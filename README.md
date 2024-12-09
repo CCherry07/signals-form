@@ -1,37 +1,22 @@
-# Farm + TypeScript
+# rxform
 
-This template should help you start developing using TypeScript in Farm.
+## Overview
 
-## Setup
+rxform is a library for building reactive forms with React. It provides a simple and intuitive API for creating and managing forms, as well as a wide range of validation and transformation options.
 
-Install the dependencies:
+## Installation
 
-```bash
-pnpm install
-```
-
-## Get Started
-
-Start the dev server:
+You can install rxform using npm:
 
 ```bash
-pnpm start
+npm install rxform
 ```
 
-Build the app for production:
+## Context
 
-```bash
-pnpm build
-```
+rxform is built on top of the [@preact/signals](
+rxform is built on top of the [@preact/signals](URL_ADDRESS.npmjs.com/package/@preact/signals) library, which provides reactive primitives for building reactive applications.
 
-Preview the Production build product:
+## Features
 
-```bash
-pnpm preview
-```
-
-Clear persistent cache local files
-
-```bash
-pnpm clean
-```
+- 需要实现的功能点

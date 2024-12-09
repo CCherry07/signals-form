@@ -1,9 +1,9 @@
 import { filter, fromEvent, map, reduce, rx } from "rxjs"
-import { D as _D, type Decision, registerCustomOperator } from "./boolless"
+import { D as _D, type Decision, registerCustomOperator, setup } from "./boolless"
 import { effect, Signal, signal } from "@preact/signals-core"
 
 registerCustomOperator(
-  "reverseAnd",
+  "n_and",
   {
     operator(...bools: boolean[]) {
       return !bools.every(Boolean)
@@ -11,23 +11,51 @@ registerCustomOperator(
   }
 )
 
-const effects = new Map<string, Function>()
-
-let D = _D as typeof _D & {
-  reverseAnd: (...nodes: (string | Node)[]) => Decision
-}
-
-const values$ = signal(
+registerCustomOperator(
+  "n_or",
   {
-    isA: signal<boolean>(true),
-    isB: signal<boolean>(false),
-    isC: signal<boolean>(true),
-    isD: signal<boolean>(false),
+    operator(...bools: boolean[]) {
+      return !bools.some(Boolean)
+    },
   }
 )
 
+const effects = new Map<string, Function>()
+
+let T = _D as typeof _D & {
+  n_and: (...nodes: (string | Node)[]) => Decision
+  n_or: (...nodes: (string | Node)[]) => Decision
+}
+
+interface Context {
+  a: Signal<string>,
+  b: Signal<string>,
+  c: Signal<string>,
+  d: Signal<string>,
+  userInfo: Signal<{ name: Signal<string>, age: Signal<number> }>
+}
+
+const context: Context = {
+  a: signal('a'),
+  b: signal('bb'),
+  c: signal('c'),
+  d: signal('dd'),
+  userInfo: signal({ name: signal('Tom'), age: signal(18) })
+};
+
+const bools = {
+  isA: (context: Context) => context.a.value === 'a',
+  isB: (context: Context) => context.b.value === 'b',
+  isC: (context: Context) => context.c.value === 'c',
+  isD: (context: Context) => context.d.value === 'd',
+  isTom: (context: Context) => context.userInfo.value.name.value === 'Tom',
+}
+
+const valuesSignals = setup(bools, context);
+
 interface Step {
-  map?: (info: string) => void
+  map?: (value: any) => any
+  tap?: (info: any) => void
   effectTarget?: string
   effectProp?: string
   operator?: "toggle" | "onlyone" | "any" | 'single'
@@ -37,7 +65,6 @@ interface Step {
 }
 
 export const signalFlow = (flow: Step[], deps: Signal[]) => {
-  // 1. 如果deps中有值发生变化，那么就重新计算flow
   effect(() => {
     run(deps, flow).subscribe()
   })
@@ -45,19 +72,26 @@ export const signalFlow = (flow: Step[], deps: Signal[]) => {
 
 export const flow: Step[] = [
   {
-    map: (info: string) => {
-      values$.value.isB.value = (info === "cherry")
+    tap: (info: string) => {
+      context.userInfo.value.name.value = info
+      return info
     }
   },
   {
-    single: "single-auto-toggle",
-    condition: D.and('isA', "isD"),
+    single: "single",
+    condition: T.and('isA', "isC", 'isTom'),
     do: [
       {
         effectTarget: "button",
         effectProp: "innerText",
+        tap(info) {
+          console.log("single", info);
+        },
         map: (info: string) => {
-          console.log("info", info);
+          return info + " isA and isB"
+        },
+        switchMap: (info: string) => {
+          return info + " isA and isC"
         }
       }
     ]
@@ -66,20 +100,22 @@ export const flow: Step[] = [
     operator: "onlyone",
     do: [
       {
-        // @ts-ignore
-        condition: D.and('isA', 'isB'),
+        condition: T.and('isA', 'isB').or('isC', 'isD'),
         do: [
           {
             effectTarget: "button",
             effectProp: "innerText",
             map: (info: string) => {
               return info + " isA and isC"
+            },
+            tap: (info: string) => {
+              console.log("info", info);
             }
           }
         ]
       },
       {
-        condition: D.and('isA', 'isC').or('isB'),
+        condition: T.and('isA', 'isC').or('isB'),
         do: [
           {
             effectTarget: "button",
@@ -93,8 +129,8 @@ export const flow: Step[] = [
     ]
   },
   {
-    map: (info: string) => {
-      values$.value.isD.value = true
+    tap: (info: string) => {
+      console.log("info", info);
     }
   }
 ]
@@ -102,9 +138,15 @@ export const flow: Step[] = [
 export const run = (source: any, flow: Step[]) => {
   return rx(flow).pipe(reduce((acc, step) => {
     let data = acc
+
     if (step.map) {
-      data = step?.map?.(acc) ?? data
+      data = step?.map?.(acc)
     }
+
+    if (step.tap) {
+      step.tap(data)
+    }
+
     if (step.effectTarget && step.effectProp) {
       const dom = document.querySelector(`#${step.effectTarget}`)!
       if (dom) {
@@ -112,17 +154,17 @@ export const run = (source: any, flow: Step[]) => {
         dom[step.effectProp] = data
       }
     }
-    if (step.operator === "onlyone") {
-      const res = step.do!.find((step) => step.condition?.evaluate(values$))
-      console.log("res", res);
 
+    if (step.operator === "onlyone") {
+      const res = step.do!.find((step) => step.condition?.evaluate(valuesSignals))
       if (res) {
-        run(data, res.do!).subscribe((v) => data = v)
+        run(data, res.do!).subscribe()
       }
     }
+
     if (step.operator === "any") {
       rx(step.do!).pipe(
-        filter((step) => !!step.condition?.evaluate(values$)),
+        filter((step) => !!step.condition?.evaluate(valuesSignals)),
         map((step) => step.do)
       ).subscribe(
         {
@@ -139,26 +181,18 @@ export const run = (source: any, flow: Step[]) => {
     if (step.single) {
       const singleKey = step.single
       if (!effects.has(singleKey)) {
-        const fn = () => {
-          if (step.condition?.evaluate(values$)) {
+        const dispose = effect(() => {
+          if (step.condition?.evaluate(valuesSignals)) {
             run(data, step.do!).subscribe({
               complete() {
                 console.log("single operator completed")
               },
             })
           }
-        }
-        effect(fn)
-        effects.set(singleKey, fn)
+        })
+        effects.set(singleKey, dispose)
       }
     }
-    // if (step.operator === "toggle") {
-    //   if (step.condition.evaluate(values)) {
-    //     run(data, step.do![0]).subscribe()
-    //   } else {
-    //     run(data, step.do![1]).subscribe()
-    //   }
-    // }
     return data
   }, source))
 }

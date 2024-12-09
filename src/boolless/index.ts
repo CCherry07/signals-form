@@ -1,4 +1,4 @@
-import { signal, computed, Signal, effect } from '@preact/signals-core';
+import { computed, Signal } from '@preact/signals-core';
 
 type MaybeSignal<T> = T | Signal<T>;
 
@@ -123,43 +123,15 @@ function createOrDecision(...ns: (string | Node)[]) {
   return new Decision(OperatorEnum.OR, ...ns.map(n => typeof n === 'string' ? new LeafNode(n) : n));
 }
 
-interface Context {
-  a: Signal<string>,
-  b: Signal<string>,
-  c: Signal<string>,
-  d: Signal<string>,
-  userInfo: Signal<{ name: Signal<string>, age: Signal<number> }>
+type Check = () => boolean;
+const createBoolSignal = (check: Check) => computed(() => check());
+
+export interface BoolsContext<C> {
+  [key: string]: (context: C) => boolean;
 }
 
-const context: Context = {
-  a: signal('a'),
-  b: signal('b'),
-  c: signal('c'),
-  d: signal('d'),
-  userInfo: signal({ name: signal('Tom'), age: signal(18) })
-};
-
-const createBoolSignal = (check: (context: Context) => boolean) => computed(() => check(context));
-
-const boolsContext = {
-  isA: createBoolSignal(() => context.a.value === 'a'),
-  isB: createBoolSignal(() => context.b.value === 'b'),
-  isC: createBoolSignal(() => context.c.value === 'c'),
-  isD: createBoolSignal(() => context.d.value === 'd'),
-  isTom: createBoolSignal(() => context.userInfo.value.name.value === 'Tom')
-};
-
-const rootNode: Node = D.and(
-  'isA',
-  'isB',
-  'isC',
-).and("isTom", D.use('isD').not());
-
-effect(() => {
-  const result = rootNode.evaluate(boolsContext)
-  console.log('Decision tree result:', result);
-});
-
-// 示例：改变信号值
-context.d.value = 'a';  // 这将触发决策树的执行
-context.userInfo.value.name.value = 'ccc';  // 这将触发决策树的执行
+export const setup = <C>(bools: BoolsContext<C>, context: MaybeSignal<C>) => {
+  return Object.fromEntries(Object.entries(bools).map(([key, check]) => {
+    return [key, createBoolSignal(() => check(toValue(context)))];
+  }))
+}
