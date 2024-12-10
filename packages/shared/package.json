@@ -1,0 +1,12 @@
+{
+  "name": "@rxform/shared",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "lodash.get": "^4.4.2"
+  }
+}

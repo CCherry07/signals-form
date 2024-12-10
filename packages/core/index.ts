@@ -1,6 +1,7 @@
 import { filter, fromEvent, map, reduce, rx } from "rxjs"
 import { D as _D, type Decision, registerCustomOperator, setup } from "./boolless"
 import { effect, Signal, signal } from "@preact/signals-core"
+import { z } from "zod"
 
 registerCustomOperator(
   "n_and",
@@ -70,70 +71,86 @@ export const signalFlow = (flow: Step[], deps: Signal[]) => {
   })
 }
 
-export const flow: Step[] = [
-  {
-    tap: (info: string) => {
-      context.userInfo.value.name.value = info
-      return info
-    }
-  },
-  {
-    single: "single",
-    condition: T.and('isA', "isC", 'isTom'),
-    do: [
-      {
-        effectTarget: "button",
-        effectProp: "innerText",
-        tap(info) {
-          console.log("single", info);
-        },
-        map: (info: string) => {
-          return info + " isA and isB"
-        },
-        switchMap: (info: string) => {
-          return info + " isA and isC"
-        }
+const budget = {
+  componentConfig: {
+    filedKey: "budget",
+    validate: {
+      initiative:{
+        all: [
+          {
+            engine: "zod",
+            schema: z.number({ message: "出价是必填的" }).min(1),
+            on: "change"
+          }
+        ],
+      },
+      signal: {
+        all: [
+          {
+            engine: "qc",
+            fact: js`$.roi`,
+            schema: "RoiValidate"
+          }
+        ]
       }
-    ]
+    },
   },
-  {
-    operator: "onlyone",
-    do: [
+  signal: {
+    "$.a": {
+      condition: T.and('isA', "isC", 'isTom'),
+      do: [
+        {
+          effectTarget: "budget",
+          effectProp: "disabled",
+          value: true
+        }
+      ]
+    },
+  },
+  events: {
+    change: [
       {
-        condition: T.and('isA', 'isB').or('isC', 'isD'),
+        map: (info: string) => {
+          context.userInfo.value.name.value = info
+          return info
+        }
+      },
+      {
+        operator: "onlyone",
         do: [
           {
-            effectTarget: "button",
-            effectProp: "innerText",
-            map: (info: string) => {
-              return info + " isA and isC"
-            },
-            tap: (info: string) => {
-              console.log("info", info);
-            }
+            condition: T.and('isA', 'isB').or('isC', 'isD'),
+            do: [
+              {
+                effectTarget: "button",
+                effectProp: "innerText",
+                map: (info: string) => {
+                  return info + " isA and isC"
+                },
+                tap: (info: string) => {
+                  console.log("info", info);
+                }
+              }
+            ]
+          },
+          {
+            condition: T.and('isA', 'isC').or('isB'),
+            do: [
+              {
+                effectTarget: "button",
+                effectProp: "innerText",
+                map: (info: string) => {
+                  return info + " is not A and C"
+                }
+              }
+            ]
           }
         ]
       },
-      {
-        condition: T.and('isA', 'isC').or('isB'),
-        do: [
-          {
-            effectTarget: "button",
-            effectProp: "innerText",
-            map: (info: string) => {
-              return info + " is not A and C"
-            }
-          }
-        ]
-      }
     ]
   },
-  {
-    tap: (info: string) => {
-      console.log("info", info);
-    }
-  }
-]
+
+}
 
 export const run = (source: any, flow: Step[]) => {
   return rx(flow).pipe(reduce((acc, step) => {
