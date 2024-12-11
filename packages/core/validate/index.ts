@@ -27,8 +27,8 @@ export const setup = (validator: string, resolver: Resolver) => {
 }
 
 interface State<T> {
-  value: T
-  event: string
+  state: T
+  updateOn: string
 }
 
 /**
@@ -37,33 +37,29 @@ interface State<T> {
  * @param context Record<string,any>
  * @returns 
  */
-const getFactValue = (fact: string | Object | Array<string>, context: any): any => {
+const getFactValue = (fact: string | Object | Array<string>, state: any, context: any): any => {
   if (isObject(fact)) {
-    return Object.fromEntries(Object.entries(fact).map(([key, value]) => [key, getFactValue(value, context)]))
+    return Object.fromEntries(Object.entries(fact).map(([key, value]) => [key, getFactValue(value, state, context)]))
   }
   if (isArray(fact)) {
-    return fact.map(item => getFactValue(item, context))
+    return fact.map(item => getFactValue(item, state, context))
   }
   if (isString(fact)) {
     if (fact.startsWith('$')) {
-      return get({ $: context }, fact)
+      return get({ $: context, $state: state }, fact)
     }
   }
   return fact
 }
 
-export const validate = async <T>(value: State<T>, validates: ValidateItem[], boolsConfig: BoolValues, context: any): Promise<FieldErrors> => {
+export const validate = async <T>({ state, updateOn: _updateOn }: State<T>, validates: ValidateItem[], boolsConfig: BoolValues, context: any): Promise<FieldErrors> => {
   const fieldErrors = {} as FieldErrors
   for (const item of validates) {
-    const { schema, engine = 'zod', fact, on, schemaOptions, factoryOptions, needValidate } = item
+    const { schema, engine = 'zod', fact, on: updateOn, schemaOptions, factoryOptions, needValidate } = item
     if (needValidate instanceof Decision && needValidate.not().evaluate(boolsConfig)) continue
-    if (typeof on === "string" && on !== value.event) continue
+    if (typeof updateOn === "string" && updateOn !== _updateOn) continue
     const validator = validatorResolvers[engine](schema, schemaOptions, factoryOptions)
-    const factValue = isString(fact)
-      ? getFactValue(fact, context)
-      : isArray(fact) ? [value.value, ...getFactValue(fact, context)]
-        : isObject(fact) ? { ...value.value, ...getFactValue(fact, context) }
-          : value.value
+    const factValue = fact ? getFactValue(fact, state, context) : state
     const { errors } = await validator(factValue)
     Object.assign(fieldErrors, errors)
   }

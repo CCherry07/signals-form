@@ -1,4 +1,4 @@
-import { computed, Signal } from '@preact/signals-core';
+import { computed } from '@preact/signals-core';
 import { MaybeSignal, toValue } from '@rxform/shared/signal';
 
 export type BoolValues = MaybeSignal<Record<string, MaybeSignal<boolean>>>;

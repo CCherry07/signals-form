@@ -39,28 +39,28 @@ describe("validate", () => {
 
   it("validate success", async () => {
     const result = await validate({
-      value: {
+      state: {
         name: "cherry",
         age: 18,
         addr: {
           city: '重庆'
         }
       },
-      event: "change"
+      updateOn: "change"
     }, rules, boolValues, context)
     expect(result).toMatchInlineSnapshot(`{}`)
   })
 
   it("validate fail", async () => {
     const result = await validate({
-      value: {
+      state: {
         name: "cherry",
         age: "18",
         addr: {
           city: '重庆'
         }
       },
-      event: "change"
+      updateOn: "change"
     }, rules, boolValues, context)
 
     expect(result).toMatchInlineSnapshot(`
@@ -77,13 +77,14 @@ describe("validate", () => {
     const rules: ValidateItem[] = [
       {
         fact: {
+          $state: "$state",
           userInfo: {
             name: "$.value.userInfo.value.name.value",
             age: "$.value.userInfo.value.age.value"
           }
         },
         schema: z.object({
-          value: z.object({
+          $state: z.object({
             name: z.string(),
             age: z.number(),
             addr: z.object({
@@ -99,14 +100,14 @@ describe("validate", () => {
     ]
 
     const result = await validate({
-      value: {
+      state: {
         name: "cherry",
         age: 18,
         addr: {
           city: '重庆'
         }
       },
-      event: "change"
+      updateOn: "change"
     }, rules, boolValues, context)
     expect(result).toMatchInlineSnapshot(`{}`)
   })
@@ -125,14 +126,14 @@ describe("validate", () => {
       }
     ]
     const result = await validate({
-      value: {
+      state: {
         name: "cherry",
         age: 18,
         addr: {
           city: '重庆'
         }
       },
-      event: "change"
+      updateOn: "change"
     }, rules, boolValues, context)
     expect(result).toMatchInlineSnapshot(`{}`)
   })
