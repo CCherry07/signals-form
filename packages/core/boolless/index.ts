@@ -1,24 +1,7 @@
-import { computed, Signal, ReadonlySignal } from '@preact/signals-core';
+import { computed, Signal } from '@preact/signals-core';
+import { MaybeSignal, toValue } from '@rxform/shared/signal';
 
-export type MaybeSignal<T = any> =
-  | T
-  | Signal<T>
-
-export type MaybeRefOrGetter<T = any> = MaybeSignal<T> | ReadonlySignal<T> | (() => T)
-
-export function isSignal<T>(v: MaybeSignal<T>): v is Signal<T> {
-  return v instanceof Signal;
-}
-
-export function unSignal<T>(signal: MaybeSignal<T> | ReadonlySignal<T>): T {
-  return isSignal(signal) ? signal.value : signal
-}
-
-export function toValue<T>(v: MaybeRefOrGetter<T>): T {
-  return typeof v === 'function'? v() : unSignal(v);
-}
-
-export type BoolValues = MaybeSignal<{ [key: string]: MaybeSignal<boolean> }>;
+export type BoolValues = MaybeSignal<Record<string, MaybeSignal<boolean>>>;
 
 export enum OperatorEnum {
   AND = "and",
@@ -109,7 +92,6 @@ export function registerCustomOperator(operatorDSL: string,
     }
     return new Decision(operatorDSL as OperatorEnum, ...ns.map(n => typeof n === 'string' ? new LeafNode(n) : n));
   };
-
   CustomDecisionCreator[operatorDSL] = DecisionCreator
   // @ts-ignore
   D[operatorDSL] = DecisionCreator;
@@ -119,11 +101,12 @@ export function registerCustomOperator(operatorDSL: string,
 
 export class LeafNode {
   name: string
-  constructor(name: string | Function) {
-    this.name = name instanceof Function ? name.toString() : name;
+  constructor(name: string | (() => string)) {
+    this.name = toValue(name) as string;
   }
   evaluate(context: BoolValues): boolean {
-    return toValue(toValue(context)[this.name]);
+    const ctx = toValue(context) as Record<string, MaybeSignal<boolean>>;
+    return toValue(ctx[this.name]);
   }
 }
 
@@ -139,11 +122,11 @@ type Check = () => boolean;
 const createBoolSignal = (check: Check) => computed(() => check());
 
 export interface BoolsConfig<C> {
-  [key: string]: (context: MaybeSignal<C>) => boolean;
+  [key: string]: (context: C) => boolean;
 }
 
-export const setup = <C>(bools: BoolsConfig<C>, context: MaybeSignal<C>) => {
-  return Object.fromEntries(Object.entries(bools).map(([key, check]) => {
+export const setup = <C>(bools: MaybeSignal<BoolsConfig<C>>, context: MaybeSignal<C>) => {
+  return Object.fromEntries(Object.entries(toValue(bools)).map(([key, check]) => {
     return [key, createBoolSignal(() => check(context))];
-  })) as Record<keyof BoolsConfig<C>, Signal<boolean>>;
+  }));
 }

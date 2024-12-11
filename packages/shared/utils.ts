@@ -7,3 +7,6 @@ export function isObject(value: any): value is object {
 export function isString(value: any): value is string {
   return Object.prototype.toString.call(value) === "[object String]";
 }
+export function isFunction(value: any): value is Function {
+  return Object.prototype.toString.call(value) === "[object Function]";
+}

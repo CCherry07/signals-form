@@ -1,8 +1,9 @@
 import { validate, type ValidateItem } from ".."
 import { z } from "zod"
 import { describe, it, expect } from "vitest"
-import { D, MaybeSignal, setup, toValue } from "../../boolless"
+import { D, setup } from "../../boolless"
 import { ReadonlySignal, signal } from "@preact/signals-core"
+import { toValue } from "@rxform/shared"
 
 const context = signal({
   name: signal('cherry'),
@@ -17,9 +18,9 @@ const context = signal({
 type Context = typeof context
 
 const bools = {
-  isD: (context: MaybeSignal<Context>) => toValue(context).d.value === 'd',
-  isTom: (context: MaybeSignal<Context>) => toValue(context).userInfo.value.name.value === 'Tom',
-}
+  isD: (context: Context) => toValue(context).d.value === 'd',
+  isTom: (context: Context) => toValue(context).userInfo.value.name.value === 'Tom',
+} as const
 
 const boolValues = setup(bools, context) as Record<keyof typeof bools, ReadonlySignal<boolean>>;
 
