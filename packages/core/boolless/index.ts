@@ -11,10 +11,10 @@ export enum OperatorEnum {
 }
 
 export const Operator = {
-  [OperatorEnum.AND]: (left: boolean, right: boolean) => left && right,
-  [OperatorEnum.OR]: (left: boolean, right: boolean) => left || right,
-  [OperatorEnum.NOT]: (left: boolean) => !left,
-  [OperatorEnum.USE]: (left: boolean) => left
+  [OperatorEnum.AND]: (nodes: Node[], values: BoolValues) => nodes.every(node => node.evaluate(values)),
+  [OperatorEnum.OR]: (nodes: Node[], values: BoolValues) => nodes.some(node => node.evaluate(values)),
+  [OperatorEnum.NOT]: (node: Node, values: BoolValues) => !node.evaluate(values),
+  [OperatorEnum.USE]: (node: Node, values: BoolValues) => node.evaluate(values),
 }
 
 export const CustomOperator = {} as { [key: string]: (...bools: boolean[]) => boolean }
@@ -56,13 +56,13 @@ export class Decision {
     }
     switch (this.operator) {
       case OperatorEnum.AND:
-        return this.nodes.every(node => node.evaluate(values));
+        return Operator.and(this.nodes, values);
       case OperatorEnum.OR:
-        return this.nodes.some(node => node.evaluate(values));
+        return Operator.or(this.nodes, values);
       case OperatorEnum.NOT:
-        return Operator.not(this.nodes[0].evaluate(values));
+        return Operator.not(this.nodes[0], values);
       case OperatorEnum.USE:
-        return Operator.use(this.nodes[0].evaluate(values));
+        return Operator.use(this.nodes[0], values);
       default:
         throw new Error(`Unknown Operator dsl: ${this.operator}`);
     }
