@@ -1,7 +1,9 @@
 import { filter, fromEvent, map, reduce, rx } from "rxjs"
 import { D as _D, type Decision, registerCustomOperator, setup } from "./boolless"
+import createTemplateLiterals from "@rxform/shared/createTemplateLiterals"
 import { effect, Signal, signal } from "@preact/signals-core"
 import { z } from "zod"
+import { createRXForm } from "./model/form"
 
 registerCustomOperator(
   "n_and",
@@ -51,7 +53,7 @@ const bools = {
   isD: (context: Context) => context.d.value === 'd',
   isTom: (context: Context) => context.userInfo.value.name.value === 'Tom',
 }
-
+const js = createTemplateLiterals({}, context)
 const valuesSignals = setup(bools, context);
 
 interface Step {
@@ -71,11 +73,18 @@ export const signalFlow = (flow: Step[], deps: Signal[]) => {
   })
 }
 
+setTimeout(() => {
+  context.a.value = 'xxx'
+}, 3000);
+
 const budget = {
   componentConfig: {
-    filedKey: "budget",
+    id: 'budget',
+
+    component: "input",
+    display: T.and('isA', 'isC'),
     validate: {
-      initiative:{
+      initiative: { // 事件驱动
         all: [
           {
             engine: "zod",
@@ -84,18 +93,21 @@ const budget = {
           }
         ],
       },
-      signal: {
+      signal: { // 信号驱动
         all: [
           {
             engine: "qc",
-            fact: js`$.roi`,
+            fact: {
+              a: "$.a",
+              roi: js`$state.value * 100`,
+            },
             schema: "RoiValidate"
           }
         ]
       }
     },
   },
-  signal: {
+  signal: { // 信号驱动
     "$.a": {
       condition: T.and('isA', "isC", 'isTom'),
       do: [
@@ -149,8 +161,19 @@ const budget = {
       },
     ]
   },
-
 }
+
+const graph = {
+  budget,
+}
+const from = createRXForm({
+  validatorEngine: "zod",
+  defaultValidatorEngine: "zod",
+  boolsConfig: bools,
+  graph
+})
+
+console.log(from);
 
 export const run = (source: any, flow: Step[]) => {
   return rx(flow).pipe(reduce((acc, step) => {
@@ -214,10 +237,10 @@ export const run = (source: any, flow: Step[]) => {
   }, source))
 }
 
-const input = document.querySelector("#input")!
+// const input = document.querySelector("#input")!
 
-fromEvent<InputEvent>(input, "input").subscribe({
-  next(value) {
-    run((value.target as HTMLInputElement).value, flow).subscribe()
-  },
-})
+// fromEvent<InputEvent>(input, "input").subscribe({
+//   next(value) {
+//     run((value.target as HTMLInputElement).value, flow).subscribe()
+//   },
+// })

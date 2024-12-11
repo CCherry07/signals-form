@@ -3,8 +3,12 @@ import { zodResolver } from "./resolvers/zod"
 import { BoolValues, Decision } from "../boolless"
 
 import type { Resolver, FactoryOptions } from "./resolvers/type"
-import type { FieldErrors } from "./error/field"
+import type { FieldErrors, FieldError } from "./error/field"
 
+export {
+  FieldErrors,
+  FieldError
+}
 export interface ValidateItem {
   schema: any
   engine?: string

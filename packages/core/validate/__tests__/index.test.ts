@@ -79,6 +79,7 @@ describe("validate", () => {
         fact: {
           $state: "$state",
           userInfo: {
+            addr: "朝阳区",
             name: "$.value.userInfo.value.name.value",
             age: "$.value.userInfo.value.age.value"
           }
@@ -94,6 +95,7 @@ describe("validate", () => {
           userInfo: z.object({
             name: z.string(),
             age: z.number(),
+            addr: z.string()
           })
         })
       }

@@ -37,11 +37,15 @@ importers:
         specifier: workspace:*
         version: link:../shared
 
+  packages/react: {}
+
   packages/shared:
     dependencies:
       lodash.get:
         specifier: ^4.4.2
         version: 4.4.2
+
+  packages/vue: {}
 
 packages:
 
