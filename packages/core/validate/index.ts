@@ -37,7 +37,7 @@ interface State<T> {
  * @param context Record<string,any>
  * @returns 
  */
-const getFactValue = (fact: string | Object | Array<string>, context: any): Record<string, any> => {
+const getFactValue = (fact: string | Object | Array<string>, context: any): any => {
   if (isObject(fact)) {
     return Object.fromEntries(Object.entries(fact).map(([key, value]) => [key, getFactValue(value, context)]))
   }
@@ -45,9 +45,11 @@ const getFactValue = (fact: string | Object | Array<string>, context: any): Reco
     return fact.map(item => getFactValue(item, context))
   }
   if (isString(fact)) {
-    return get({ $: context }, fact)
+    if (fact.startsWith('$')) {
+      return get({ $: context }, fact)
+    }
   }
-  return {}
+  return fact
 }
 
 export const validate = async <T>(value: State<T>, validates: ValidateItem[], boolsConfig: BoolValues, context: any): Promise<FieldErrors> => {
@@ -57,11 +59,11 @@ export const validate = async <T>(value: State<T>, validates: ValidateItem[], bo
     if (needValidate instanceof Decision && needValidate.not().evaluate(boolsConfig)) continue
     if (typeof on === "string" && on !== value.event) continue
     const validator = validatorResolvers[engine](schema, schemaOptions, factoryOptions)
-    const factValue = fact ? {
-      value: value.value,
-      ...getFactValue(fact, context)
-    } : value.value
-
+    const factValue = isString(fact)
+      ? getFactValue(fact, context)
+      : isArray(fact) ? [value.value, ...getFactValue(fact, context)]
+        : isObject(fact) ? { ...value.value, ...getFactValue(fact, context) }
+          : value.value
     const { errors } = await validator(factValue)
     Object.assign(fieldErrors, errors)
   }
