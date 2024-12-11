@@ -1,6 +1,6 @@
 import { isProd, isArray, isObject, isString, get } from "@rxform/shared"
 import { zodResolver } from "./resolvers/zod"
-import { Decision } from "../boolless"
+import { BoolValues, Decision } from "../boolless"
 
 import type { Resolver, FactoryOptions } from "./resolvers/type"
 import type { FieldErrors } from "./error/field"
@@ -50,14 +50,13 @@ const getFactValue = (fact: string | Object | Array<string>, context: any): Reco
   return {}
 }
 
-export const validate = async <T>(value: State<T>, validates: ValidateItem[], context: any): Promise<FieldErrors> => {
+export const validate = async <T>(value: State<T>, validates: ValidateItem[], boolsConfig: BoolValues, context: any): Promise<FieldErrors> => {
   const fieldErrors = {} as FieldErrors
   for (const item of validates) {
     const { schema, engine = 'zod', fact, on, schemaOptions, factoryOptions, needValidate } = item
-    if (needValidate instanceof Decision && needValidate.not().evaluate(context.boolsContext)) continue
+    if (needValidate instanceof Decision && needValidate.not().evaluate(boolsConfig)) continue
     if (typeof on === "string" && on !== value.event) continue
     const validator = validatorResolvers[engine](schema, schemaOptions, factoryOptions)
-
     const factValue = fact ? {
       value: value.value,
       ...getFactValue(fact, context)

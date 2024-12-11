@@ -1,12 +1,24 @@
-import { computed, Signal } from '@preact/signals-core';
+import { computed, Signal, ReadonlySignal } from '@preact/signals-core';
 
-type MaybeSignal<T> = T | Signal<T>;
+export type MaybeSignal<T = any> =
+  | T
+  | Signal<T>
 
-function toValue<T>(v: MaybeSignal<T>): T {
-  return v instanceof Signal ? v.value : v;
+export type MaybeRefOrGetter<T = any> = MaybeSignal<T> | ReadonlySignal<T> | (() => T)
+
+export function isSignal<T>(v: MaybeSignal<T>): v is Signal<T> {
+  return v instanceof Signal;
 }
 
-type BoolValues = MaybeSignal<{ [key: string]: MaybeSignal<boolean> }>;
+export function unSignal<T>(signal: MaybeSignal<T> | ReadonlySignal<T>): T {
+  return isSignal(signal) ? signal.value : signal
+}
+
+export function toValue<T>(v: MaybeRefOrGetter<T>): T {
+  return typeof v === 'function'? v() : unSignal(v);
+}
+
+export type BoolValues = MaybeSignal<{ [key: string]: MaybeSignal<boolean> }>;
 
 export enum OperatorEnum {
   AND = "and",
@@ -126,12 +138,12 @@ function createOrDecision(...ns: (string | Node)[]) {
 type Check = () => boolean;
 const createBoolSignal = (check: Check) => computed(() => check());
 
-export interface BoolsContext<C> {
-  [key: string]: (context: C) => boolean;
+export interface BoolsConfig<C> {
+  [key: string]: (context: MaybeSignal<C>) => boolean;
 }
 
-export const setup = <C>(bools: BoolsContext<C>, context: MaybeSignal<C>) => {
+export const setup = <C>(bools: BoolsConfig<C>, context: MaybeSignal<C>) => {
   return Object.fromEntries(Object.entries(bools).map(([key, check]) => {
-    return [key, createBoolSignal(() => check(toValue(context)))];
-  }))
+    return [key, createBoolSignal(() => check(context))];
+  })) as Record<keyof BoolsConfig<C>, Signal<boolean>>;
 }
