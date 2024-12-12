@@ -5,7 +5,7 @@ interface Parops {
   app: ReactNode,
   from: any
 }
-export function Main(props:Parops) {
+export function App(props:Parops) {
   return <div>
     {props.app}
     <Submit from={props.from} />

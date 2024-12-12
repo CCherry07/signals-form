@@ -27,9 +27,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.model = model as M;
     this.validatorEngine = validatorEngine;
     this.defaultValidatorEngine = defaultValidatorEngine
-    effect(() => {
-      this.bools = setup(boolsConfig, this.model)
-    })
+    this.bools = setup(boolsConfig, this.model)
   }
 
   updateModel(model: M) {

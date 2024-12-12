@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { FieldControl } from "./FieldControl";
 import { createRXForm, Filed } from "@rxform/core"
 
@@ -28,7 +28,10 @@ export const createForm = (config: FormConfig) => {
       Object.entries(graph).map(([key, filed]) => {
         return <FieldControl
           key={key}
-          filed={filed} />
+          filed={filed} 
+          bools={from.bools}
+          model={from.model}
+          />
       })
     }
   </div>

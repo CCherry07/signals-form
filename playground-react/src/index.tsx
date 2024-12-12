@@ -7,43 +7,31 @@ import {
   Signal as FiledSignal,
   D, createTemplateLiterals, Filed, Component, ModelPipe
 } from "@rxform/core"
-import BudgetComponent from "./components/Budget"
+import InputComponent from "./components/Input"
 import { createForm } from "@rxform/react"
-import { Main } from "./App"
-interface Context {
-  a: Signal<string>,
-  b: Signal<string>,
-  c: Signal<string>,
-  d: Signal<string>,
-  userInfo: Signal<{ name: Signal<string>, age: Signal<number> }>
-}
+import { App } from "./App"
 
+interface Context {
+  name: Signal<string>,
+}
 const context: Context = {
-  a: signal('a'),
-  b: signal('bb'),
-  c: signal('c'),
-  d: signal('dd'),
-  userInfo: signal({ name: signal('Tom'), age: signal(18) })
+  name: signal('a'),
 };
 
 const bools = {
-  isA: (context: Context) => context.a.value === 'a',
-  isB: (context: Context) => context.b.value === 'b',
-  isC: (context: Context) => context.c.value === 'c',
-  isD: (context: Context) => context.d.value === 'd',
-  isTom: (context: Context) => context.userInfo.value.name.value === 'Tom',
+  isCherry: (context: Signal<Context>) => context.value.name.value === 'cherry',
 }
 const js = createTemplateLiterals({}, context)
 
 @Component({
-  id: "budget",
-  component: BudgetComponent,
+  id: "name",
+  component: InputComponent,
   disabled: D.or('isA', 'isC'),
   display: D.and('isA', 'isC'),
 })
 @ModelPipe({
   data2model() {
-    return "data2model value"
+    return ""
   }
 })
 @FiledSignal({
@@ -71,10 +59,9 @@ const js = createTemplateLiterals({}, context)
   }
 })
 @Events({
-  change: [
+  onChange: [
     {
       map: (info: string) => {
-        context.userInfo.value.name.value = info
         return info
       }
     },
@@ -82,11 +69,14 @@ const js = createTemplateLiterals({}, context)
       operator: "onlyone",
       do: [
         {
-          decision: D.and('isA', 'isB').or('isC', 'isD'),
+          decision: D.use('isCherry'),
           do: [
             {
               map: (info: string) => {
                 return info + " isA and isC"
+              },
+              effect(info) {
+                this.value.value = info
               },
               tap: (info: string) => {
                 console.log("info", info);
@@ -95,12 +85,12 @@ const js = createTemplateLiterals({}, context)
           ]
         },
         {
-          decision: D.and('isA', 'isC').or('isB'),
+          decision: D.not('isCherry'),
           do: [
             {
-              map: (info: string) => {
-                return info + " is not A and C"
-              }
+              effect(info) {
+                this.value.value = info
+              },
             }
           ]
         }
@@ -108,44 +98,16 @@ const js = createTemplateLiterals({}, context)
     },
   ]
 })
-class Budget extends Filed {
-  value: Signal<string> = signal("default value")
+class Name extends Filed {
   constructor() {
     super()
   }
   onChange(e: any): void {
-    this.value.value = e.target.value
-  }
-  onInit(): void {
-    console.log("onInit");
-  }
-  onDestroy(): void {
-    console.log("onDestroy");
-  }
-  onDisabled(): void {
-    console.log("onDisabled");
-  }
-  onBlur(): void {
-    console.log("onBlur");
-  }
-  onBeforeInit(): void {
-    console.log("onBeforeInit");
-  }
-  onDisplay(): void {
-    console.log("onDisplay");
-  }
-  onFocus(): void {
-    console.log("onFocus");
-  }
-  onValidate(): void {
-    console.log("onValidate");
-  }
-  onValueChange(): void {
-    console.log("onValueChange");
+    return e.target.value
   }
 }
 const graph = {
-  budget: new Budget(),
+  budget: new Name(),
 }
 export const {
   from,
@@ -156,9 +118,9 @@ export const {
   boolsConfig: bools,
   graph,
   components: {
-    budget: BudgetComponent
+    input: InputComponent
   }
 })
 
 const root = createRoot(document.getElementById('root')!);
-root.render(<Main app={app} from={from} />);
+root.render(<App app={app} from={from} />);

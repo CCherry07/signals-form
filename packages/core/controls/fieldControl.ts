@@ -1,6 +1,6 @@
 import { Decision } from "../boolless"
 import { FieldError } from "../validate"
-import { DecoratorInject } from "./decorator"
+import type { DecoratorInject } from "./decorator"
 export interface FieldControl<T> {
   readonly value: T;
   readonly id: string;
@@ -28,7 +28,7 @@ export class Filed<T = any, D = any> implements DecoratorInject<T, D> {
   onValidate(): void {
     throw new Error("Method not implemented.");
   }
-  onChange(value: T): void {
+  onChange(this: Filed<T, D>, _value: T): void {
     throw new Error("Method not implemented.");
   }
   onValueChange(): void {
