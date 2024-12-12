@@ -10,6 +10,7 @@ export interface Step {
   condition?: Decision
   single?: string
   do?: Step[]
+  value?: any
 }
 
 export const run = (source: any, flow: Step[]) => {

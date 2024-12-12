@@ -37,7 +37,11 @@ importers:
         specifier: workspace:*
         version: link:../shared
 
-  packages/react: {}
+  packages/react:
+    dependencies:
+      '@rxform/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/shared:
     dependencies:

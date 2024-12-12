@@ -1,4 +1,4 @@
-const createTemplateLiterals = <S, C>(state: S, context: C) => {
+export const createTemplateLiterals = <S, C>(state: S, context: C) => {
   return (string: TemplateStringsArray) => {
     return parseExpression(string, state, context);
   }
@@ -15,4 +15,3 @@ export function parseExpression(content: TemplateStringsArray, state: any, conte
   }
 }
 
-export default createTemplateLiterals;

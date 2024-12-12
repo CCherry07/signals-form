@@ -19,63 +19,6 @@ export interface FieldControl<T> {
   display: Decision;
 }
 
-interface ComponentMetaData {
-  id: string;
-  component: string;
-  display: Decision;
-  disabled: Decision;
-}
-export function Component(metadata: ComponentMetaData): ClassDecorator {
-  return function (target: Function) {
-    Object.assign(target.prototype, {
-      componentConfig: metadata
-    });
-  };
-}
-
-interface ValidateMetaData {
-  signal: Record<string, ValidateItem[]>;
-  initiative: Record<string, ValidateItem[]>;
-}
-export function Validator(metadata: ValidateMetaData): ClassDecorator {
-  return function (target: Function) {
-    Object.assign(target.prototype, {
-      validate: metadata
-    });
-  };
-}
-
-type SignalMetaData = Record<string, Step>;
-export function Signal(metadata: SignalMetaData): ClassDecorator {
-  return function (target: Function) {
-    Object.assign(target.prototype, {
-      signal: metadata
-    });
-  };
-}
-
-type EventMetaData = Record<string, Step[]>;
-export function Events(metadata: EventMetaData): ClassDecorator {
-  return function (target: Function) {
-    Object.assign(target.prototype, {
-      events: metadata
-    });
-  };
-}
-
-interface ModelPipeMetaData<T, D> {
-  model2data: (model: T) => D
-  data2model: (data: D) => T
-};
-export function ModelPipe<T, D>(metadata: ModelPipeMetaData<T, D>) {
-  return function (target: Function) {
-    Object.assign(target.prototype, {
-      model2data: metadata.model2data,
-      data2model: metadata.data2model
-    });
-  };
-}
-
 interface FiledLifeCycle {
   onBeforeInit(): void
   onInit(): void
@@ -133,7 +76,7 @@ export class Filed<T = any, D = any> implements FieldConfig, FiledLifeCycle {
   public isDisplay: boolean = false
   public isDisabled: boolean = false
   public isValidate: boolean = false
-  constructor(public id: string, public value: T) {
+  constructor(public id?: string, public value?: T) {
     this.id = id
     this.value = value
   }
