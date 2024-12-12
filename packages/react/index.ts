@@ -1,11 +1,10 @@
-import { effect, Signal, signal } from "@preact/signals-core"
-import { z } from "zod"
+import { Signal, signal } from "@preact/signals-core"
 import {
   registerCustomOperator,
   Validator,
   Events,
   Signal as FiledSignal,
-  D as _D, Decision, createRXForm, setup, createTemplateLiterals, Filed, Component, ModelPipe
+  D as _D, Decision, createRXForm, createTemplateLiterals, Filed, Component, ModelPipe
 } from "@rxform/core"
 registerCustomOperator(
   "n_and",
@@ -24,8 +23,6 @@ registerCustomOperator(
     },
   }
 )
-
-const effects = new Map<string, Function>()
 
 let T = _D as typeof _D & {
   n_and: (...nodes: (string | Node)[]) => Decision
@@ -56,7 +53,7 @@ const bools = {
   isTom: (context: Context) => context.userInfo.value.name.value === 'Tom',
 }
 const js = createTemplateLiterals({}, context)
-const valuesSignals = setup(bools, context);
+// const valuesSignals = setup(bools, context);
 
 @Component({
   id: "budget",
