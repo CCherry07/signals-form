@@ -89,7 +89,7 @@ interface FiledLifeCycle {
   onValidate(): void
 }
 
-export class Filed<T,D> implements FieldConfig, FiledLifeCycle {
+export class Filed<T = any, D = any> implements FieldConfig, FiledLifeCycle {
   component?: string | undefined;
   validator?: { signal?: Record<string, ValidateItem[]>; initiative?: Record<string, ValidateItem[]>; };
   signal?: Record<string, Step>;
