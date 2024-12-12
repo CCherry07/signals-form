@@ -6,7 +6,6 @@ import {
   D, createRXForm, createTemplateLiterals, Filed, Component, ModelPipe
 } from "@rxform/core"
 
-
 interface Context {
   a: Signal<string>,
   b: Signal<string>,
@@ -40,7 +39,7 @@ const js = createTemplateLiterals({}, context)
 })
 @ModelPipe({
   data2model() {
-    return "data2model"
+    return "data2model value"
   }
 })
 @FiledSignal({
@@ -106,6 +105,7 @@ const js = createTemplateLiterals({}, context)
   ]
 })
 class Budget extends Filed {
+  value: string = "default value"
   constructor() {
     super()
   }
@@ -151,5 +151,4 @@ const from = createRXForm({
   boolsConfig: bools,
   graph
 })
-
-console.log(from);
+console.log(from.model.value);

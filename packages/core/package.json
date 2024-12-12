@@ -1,10 +1,7 @@
 {
   "name": "@rxform/core",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "vitest"
-  },
+  "main": "index.ts",
   "keywords": [],
   "author": "",
   "license": "ISC",

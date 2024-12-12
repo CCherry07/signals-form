@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import createTemplateLiterals from "../createTemplateLiterals"
+import { createTemplateLiterals } from "../createTemplateLiterals"
 
 describe('createTemplateLiterals', () => {
   it('should return a function', () => {
@@ -12,7 +12,7 @@ describe('createTemplateLiterals', () => {
     const state = { foo: 'bar' };
     const context = { baz: 'qux' };
     const js = createTemplateLiterals(state, context);
-    
+
     const result = js`$state.foo`;
     expect(result).toBe('bar');
   })

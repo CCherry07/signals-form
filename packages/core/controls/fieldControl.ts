@@ -1,16 +1,7 @@
 import { Decision } from "../boolless"
 import { Step } from "../stream";
 import { FieldError, ValidateItem } from "../validate"
-export interface FieldConfig {
-  component?: string
-  validator?: {
-    signal?: Record<string, ValidateItem[]>;
-    initiative?: Record<string, ValidateItem[]>;
-  }
-  signal?: Record<string, Step>;
-  events?: Record<string, Step[]>
-}
-
+import { DecoratorInject } from "./decorator"
 export interface FieldControl<T> {
   readonly value: T;
   readonly id: string;
@@ -32,13 +23,16 @@ interface FiledLifeCycle {
   onValidate(): void
 }
 
-export class Filed<T = any, D = any> implements FieldConfig, FiledLifeCycle {
+export class Filed<T = any, D = any> implements FiledLifeCycle, DecoratorInject<T, D> {
   component?: string | undefined;
   validator?: { signal?: Record<string, ValidateItem[]>; initiative?: Record<string, ValidateItem[]>; };
   signal?: Record<string, Step>;
   events?: Record<string, Step[]>;
-  model2data?: (model: T) => D
-  data2model?: (data?: D) => T
+  model2data?: (model: T) => any;
+  data2model?: (data?: any) => T;
+  id!: string;
+  disabled?: Decision 
+  display?: Decision
   onBeforeInit(): void {
     throw new Error("Method not implemented.");
   }
@@ -76,8 +70,7 @@ export class Filed<T = any, D = any> implements FieldConfig, FiledLifeCycle {
   public isDisplay: boolean = false
   public isDisabled: boolean = false
   public isValidate: boolean = false
-  constructor(public id?: string, public value?: T) {
-    this.id = id
+  constructor(public value?: T) {
     this.value = value
   }
 }
