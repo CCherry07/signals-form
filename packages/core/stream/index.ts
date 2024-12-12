@@ -4,8 +4,6 @@ import { Decision } from "../boolless"
 export interface Step {
   map?: (value: any) => any
   tap?: (info: any) => void
-  effectTarget?: string
-  effectProp?: string
   operator?: "toggle" | "onlyone" | "any" |'single'
   condition?: Decision
   single?: string
@@ -23,14 +21,6 @@ export const run = (source: any, flow: Step[]) => {
 
     if (step.tap) {
       step.tap(data)
-    }
-
-    if (step.effectTarget && step.effectProp) {
-      const dom = document.querySelector(`#${step.effectTarget}`)!
-      if (dom) {
-        // @ts-ignore
-        dom[step.effectProp] = data
-      }
     }
 
     if (step.operator === "onlyone") {
