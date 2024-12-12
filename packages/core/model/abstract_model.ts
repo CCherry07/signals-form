@@ -1,6 +1,7 @@
 import { FieldErrors } from "../validate/error/field";
 import { BoolsConfig, setup, type BoolValues } from "../boolless"
 import { effect, Signal } from "@preact/signals-core";
+import { toDeepValue } from "@rxform/shared";
 export type Model = Record<string, any>;
 export interface AbstractModel<M extends Signal<Model>> {
   bools: BoolValues;
@@ -15,7 +16,7 @@ export interface AbstractModelConstructorOptions<M extends Model> {
   validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: BoolsConfig<M>
-  model: M
+  model?: M
 }
 
 export class AbstractModel<M> implements AbstractModel<M> {
@@ -78,5 +79,6 @@ export class AbstractModel<M> implements AbstractModel<M> {
 
   submit() {
     this.submitted = true;
+    return Promise.resolve(toDeepValue(this.model));
   }
 }

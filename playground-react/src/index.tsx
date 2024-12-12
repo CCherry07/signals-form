@@ -1,11 +1,15 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 import { Signal, signal } from "@preact/signals-core"
 import {
   Validator,
   Events,
   Signal as FiledSignal,
-  D, createRXForm, createTemplateLiterals, Filed, Component, ModelPipe
+  D, createTemplateLiterals, Filed, Component, ModelPipe
 } from "@rxform/core"
-
+import BudgetComponent from "./components/Budget"
+import { createForm } from "@rxform/react"
+import { Main } from "./App"
 interface Context {
   a: Signal<string>,
   b: Signal<string>,
@@ -33,7 +37,7 @@ const js = createTemplateLiterals({}, context)
 
 @Component({
   id: "budget",
-  component: "input",
+  component: BudgetComponent,
   disabled: D.or('isA', 'isC'),
   display: D.and('isA', 'isC'),
 })
@@ -105,12 +109,12 @@ const js = createTemplateLiterals({}, context)
   ]
 })
 class Budget extends Filed {
-  value: string = "default value"
+  value: Signal<string> = signal("default value")
   constructor() {
     super()
   }
-  onChanges(): void {
-    console.log("onChanges");
+  onChange(e: any): void {
+    this.value.value = e.target.value
   }
   onInit(): void {
     console.log("onInit");
@@ -140,15 +144,21 @@ class Budget extends Filed {
     console.log("onValueChange");
   }
 }
-
 const graph = {
   budget: new Budget(),
 }
-const from = createRXForm({
+export const {
+  from,
+  app
+} = createForm({
   validatorEngine: "zod",
   defaultValidatorEngine: "zod",
-  // @ts-ignore
   boolsConfig: bools,
-  graph
+  graph,
+  components: {
+    budget: BudgetComponent
+  }
 })
-console.log(from.model.value);
+
+const root = createRoot(document.getElementById('root')!);
+root.render(<Main app={app} from={from} />);

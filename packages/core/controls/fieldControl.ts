@@ -1,6 +1,5 @@
 import { Decision } from "../boolless"
-import { Step } from "../stream";
-import { FieldError, ValidateItem } from "../validate"
+import { FieldError } from "../validate"
 import { DecoratorInject } from "./decorator"
 export interface FieldControl<T> {
   readonly value: T;
@@ -10,29 +9,7 @@ export interface FieldControl<T> {
   display: Decision;
 }
 
-interface FiledLifeCycle {
-  onBeforeInit(): void
-  onInit(): void
-  onDestroy(): void
-  onChanges(): void
-  onBlur(): void
-  onFocus(): void
-  onDisplay(): void
-  onDisabled(): void
-  onValueChange(): void
-  onValidate(): void
-}
-
-export class Filed<T = any, D = any> implements FiledLifeCycle, DecoratorInject<T, D> {
-  component?: string | undefined;
-  validator?: { signal?: Record<string, ValidateItem[]>; initiative?: Record<string, ValidateItem[]>; };
-  signal?: Record<string, Step>;
-  events?: Record<string, Step[]>;
-  model2data?: (model: T) => any;
-  data2model?: (data?: any) => T;
-  id!: string;
-  disabled?: Decision 
-  display?: Decision
+export class Filed<T = any, D = any> implements DecoratorInject<T, D> {
   onBeforeInit(): void {
     throw new Error("Method not implemented.");
   }
@@ -51,7 +28,7 @@ export class Filed<T = any, D = any> implements FiledLifeCycle, DecoratorInject<
   onValidate(): void {
     throw new Error("Method not implemented.");
   }
-  onChanges(): void {
+  onChange(value: T): void {
     throw new Error("Method not implemented.");
   }
   onValueChange(): void {

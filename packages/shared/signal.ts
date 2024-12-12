@@ -18,3 +18,21 @@ export function unSignal<T>(signal: MaybeSignal<T> | ReadonlySignal<T>): T {
 export function toValue<T>(source: MaybeSignalOrGetter<T>): T {
   return isFunction(source) ? source() : unSignal(source);
 }
+
+export function toDeepValue<T>(source: MaybeSignalOrGetter<T>): T {
+  if (isFunction(source)) {
+    return toDeepValue(source());
+  } else if (isSignal(source)) {
+    return toDeepValue(source.value);
+  } else if (Array.isArray(source)) {
+    return source.map(toDeepValue) as T; 
+  } else if (typeof source === 'object' && source !== null) {
+    return Object.keys(source).reduce((acc, key) => {
+      // @ts-ignore
+      acc[key] = toDeepValue(source[key]);
+      return acc;
+    }, {} as Record<string, any>) as T;
+  } else {
+    return source;
+  }
+}

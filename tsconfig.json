@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "jsx": "react",
     "target": "ES2020",
     "useDefineForClassFields": true,
     "module": "ESNext",
@@ -19,6 +20,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["packages/core","packages/shared", "packages/react", "packages/vue"],
+  "include": ["packages/core","packages/shared", "packages/react", "packages/vue", "playground-react"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
