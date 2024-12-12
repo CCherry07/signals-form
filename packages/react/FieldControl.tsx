@@ -1,5 +1,6 @@
 import { createElement, useEffect, useLayoutEffect, useState } from 'react';
 import { Filed, toValue, run, type DecoratorInject, BoolValues, validate } from "@rxform/core"
+import { untracked } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
 interface Props {
   filed: Filed & DecoratorInject;
@@ -20,7 +21,6 @@ function bindingMethods(filed: Filed) {
 }
 
 export function FieldControl(props: Props) {
-
   const { filed, model, bools } = props;
   const [state, setState] = useState(toValue(filed.value));
   const [errors, setErrors] = useState(toValue(filed.errors));
@@ -30,14 +30,14 @@ export function FieldControl(props: Props) {
     signal
   } = filed.validator ?? {}
 
-  effect(() => {
-    if (signal) {
-      validate({ state, updateOn: "signal" }, signal.all, bools, model).then(errors => {
-        filed.errors.value = errors
-        setErrors(errors)
-      })
-    }
-  })
+  // effect(() => {
+  //   if (signal) {
+  //     validate({ state: filed.value, updateOn: "signal" }, signal.all, untracked(() => bools), untracked(() => model)).then(errors => {
+  //       filed.errors.value = errors
+  //       setErrors(errors)
+  //     })
+  //   }
+  // })
 
   useLayoutEffect(() => {
     filed.onBeforeInit()
@@ -50,28 +50,39 @@ export function FieldControl(props: Props) {
     filed.onInit()
     return filed.onDisplay
   }, [])
-  const events = Object.fromEntries(Object.entries(filed.events!).map(([e, flow]) => {
-    return [e, function (...args: any[]) {
-      // @ts-ignore
-      const data = (filed[e] as Function).apply(filed, args)
-      run.call(filed, flow, data, bools, model).subscribe(
-        {
-          complete() {
-            if (initiative) {
-              console.log(filed.value);
-              validate({ state: Number(filed.value), updateOn: e }, initiative.all, bools, model).then(errors => {
-                filed.errors.value = errors
-                setErrors(errors)
-              })
-            }
-          },
-        }
-      )
-    }]
-  }))
+
+  let events = {
+    onChange(v: any) {
+      filed.value.value = v
+    }
+  }
+
+  if (filed.events) {
+    // @ts-ignore
+    events = Object.fromEntries(Object.entries(filed.events!).map(([e, flow]) => {
+      return [e, function (...args: any[]) {
+        // @ts-ignore
+        const data = filed[e] ? (filed[e] as Function).apply(filed, args) : args[0]        
+        run.call(filed, flow, data, bools, model).subscribe(
+          {
+            complete() {
+              if (initiative) {
+                validate({ state: toValue(filed.value), updateOn: e }, initiative.all, bools, model).then(errors => {
+                  filed.errors.value = errors
+                  setErrors(errors)
+                })
+              }
+            },
+          }
+        )
+      }]
+    }))
+  }
+
   const methodsMap = bindingMethods(filed)
   // @ts-ignore
   return createElement(filed.component, {
+    ...filed.props,
     ...filed,
     errors,
     value: state,

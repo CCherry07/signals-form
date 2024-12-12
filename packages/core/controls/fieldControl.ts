@@ -23,11 +23,14 @@ export class Filed<T = any, D = any> implements DecoratorInject<T, D> {
   }
   onValidate(): void {
   }
-  onChange(this: Filed<T, D>, _value: T): void {
+  onChange(this: Filed<T, D>, _value: T): T {
+    return _value
   }
-  onValueChange(): void {
+  onValueChange(this: Filed<T, D>, _value: T): T {
+    return _value
   }
-  onBlur(): void {
+  onBlur(this: Filed<T, D>, _value: T): T {
+    return _value
   }
   onFocus(): void {
   }

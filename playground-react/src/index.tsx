@@ -5,7 +5,8 @@ import {
   Validator,
   Events,
   Signal as FiledSignal,
-  D, createTemplateLiterals, Filed, Component, ModelPipe
+  D, createTemplateLiterals, Filed, Component, ModelPipe,
+  Props
 } from "@rxform/core"
 import InputComponent from "./components/Input"
 import { createForm } from "@rxform/react"
@@ -15,13 +16,16 @@ import { z } from 'zod';
 
 interface Context {
   name: Signal<string>,
+  age: Signal<number>
 }
 const context: Context = {
   name: signal('a'),
+  age: signal(0)
 };
 
 const bools = {
   isCherry: (context: Signal<Context>) => context.value.name.value === 'cherry',
+  is100: (context: Signal<Context>) => context.value.age.value === 100,
 }
 const js = createTemplateLiterals({}, context)
 
@@ -50,20 +54,19 @@ const js = createTemplateLiterals({}, context)
   initiative: {
     all: [
       {
-        schema: z.number({ message: "a is not number" }),
+        schema: z.string({ message: "name is not string" }),
       }
     ]
   },
   signal: {
     all: [
-      {
-        engine: "custom",
-        fact: {
-          a: "$.a",
-          c: js`$state.value * 100`,
-        },
-        schema: "CustomValidate"
-      }
+      // {
+      //   fact: {
+      //     a: "$state",
+      //     c: js`$state.value * 100`,
+      //   },
+      //   schema: z.object({})
+      // }
     ]
   }
 })
@@ -78,7 +81,7 @@ const js = createTemplateLiterals({}, context)
       operator: "onlyone",
       do: [
         {
-          decision: D.use('isCherry'),
+          decision: D.use('is100'),
           do: [
             {
               pipe: [
@@ -96,10 +99,11 @@ const js = createTemplateLiterals({}, context)
           ]
         },
         {
-          decision: D.not('isCherry'),
+          decision: D.not('is100'),
           do: [
             {
               effect(info) {
+                console.log('not 100', info);
                 this.value.value = info
               },
             }
@@ -109,22 +113,43 @@ const js = createTemplateLiterals({}, context)
     },
   ]
 })
+@Props({
+  type: "text",
+  title: "name"
+})
 class Name extends Filed {
   constructor() {
     super()
   }
-  onChange(e: any) {
-    return e.target.value
-  }
-  onBeforeInit(): void {
-    console.log("onBeforeInit");
-  }
-  onInit(): void {
-    console.log("onInit");
+}
+
+
+@Component({
+  id: "age",
+  component: InputComponent,
+})
+@Props({
+  type: "number",
+  title: "age"
+})
+@Validator({
+  initiative: {
+    all: [
+      {
+        schema: z.number({ message: "a is not number" }),
+      }
+    ]
+  },
+})
+class Age extends Filed {
+  constructor() {
+    super()
   }
 }
+
 const graph = {
-  budget: new Name(),
+  name: new Name(),
+  age: new Age()
 }
 export const {
   from,

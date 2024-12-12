@@ -1,10 +1,9 @@
 import { rx, reduce, filter, map, pipe, UnaryFunction, of } from "rxjs";
-import operators from "rxjs/operators";
 import { BoolValues, Decision } from "../boolless";
-import { Field, Filed } from "../controls/fieldControl";
+import { Filed } from "../controls/fieldControl";
 
 export type Step = {
-  effect?: (this: Field, info: any) => void;
+  effect?: (this: Filed, info: any) => void;
   operator?: "toggle" | "onlyone" | "any" | "single";
   decision?: Decision;
   do?: Step[];
@@ -16,7 +15,7 @@ export function run(this: Filed, flow: Step[], source: any, bools: BoolValues, c
   return rx(flow).pipe(reduce((acc, step) => {
     let data = acc
     const { effect, operator, decision, do: _do, value, pipe } = step
-    if (pipe) {
+    if (pipe) {      
       // @ts-ignore
       of(data).pipe(...pipe).subscribe((v) => {
         data = v

@@ -54,12 +54,24 @@ export function ModelPipe<T, D>(metadata: ModelPipeMetaData<T, D>) {
   };
 }
 
-export interface DecoratorInject <T = any, D = any>{
+export interface PropsMetaData {
+  [key: string]: any;
+}
+export function Props(metadata: PropsMetaData): ClassDecorator {
+  return function (target: Function) {
+    Object.assign(target.prototype, {
+      props: metadata
+    });
+  };
+}
+
+export interface DecoratorInject<T = any, D = any> {
   id?: string;
   component?: any;
   display?: Decision;
   disabled?: Decision;
   value?: T;
+  props?: PropsMetaData;
   validator?: ValidatorMetaData;
   signal?: SignalMetaData;
   events?: EventMetaData;
