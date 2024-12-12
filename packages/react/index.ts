@@ -71,8 +71,6 @@ const js = createTemplateLiterals({}, context)
     condition: T.and('isA', "isC", 'isTom'),
     do: [
       {
-        effectTarget: "budget",
-        effectProp: "disabled",
         value: true
       }
     ]
