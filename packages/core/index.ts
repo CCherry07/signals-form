@@ -4,6 +4,7 @@ import createTemplateLiterals from "@rxform/shared/createTemplateLiterals"
 import { effect, Signal, signal } from "@preact/signals-core"
 import { z } from "zod"
 import { createRXForm } from "./model/form"
+import { ValidateItem } from "./validate"
 
 registerCustomOperator(
   "n_and",
@@ -80,7 +81,6 @@ setTimeout(() => {
 const budget = {
   componentConfig: {
     id: 'budget',
-
     component: "input",
     display: T.and('isA', 'isC'),
     validate: {
@@ -90,7 +90,7 @@ const budget = {
             engine: "zod",
             schema: z.number({ message: "出价是必填的" }).min(1),
             on: "change"
-          }
+          } as ValidateItem
         ],
       },
       signal: { // 信号驱动
@@ -161,7 +161,7 @@ const budget = {
       },
     ]
   },
-}
+} as const
 
 const graph = {
   budget,
@@ -175,67 +175,7 @@ const from = createRXForm({
 
 console.log(from);
 
-export const run = (source: any, flow: Step[]) => {
-  return rx(flow).pipe(reduce((acc, step) => {
-    let data = acc
 
-    if (step.map) {
-      data = step?.map?.(acc)
-    }
-
-    if (step.tap) {
-      step.tap(data)
-    }
-
-    if (step.effectTarget && step.effectProp) {
-      const dom = document.querySelector(`#${step.effectTarget}`)!
-      if (dom) {
-        // @ts-ignore
-        dom[step.effectProp] = data
-      }
-    }
-
-    if (step.operator === "onlyone") {
-      const res = step.do!.find((step) => step.condition?.evaluate(valuesSignals))
-      if (res) {
-        run(data, res.do!).subscribe()
-      }
-    }
-
-    if (step.operator === "any") {
-      rx(step.do!).pipe(
-        filter((step) => !!step.condition?.evaluate(valuesSignals)),
-        map((step) => step.do)
-      ).subscribe(
-        {
-          next: (v) => {
-            run(data, v!).subscribe()
-          },
-          complete() {
-            console.log("any operator completed")
-          },
-        }
-      )
-    }
-
-    if (step.single) {
-      const singleKey = step.single
-      if (!effects.has(singleKey)) {
-        const dispose = effect(() => {
-          if (step.condition?.evaluate(valuesSignals)) {
-            run(data, step.do!).subscribe({
-              complete() {
-                console.log("single operator completed")
-              },
-            })
-          }
-        })
-        effects.set(singleKey, dispose)
-      }
-    }
-    return data
-  }, source))
-}
 
 // const input = document.querySelector("#input")!
 
