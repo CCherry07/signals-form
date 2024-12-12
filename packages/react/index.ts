@@ -135,6 +135,39 @@ const js = createTemplateLiterals({}, context)
   ]
 })
 class Budget extends Filed {
+  constructor() {
+    super()
+  }
+  onChanges(): void {
+    console.log("onChanges");
+  }
+  onInit(): void {
+    console.log("onInit");
+  }
+  onDestroy(): void {
+    console.log("onDestroy");
+  }
+  onDisabled(): void {
+    console.log("onDisabled");
+  }
+  onBlur(): void {
+    console.log("onBlur");
+  }
+  onBeforeInit(): void {
+    console.log("onBeforeInit");
+  }
+  onDisplay(): void {
+    console.log("onDisplay");
+  }
+  onFocus(): void {
+    console.log("onFocus");
+  }
+  onValidate(): void {
+    console.log("onValidate");
+  }
+  onValueChange(): void {
+    console.log("onValueChange");
+  }
 }
 
 const graph = {
