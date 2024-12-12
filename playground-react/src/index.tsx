@@ -1,12 +1,13 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Signal, signal } from "@preact/signals-core"
+import { Signal } from "@preact/signals-core"
 import {
   Validator,
   Events,
   Signal as FiledSignal,
-  D, createTemplateLiterals, Filed, Component, ModelPipe,
-  Props
+  D, Filed, Component, ModelPipe,
+  Props,
+  js
 } from "@rxform/core"
 import InputComponent from "./components/Input"
 import { createForm } from "@rxform/react"
@@ -18,16 +19,11 @@ interface Context {
   name: Signal<string>,
   age: Signal<number>
 }
-const context: Context = {
-  name: signal('a'),
-  age: signal(0)
-};
 
 const bools = {
   isCherry: (context: Signal<Context>) => context.value.name.value === 'cherry',
   is100: (context: Signal<Context>) => context.value.age.value === 100,
 }
-const js = createTemplateLiterals({}, context)
 
 @Component({
   id: "name",
@@ -60,13 +56,16 @@ const js = createTemplateLiterals({}, context)
   },
   signal: {
     all: [
-      // {
-      //   fact: {
-      //     a: "$state",
-      //     c: js`$state.value * 100`,
-      //   },
-      //   schema: z.object({})
-      // }
+      {
+        fact: {
+          a: "$state.value",
+          c: js`$.value.age.value * 100`,
+        },
+        schema: z.object({
+          a: z.string(),
+          c: z.number()
+        })
+      }
     ]
   }
 })

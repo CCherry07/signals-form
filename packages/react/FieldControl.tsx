@@ -30,15 +30,6 @@ export function FieldControl(props: Props) {
     signal
   } = filed.validator ?? {}
 
-  // effect(() => {
-  //   if (signal) {
-  //     validate({ state: filed.value, updateOn: "signal" }, signal.all, untracked(() => bools), untracked(() => model)).then(errors => {
-  //       filed.errors.value = errors
-  //       setErrors(errors)
-  //     })
-  //   }
-  // })
-
   useLayoutEffect(() => {
     filed.onBeforeInit()
     const stop = effect(() => {
@@ -48,21 +39,33 @@ export function FieldControl(props: Props) {
   }, [])
   useEffect(() => {
     filed.onInit()
+    effect(() => {
+      if (signal) {
+        validate({ state: filed.value, updateOn: "signal" }, signal.all, untracked(() => bools), untracked(() => model)).then(errors => {
+          filed.errors.value = errors
+          setErrors(errors)
+        })
+      }
+    })
     return filed.onDisplay
   }, [])
 
   let events = {
     onChange(v: any) {
+      console.log('onChange', v);
+      
       filed.value.value = v
     }
   }
 
   if (filed.events) {
+    console.log('filed.events', filed.events,filed.id);
+    
     // @ts-ignore
     events = Object.fromEntries(Object.entries(filed.events!).map(([e, flow]) => {
       return [e, function (...args: any[]) {
         // @ts-ignore
-        const data = filed[e] ? (filed[e] as Function).apply(filed, args) : args[0]        
+        const data = filed[e] ? (filed[e] as Function).apply(filed, args) : args[0]
         run.call(filed, flow, data, bools, model).subscribe(
           {
             complete() {

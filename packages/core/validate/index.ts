@@ -42,6 +42,9 @@ interface State<T> {
  * @returns 
  */
 const getFactValue = (fact: string | Object | Array<string>, state: any, context: any): any => {
+  if (isFunction(fact)) {
+    return fact(state, context)
+  }
   if (isObject(fact)) {
     return Object.fromEntries(Object.entries(fact).map(([key, value]) => [key, getFactValue(value, state, context)]))
   }
@@ -67,6 +70,8 @@ export const validate = async <T>({ state, updateOn: _updateOn }: State<T>, vali
     }
     const validator = validatorResolvers[engine](schema, schemaOptions, factoryOptions)
     const factValue = fact ? getFactValue(fact, state, context) : state
+    console.log('factValue', factValue, state, context);
+
     const { errors } = await validator(factValue)
     Object.assign(fieldErrors, errors)
   }
