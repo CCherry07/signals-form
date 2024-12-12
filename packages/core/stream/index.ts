@@ -5,7 +5,7 @@ export interface Step {
   map?: (value: any) => any
   tap?: (info: any) => void
   operator?: "toggle" | "onlyone" | "any" |'single'
-  condition?: Decision
+  decision?: Decision
   single?: string
   do?: Step[]
   value?: any
@@ -24,7 +24,7 @@ export const run = (source: any, flow: Step[]) => {
     }
 
     if (step.operator === "onlyone") {
-      const res = step.do!.find((step) => step.condition?.evaluate({}))
+      const res = step.do!.find((step) => step.decision?.evaluate({}))
       if (res) {
         run(data, res.do!).subscribe()
       }
@@ -32,7 +32,7 @@ export const run = (source: any, flow: Step[]) => {
 
     if (step.operator === "any") {
       rx(step.do!).pipe(
-        filter((step) => !!step.condition?.evaluate({})),
+        filter((step) => !!step.decision?.evaluate({})),
         map((step) => step.do)
       ).subscribe(
         {

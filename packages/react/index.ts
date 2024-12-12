@@ -1,33 +1,11 @@
 import { Signal, signal } from "@preact/signals-core"
 import {
-  registerCustomOperator,
   Validator,
   Events,
   Signal as FiledSignal,
-  D as _D, Decision, createRXForm, createTemplateLiterals, Filed, Component, ModelPipe
+  D, createRXForm, createTemplateLiterals, Filed, Component, ModelPipe
 } from "@rxform/core"
-registerCustomOperator(
-  "n_and",
-  {
-    operator(...bools: boolean[]) {
-      return !bools.every(Boolean)
-    },
-  }
-)
 
-registerCustomOperator(
-  "n_or",
-  {
-    operator(...bools: boolean[]) {
-      return !bools.some(Boolean)
-    },
-  }
-)
-
-let T = _D as typeof _D & {
-  n_and: (...nodes: (string | Node)[]) => Decision
-  n_or: (...nodes: (string | Node)[]) => Decision
-}
 
 interface Context {
   a: Signal<string>,
@@ -57,8 +35,8 @@ const js = createTemplateLiterals({}, context)
 @Component({
   id: "budget",
   component: "input",
-  disabled: T.n_and('isA', 'isC'),
-  display: T.and('isA', 'isC'),
+  disabled: D.or('isA', 'isC'),
+  display: D.and('isA', 'isC'),
 })
 @ModelPipe({
   data2model() {
@@ -67,7 +45,7 @@ const js = createTemplateLiterals({}, context)
 })
 @FiledSignal({
   "$.a": {
-    condition: T.and('isA', "isC", 'isTom'),
+    decision: D.and('isA', "isC", 'isTom'),
     do: [
       {
         value: true
@@ -101,7 +79,7 @@ const js = createTemplateLiterals({}, context)
       operator: "onlyone",
       do: [
         {
-          condition: T.and('isA', 'isB').or('isC', 'isD'),
+          decision: D.and('isA', 'isB').or('isC', 'isD'),
           do: [
             {
               map: (info: string) => {
@@ -114,7 +92,7 @@ const js = createTemplateLiterals({}, context)
           ]
         },
         {
-          condition: T.and('isA', 'isC').or('isB'),
+          decision: D.and('isA', 'isC').or('isB'),
           do: [
             {
               map: (info: string) => {
