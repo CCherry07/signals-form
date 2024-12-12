@@ -95,7 +95,7 @@ export class Filed<T = any, D = any> implements FieldConfig, FiledLifeCycle {
   signal?: Record<string, Step>;
   events?: Record<string, Step[]>;
   model2data?: (model: T) => D
-  data2model?: (data: D) => T
+  data2model?: (data?: D) => T
   onBeforeInit(): void {
     throw new Error("Method not implemented.");
   }
