@@ -53,7 +53,6 @@ const bools = {
   isTom: (context: Context) => context.userInfo.value.name.value === 'Tom',
 }
 const js = createTemplateLiterals({}, context)
-// const valuesSignals = setup(bools, context);
 
 @Component({
   id: "budget",
@@ -80,12 +79,12 @@ const js = createTemplateLiterals({}, context)
   signal: {
     all: [
       {
-        engine: "qc",
+        engine: "custom",
         fact: {
           a: "$.a",
-          roi: js`$state.value * 100`,
+          c: js`$state.value * 100`,
         },
-        schema: "RoiValidate"
+        schema: "CustomValidate"
       }
     ]
   }
@@ -176,11 +175,3 @@ const from = createRXForm({
 })
 
 console.log(from);
-
-// const input = document.querySelector("#input")!
-
-// fromEvent<InputEvent>(input, "input").subscribe({
-//   next(value) {
-//     run((value.target as HTMLInputElement).value, flow).subscribe()
-//   },
-// })
