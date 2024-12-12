@@ -107,8 +107,6 @@ const js = createTemplateLiterals({}, context)
           condition: T.and('isA', 'isB').or('isC', 'isD'),
           do: [
             {
-              effectTarget: "button",
-              effectProp: "innerText",
               map: (info: string) => {
                 return info + " isA and isC"
               },
@@ -122,8 +120,6 @@ const js = createTemplateLiterals({}, context)
           condition: T.and('isA', 'isC').or('isB'),
           do: [
             {
-              effectTarget: "button",
-              effectProp: "innerText",
               map: (info: string) => {
                 return info + " is not A and C"
               }
