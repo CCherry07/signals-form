@@ -1,5 +1,5 @@
-import { createElement, useEffect, useState } from 'react';
-import { Filed, toValue, run, type DecoratorInject, BoolValues } from "@rxform/core"
+import { createElement, useEffect, useLayoutEffect, useState } from 'react';
+import { Filed, toValue, run, type DecoratorInject, BoolValues, validate } from "@rxform/core"
 import { effect } from "@preact/signals-core"
 interface Props {
   filed: Filed & DecoratorInject;
@@ -20,32 +20,60 @@ function bindingMethods(filed: Filed) {
 }
 
 export function FieldControl(props: Props) {
+
   const { filed, model, bools } = props;
   const [state, setState] = useState(toValue(filed.value));
-  useEffect(() => {
+  const [errors, setErrors] = useState(toValue(filed.errors));
+
+  const {
+    initiative,
+    signal
+  } = filed.validator ?? {}
+
+  effect(() => {
+    if (signal) {
+      validate({ state, updateOn: "signal" }, signal.all, bools, model).then(errors => {
+        filed.errors.value = errors
+        setErrors(errors)
+      })
+    }
+  })
+
+  useLayoutEffect(() => {
+    filed.onBeforeInit()
     const stop = effect(() => {
-      console.log("filed effect", toValue(filed.value));
-      
       setState(toValue(filed.value))
     })
     return stop
   }, [])
+  useEffect(() => {
+    filed.onInit()
+    return filed.onDisplay
+  }, [])
   const events = Object.fromEntries(Object.entries(filed.events!).map(([e, flow]) => {
-    return [e, async function (...args: any[]) {
+    return [e, function (...args: any[]) {
       // @ts-ignore
-      const data = await filed[e].call(filed, ...args)
-      console.log("filed event", e, data);
-      run.call(filed, flow, data, bools, model).subscribe({
-        next: (res) => {
-          console.log("filed event next", e, res);
-        },
-      })
+      const data = (filed[e] as Function).apply(filed, args)
+      run.call(filed, flow, data, bools, model).subscribe(
+        {
+          complete() {
+            if (initiative) {
+              console.log(filed.value);
+              validate({ state: Number(filed.value), updateOn: e }, initiative.all, bools, model).then(errors => {
+                filed.errors.value = errors
+                setErrors(errors)
+              })
+            }
+          },
+        }
+      )
     }]
   }))
   const methodsMap = bindingMethods(filed)
   // @ts-ignore
   return createElement(filed.component, {
     ...filed,
+    errors,
     value: state,
     ...methodsMap,
     ...events

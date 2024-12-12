@@ -10,6 +10,8 @@ import {
 import InputComponent from "./components/Input"
 import { createForm } from "@rxform/react"
 import { App } from "./App"
+import { map, tap } from 'rxjs';
+import { z } from 'zod';
 
 interface Context {
   name: Signal<string>,
@@ -45,6 +47,13 @@ const js = createTemplateLiterals({}, context)
   },
 })
 @Validator({
+  initiative: {
+    all: [
+      {
+        schema: z.number({ message: "a is not number" }),
+      }
+    ]
+  },
   signal: {
     all: [
       {
@@ -61,9 +70,9 @@ const js = createTemplateLiterals({}, context)
 @Events({
   onChange: [
     {
-      map: (info: string) => {
-        return info
-      }
+      pipe: [
+        map((x) => x)
+      ]
     },
     {
       operator: "onlyone",
@@ -72,15 +81,17 @@ const js = createTemplateLiterals({}, context)
           decision: D.use('isCherry'),
           do: [
             {
-              map: (info: string) => {
-                return info + " isA and isC"
-              },
+              pipe: [
+                tap((info) => {
+                  console.log("info", info);
+                }),
+                map((info: string) => {
+                  return info + " isA and isC"
+                })
+              ],
               effect(info) {
                 this.value.value = info
               },
-              tap: (info: string) => {
-                console.log("info", info);
-              }
             }
           ]
         },
@@ -102,8 +113,14 @@ class Name extends Filed {
   constructor() {
     super()
   }
-  onChange(e: any): void {
+  onChange(e: any) {
     return e.target.value
+  }
+  onBeforeInit(): void {
+    console.log("onBeforeInit");
+  }
+  onInit(): void {
+    console.log("onInit");
   }
 }
 const graph = {

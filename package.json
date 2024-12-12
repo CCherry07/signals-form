@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "farm",
-    "start": "farm",
+    "play:react": "pnpm --filter playground-react dev",
     "build": "farm build",
     "preview": "farm preview",
     "clean": "farm clean",

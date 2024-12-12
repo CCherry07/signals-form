@@ -1,4 +1,4 @@
-import { isProd, isArray, isObject, isString, get } from "@rxform/shared"
+import { isProd, isArray, isObject, isString, get, isFunction } from "@rxform/shared"
 import { zodResolver } from "./resolvers/zod"
 import { BoolValues, Decision } from "../boolless"
 
@@ -62,6 +62,9 @@ export const validate = async <T>({ state, updateOn: _updateOn }: State<T>, vali
     const { schema, engine = 'zod', fact, on: updateOn, schemaOptions, factoryOptions, needValidate } = item
     if (needValidate instanceof Decision && needValidate.not().evaluate(boolsConfig)) continue
     if (typeof updateOn === "string" && updateOn !== _updateOn) continue
+    if (!isFunction(validatorResolvers[engine])) {
+      throw new Error(`validator ${engine} is not registered`)
+    }
     const validator = validatorResolvers[engine](schema, schemaOptions, factoryOptions)
     const factValue = fact ? getFactValue(fact, state, context) : state
     const { errors } = await validator(factValue)

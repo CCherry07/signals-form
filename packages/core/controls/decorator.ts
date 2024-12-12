@@ -60,7 +60,7 @@ export interface DecoratorInject <T = any, D = any>{
   display?: Decision;
   disabled?: Decision;
   value?: T;
-  validate?: ValidatorMetaData;
+  validator?: ValidatorMetaData;
   signal?: SignalMetaData;
   events?: EventMetaData;
   data2model?: (data?: D) => T;

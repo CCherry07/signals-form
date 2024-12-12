@@ -1,30 +1,29 @@
-import { rx, reduce, filter, map } from "rxjs"
-import { BoolValues, Decision } from "../boolless"
-import { Filed } from "../controls/fieldControl"
+import { rx, reduce, filter, map, pipe, UnaryFunction, of } from "rxjs";
+import operators from "rxjs/operators";
+import { BoolValues, Decision } from "../boolless";
+import { Field, Filed } from "../controls/fieldControl";
 
-export interface Step {
-  map?: (value: any) => any
-  tap?: (info: any) => void
-  effect?: (this: Filed, info: any) => void
-  operator?: "toggle" | "onlyone" | "any" | 'single'
-  decision?: Decision
-  single?: string
-  do?: Step[]
-  value?: any
-}
+export type Step = {
+  effect?: (this: Field, info: any) => void;
+  operator?: "toggle" | "onlyone" | "any" | "single";
+  decision?: Decision;
+  do?: Step[];
+  value?: any;
+  pipe?: Array<UnaryFunction<any, any>>;
+};
 
 export function run(this: Filed, flow: Step[], source: any, bools: BoolValues, context: any) {
   return rx(flow).pipe(reduce((acc, step) => {
     let data = acc
-    if (step.map) {
-      data = step?.map?.(acc)
+    const { effect, operator, decision, do: _do, value, pipe } = step
+    if (pipe) {
+      // @ts-ignore
+      of(data).pipe(...pipe).subscribe((v) => {
+        data = v
+      })
     }
 
-    if (step.tap) {
-      step.tap(data)
-    }
-
-    if (step.effect) {
+    if (step.effect && !step.operator) {
       step.effect.call(this, data)
     }
 

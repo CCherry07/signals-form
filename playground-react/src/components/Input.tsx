@@ -1,8 +1,14 @@
 import React from 'react';
-export default function Budget(props: { onChange: any; value: any; }) {
-  const { onChange, value } = props
+interface Props {
+  errors: any;
+  value: any
+  onChange: any
+}
+export default function Budget(props: Props) {
+  const { onChange, value, errors } = props
   return <div>
-    <h1>Hello, React 19!</h1>
+    <h1>input {value}</h1>
     <input value={value} type="text" onChange={onChange} />
+    <div>{JSON.stringify(errors)}</div>
   </div>
 }

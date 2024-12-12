@@ -1,5 +1,6 @@
+import { signal, Signal } from "@preact/signals-core";
 import { Decision } from "../boolless"
-import { FieldError } from "../validate"
+import { FieldError, FieldErrors } from "../validate"
 import type { DecoratorInject } from "./decorator"
 export interface FieldControl<T> {
   readonly value: T;
@@ -11,34 +12,24 @@ export interface FieldControl<T> {
 
 export class Filed<T = any, D = any> implements DecoratorInject<T, D> {
   onBeforeInit(): void {
-    throw new Error("Method not implemented.");
   }
   onInit(): void {
-    throw new Error("Method not implemented.");
   }
   onDestroy(): void {
-    throw new Error("Method not implemented.");
   }
   onDisplay(): void {
-    throw new Error("Method not implemented.");
   }
   onDisabled(): void {
-    throw new Error("Method not implemented.");
   }
   onValidate(): void {
-    throw new Error("Method not implemented.");
   }
   onChange(this: Filed<T, D>, _value: T): void {
-    throw new Error("Method not implemented.");
   }
   onValueChange(): void {
-    throw new Error("Method not implemented.");
   }
   onBlur(): void {
-    throw new Error("Method not implemented.");
   }
   onFocus(): void {
-    throw new Error("Method not implemented.");
   }
   public isBlurred: boolean = false
   public isFocused: boolean = false
@@ -47,6 +38,7 @@ export class Filed<T = any, D = any> implements DecoratorInject<T, D> {
   public isDisplay: boolean = false
   public isDisabled: boolean = false
   public isValidate: boolean = false
+  public errors: Signal<FieldErrors> = signal({})
   constructor(public value?: T) {
     this.value = value
   }
