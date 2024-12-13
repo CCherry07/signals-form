@@ -5,10 +5,10 @@ interface Props {
   title: string,
 }
 export function Card(props: Props) {
-  return <AntdCard>
+  return <AntdCard style={{ width: "400px" }}>
     <h1>{props.title}</h1>
     {
       props.children
     }
-    </AntdCard>;
+  </AntdCard>;
 }

@@ -1,11 +1,11 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { batch, Signal } from "@preact/signals-core"
+import { Signal } from "@preact/signals-core"
 import {
   Validator,
   Events,
   Signal as FiledSignal,
-  D, Filed, Component, ModelPipe,
+  D, Filed, Component,
   js,
   Props
 } from "@rxform/core"
@@ -16,6 +16,7 @@ import { Card as CardComponent } from './components/Card';
 import { createForm } from "@rxform/react"
 import { App } from "./App"
 import { z } from 'zod';
+import { tap } from 'rxjs';
 
 interface Context {
   userInfo: Signal<{
@@ -50,7 +51,7 @@ class Open extends Filed {
 })
 @Props({
   type: "text",
-  title: "name"
+  title: "姓名"
 })
 @FiledSignal({
   "$.a": {
@@ -66,7 +67,7 @@ class Open extends Filed {
   initiative: {
     all: [
       {
-        schema: z.string({ message: "name is not string" }),
+        schema: z.string({ message: "姓名必须是字符" }),
       }
     ]
   },
@@ -78,8 +79,8 @@ class Open extends Filed {
           age: js`$.value.userInfo.value.age.value`,
         },
         schema: z.object({
-          name: z.string().max(10).min(2),
-          age: z.number()
+          name: z.string({message: "姓名必须是字符"}).max(10, "必须在2-10个字符之间").min(2, "必须在2-10个字符之间"),
+          age: z.number({ message: "年龄必须是数字" })
         })
       }
     ]
@@ -88,40 +89,30 @@ class Open extends Filed {
 @Events({
   onChange: [
     {
-      // operator: 'switch',
-      // do: [
-      //   {
-      //     decision: D.use('is100'),
-      //     do: [
-      //       {
-      //         pipe: [
-      //           tap((info) => {
-      //             console.log("info", info);
-      //           }),
-      //         ],
-      //         effect(info) {
-      //           this.value.value = info
-      //         },
-      //       }
-      //     ]
-      //   },
-      //   {
-      //     decision: D.not('is100'),
-      //     do: [
-      //       {
-      //         effect(info) {
-      //           this.props!.title = Math.round(Math.random() * 100)
-      //           this.value.value = info
-      //         },
-      //       }
-      //     ]
-      //   }
-      // ]
-      effect(info) {
-        console.log("effect", info);
-        this.props!.title = Math.round(Math.random() * 100)
-        this.value.value = info
-      },
+      operator: 'ifelse',
+      decision: D.use("isAgeEq100"),
+      do: [
+        [
+          {
+            pipe: [
+              tap((info) => {
+                console.log("info", info);
+              }),
+            ],
+            effect(info) {
+              this.value.value = info
+            },
+          }
+        ],
+        [
+          {
+            effect(info) {
+              this.props!.title = Math.round(Math.random() * 100)
+              this.value.value = info
+            },
+          }
+        ]
+      ],
     },
   ]
 })
@@ -140,7 +131,7 @@ class Name extends Filed {
   disabled: D.use('isCherry'),
   props: {
     type: "number",
-    title: "age"
+    title: "年龄"
   }
 })
 @Validator({
@@ -157,7 +148,6 @@ class Age extends Filed {
     super()
   }
 }
-
 @Component({
   id: "userInfo",
   component: CardComponent,
@@ -167,7 +157,7 @@ class Age extends Filed {
     open: new Open()
   },
   props: {
-    title: "userInfo"
+    title: "用户信息"
   }
 })
 class UserInfo extends Filed {
