@@ -3,16 +3,15 @@ interface Props {
   errors: any;
   value: any
   onChange: any
-  type: "number" | "text",
+  type: "number" | "text" | "checkbox",
   title: string
 }
-export default function Input(props: Props) {
+export default function Checkbox(props: Props) {
   const { onChange, value, errors, type, title } = props
   return <div>
     <h1>{title} {value}</h1>
     <input type={type} value={value} onChange={(e) => {
-      const value = type === "number" ? Number(e.target.value) : e.target.value
-      onChange(value)
+      onChange(e.target.checked)
     }} />
     <div style={{ color: "red" }}>{JSON.stringify(errors)}</div>
   </div>

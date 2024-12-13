@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Signal } from "@preact/signals-core"
+import { batch, Signal } from "@preact/signals-core"
 import {
   Validator,
   Events,
@@ -10,7 +10,8 @@ import {
   Props
 } from "@rxform/core"
 import InputComponent from "./components/Input"
-import { Card as CardComponent } from './components/card';
+import CheckboxComponent from "./components/Checkbox"
+import { Card as CardComponent } from './components/Card';
 import { createForm } from "@rxform/react"
 import { App } from "./App"
 import { map, tap } from 'rxjs';
@@ -21,17 +22,19 @@ interface Context {
     name: Signal<string>,
     age: Signal<number>
   }>
+  a: Signal<boolean>
 }
 
 const bools = {
   isCherry: (context: Signal<Context>) => context.value.userInfo.value.name.value === 'cherry',
   isTom: (context: Signal<Context>) => context.value.userInfo.value.name.value === 'tom',
   isA: (context: Signal<Context>) => context.value.userInfo.value.name.value === 'A',
-  is100: (context: Signal<Context>) => false,
+  is100: (context: Signal<Context>) => context.value.userInfo.value.age.value === 100,
+  isDisabled: (context: Signal<Context>) => context.value.a.value === true,
 }
 @Component({
   id: "a",
-  component: InputComponent,
+  component: CheckboxComponent,
   props: {
     type: "checkbox",
     title: "A"
@@ -47,7 +50,7 @@ class A extends Filed {
   id: "name",
   component: InputComponent,
   disabled: D.or('isA', 'isC'),
-  display: D.and('isA', 'isC'),
+  display: D.and('isDisabled', 'is100').not(),
 })
 @Props({
   type: "text",
@@ -131,10 +134,8 @@ class Name extends Filed {
     super()
   }
   onInit(): void {
-    console.log("onInit");
   }
   onDestroy(): void {
-    console.log("onDestroy");
   }
 }
 @Component({
@@ -177,9 +178,9 @@ class UserInfo extends Filed {
   }
 }
 const graph = {
-  UserInfo: new UserInfo()
+  UserInfo: new UserInfo(),
+  a: new A()
 }
-
 
 export const {
   from,
@@ -193,6 +194,5 @@ export const {
     input: InputComponent
   }
 })
-console.log(graph);
 const root = createRoot(document.getElementById('root')!);
 root.render(<App app={app} from={from} />);

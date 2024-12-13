@@ -1,6 +1,6 @@
 import { createElement, ReactNode, useEffect, useState } from 'react';
 import { Filed, toValue, run, type DecoratorInject, BoolValues, validate, toDeepValue } from "@rxform/core"
-import { untracked } from "@preact/signals-core"
+import { batch, untracked } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
 
 interface Props {
@@ -21,13 +21,13 @@ interface Props {
 
 function normalizeProps(filed: Filed) {
   return {
-    isBlurred: filed.isBlurred,
-    isFocused: filed.isFocused,
-    isInit: filed.isInit,
-    isDestroyed: filed.isDestroyed,
-    isDisplay: filed.isDisplay,
-    isDisabled: filed.isDisabled,
-    isValidate: filed.isValidate,
+    isBlurred: filed.isBlurred.value,
+    isFocused: filed.isFocused.value,
+    isInit: filed.isInit.value,
+    isDestroyed: filed.isDestroyed.value,
+    isDisplay: filed.isDisplay.value,
+    isDisabled: filed.isDisabled.value,
+    isValidate: filed.isValidate.value,
     errors: filed.errors.value,
     value: toDeepValue(filed.value),
     // @ts-ignore
@@ -46,21 +46,26 @@ export function FieldControl(props: Props) {
 
   useEffect(() => {
     filed.onInit()
-    const onDestroyValidate = effect(() => {
+    const onValidateDispose = effect(() => {
       if (signal) {
         validate({ state: filed.value, updateOn: "signal" }, signal.all, untracked(() => bools), untracked(() => model)).then(errors => {
-          // filed.errors.value = errors
+          filed.errors.value = errors
         })
       }
     })
-    // TODO 更新了多次，需要优化
-    const onDestroyState = effect(() => {
-      console.log("state 更新了", filed.id);
+    const onStatesDispose = effect(() => {
+      batch(() => {
+        filed.isDisplay.value = filed.display?.evaluate(bools) ?? true
+        filed.isDisabled.value = filed.disabled?.evaluate(bools) ?? false
+      })
+    })
+    const onStateDispose = effect(() => {
       setFiledState(normalizeProps(filed))
     })
     return () => {
-      onDestroyState()
-      onDestroyValidate()
+      onValidateDispose()
+      onStatesDispose()
+      onStateDispose()
       filed.onDestroy()
     }
   }, [])
@@ -84,15 +89,12 @@ export function FieldControl(props: Props) {
       }]
     }))
     const baseEvents = {
-      onChange(info:any){
-        setFiledState({
-          ...filedState,
-          value: info
-        })
+      onChange(info: any) {
         filed.value.value = info
       },
-      onBlur(_info:any){
-        filed.isBlurred = true
+      onBlur(info: any) {
+        filed.value.value = info
+        filed.isBlurred.value = true
       }
     }
     setEvents({
@@ -117,8 +119,10 @@ export function FieldControl(props: Props) {
 
   return createElement("div", {
     "data-filed-id": filed.id,
+    style: {
+      display: filed.isDisplay.value ? "block" : "none"
+    }
   },
-
     createElement(filed.component, {
       ...filedState,
       ...events
