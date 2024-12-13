@@ -68,9 +68,9 @@ export const validate = async <T>({ state, updateOn: _updateOn }: State<T>, vali
     if (!isFunction(validatorResolvers[engine])) {
       throw new Error(`validator ${engine} is not registered`)
     }
+    
     const validator = validatorResolvers[engine](schema, schemaOptions, factoryOptions)
     const factValue = fact ? getFactValue(fact, state, context) : state
-    console.log('factValue', factValue, state, context);
 
     const { errors } = await validator(factValue)
     Object.assign(fieldErrors, errors)

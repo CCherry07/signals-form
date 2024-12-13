@@ -2,22 +2,32 @@ import { AbstractModel, AbstractModelConstructorOptions, Model } from "./abstrac
 import { Filed } from "../controls/fieldControl"
 import { DecoratorInject } from "../controls/decorator"
 import { signal } from "@preact/signals-core"
+import { toValue } from "@rxform/shared"
 
 interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M> {
   graph: Record<string, Filed & DecoratorInject>
 }
-
-export function createRXForm(config: FormConfig<Model>) {
-  const model = Object.entries(config.graph).reduce((acc, [, filed]) => {
-    const { id, data2model } = filed
-    const filedValue = signal(data2model ? data2model?.() || filed.value : filed.value)
+// 递归创建 model 其中field 可能有一个 children
+function refreshModel(graph: Record<string, Filed & DecoratorInject>) {
+  return Object.entries(graph).reduce((acc, [, filed]) => {
+    const { id, data2model, properties } = filed
+    const filedValue = signal(data2model ? data2model?.() || toValue(filed?.value) : toValue(filed?.value))
     filed.value = filedValue
-    acc[id!] = filedValue
+    acc.value[id!] = filedValue
+    if (properties) {
+      const childValue = refreshModel(properties).value
+      filed.value.value = {
+        ...filedValue.value,
+        ...childValue
+      }
+    }
     return acc
-  }, {} as any)
-  
+  }, signal({} as any))
+}
+export function createRXForm(config: FormConfig<Model>) {
+  const model = refreshModel(config.graph)
   return new AbstractModel({
     ...config,
-    model: signal(model)
+    model
   })
 }

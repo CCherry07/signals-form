@@ -7,6 +7,8 @@ interface Props {
   title: string
 }
 export default function Budget(props: Props) {
+  console.log(props);
+  
   const { onChange, value, errors, type, title } = props
   return <div>
     <h1>{title} {value}</h1>

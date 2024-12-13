@@ -1,68 +1,72 @@
-import { createElement, useEffect, useLayoutEffect, useState } from 'react';
-import { Filed, toValue, run, type DecoratorInject, BoolValues, validate } from "@rxform/core"
+import { createElement, ReactNode, useEffect, useState } from 'react';
+import { Filed, toValue, run, type DecoratorInject, BoolValues, validate, toDeepValue } from "@rxform/core"
 import { untracked } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
+
 interface Props {
   filed: Filed & DecoratorInject;
   model: any
   bools: BoolValues
 };
-function bindingMethods(filed: Filed) {
-  const methodsMap = {} as Record<string, Function>
-  // @ts-ignore
-  Object.getOwnPropertyNames(filed.__proto__).forEach(method => {
+
+// function bindingMethods(filed: Filed) {
+//   const methodsMap = {} as Record<string, Function>
+//   Object.getOwnPropertyNames(filed.__proto__).forEach(method => {
+//     if (typeof filed[method] === 'function' && method !== 'constructor' && method !== "data2model" && method !== "model2data" && method !== "component") {
+//       methodsMap[method as any] = filed[method]?.bind(filed)
+//     }
+//   })
+//   return methodsMap
+// }
+
+function normalizeProps(filed: Filed) {
+  return {
+    isBlurred: filed.isBlurred,
+    isFocused: filed.isFocused,
+    isInit: filed.isInit,
+    isDestroyed: filed.isDestroyed,
+    isDisplay: filed.isDisplay,
+    isDisabled: filed.isDisabled,
+    isValidate: filed.isValidate,
+    errors: filed.errors.value,
+    value: toDeepValue(filed.value),
     // @ts-ignore
-    if (typeof filed[method] === 'function' && method !== 'constructor' && method !== "data2model" && method !== "model2data" && method !== "component") {
-      // @ts-ignore
-      methodsMap[method as any] = filed[method]?.bind(filed)
-    }
-  })
-  return methodsMap
+    ...filed.props
+  }
 }
 
 export function FieldControl(props: Props) {
   const { filed, model, bools } = props;
-  const [state, setState] = useState(toValue(filed.value));
-  const [errors, setErrors] = useState(toValue(filed.errors));
-
+  const [filedState, setFiledState] = useState(() => normalizeProps(filed))
+  const [events, setEvents] = useState({})
   const {
     initiative,
     signal
   } = filed.validator ?? {}
 
-  useLayoutEffect(() => {
-    filed.onBeforeInit()
-    const stop = effect(() => {
-      setState(toValue(filed.value))
-    })
-    return stop
-  }, [])
   useEffect(() => {
     filed.onInit()
-    effect(() => {
+    const onDestroyValidate = effect(() => {
       if (signal) {
         validate({ state: filed.value, updateOn: "signal" }, signal.all, untracked(() => bools), untracked(() => model)).then(errors => {
-          filed.errors.value = errors
-          setErrors(errors)
+          // filed.errors.value = errors
         })
       }
     })
-    return filed.onDisplay
+    // TODO 更新了多次，需要优化
+    const onDestroyState = effect(() => {
+      console.log("state 更新了", filed.id);
+      setFiledState(normalizeProps(filed))
+    })
+    return () => {
+      onDestroyState()
+      onDestroyValidate()
+      filed.onDestroy()
+    }
   }, [])
 
-  let events = {
-    onChange(v: any) {
-      console.log('onChange', v);
-      
-      filed.value.value = v
-    }
-  }
-
-  if (filed.events) {
-    console.log('filed.events', filed.events,filed.id);
-    
-    // @ts-ignore
-    events = Object.fromEntries(Object.entries(filed.events!).map(([e, flow]) => {
+  useEffect(() => {
+    const events = Object.fromEntries(Object.entries(filed.events || {}).map(([e, flow]) => {
       return [e, function (...args: any[]) {
         // @ts-ignore
         const data = filed[e] ? (filed[e] as Function).apply(filed, args) : args[0]
@@ -72,7 +76,6 @@ export function FieldControl(props: Props) {
               if (initiative) {
                 validate({ state: toValue(filed.value), updateOn: e }, initiative.all, bools, model).then(errors => {
                   filed.errors.value = errors
-                  setErrors(errors)
                 })
               }
             },
@@ -80,17 +83,45 @@ export function FieldControl(props: Props) {
         )
       }]
     }))
+    const baseEvents = {
+      onChange(info:any){
+        setFiledState({
+          ...filedState,
+          value: info
+        })
+        filed.value.value = info
+      },
+      onBlur(_info:any){
+        filed.isBlurred = true
+      }
+    }
+    setEvents({
+      ...baseEvents,
+      ...events
+    })
+  }, [])
+
+  function getChildren(): ReactNode[] {
+    if (filed.properties) {
+      return Object.entries(filed.properties).map(([id, child]) => {
+        return createElement(FieldControl, {
+          key: id,
+          filed: child,
+          model,
+          bools
+        })
+      })
+    }
+    return []
   }
 
-  const methodsMap = bindingMethods(filed)
-  // @ts-ignore
-  return createElement(filed.component, {
-    ...filed.props,
-    ...filed,
-    errors,
-    value: state,
-    ...methodsMap,
-    ...events
-    // @ts-ignore
-  }, filed.children);
+  return createElement("div", {
+    "data-filed-id": filed.id,
+  },
+
+    createElement(filed.component, {
+      ...filedState,
+      ...events
+    }, getChildren())
+  );
 }

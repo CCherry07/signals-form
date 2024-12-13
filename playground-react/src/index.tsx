@@ -6,22 +6,41 @@ import {
   Events,
   Signal as FiledSignal,
   D, Filed, Component, ModelPipe,
-  js
+  js,
+  Props
 } from "@rxform/core"
 import InputComponent from "./components/Input"
+import { Card as CardComponent } from './components/card';
 import { createForm } from "@rxform/react"
 import { App } from "./App"
 import { map, tap } from 'rxjs';
 import { z } from 'zod';
 
 interface Context {
-  name: Signal<string>,
-  age: Signal<number>
+  userInfo: Signal<{
+    name: Signal<string>,
+    age: Signal<number>
+  }>
 }
 
 const bools = {
-  isCherry: (context: Signal<Context>) => context.value.name.value === 'cherry',
-  is100: (context: Signal<Context>) => context.value.age.value === 100,
+  isCherry: (context: Signal<Context>) => context.value.userInfo.value.name.value === 'cherry',
+  isTom: (context: Signal<Context>) => context.value.userInfo.value.name.value === 'tom',
+  isA: (context: Signal<Context>) => context.value.userInfo.value.name.value === 'A',
+  is100: (context: Signal<Context>) => false,
+}
+@Component({
+  id: "a",
+  component: InputComponent,
+  props: {
+    type: "checkbox",
+    title: "A"
+  }
+})
+class A extends Filed {
+  constructor() {
+    super()
+  }
 }
 
 @Component({
@@ -29,15 +48,10 @@ const bools = {
   component: InputComponent,
   disabled: D.or('isA', 'isC'),
   display: D.and('isA', 'isC'),
-  props: {
-    type: "text",
-    title: "name"
-  }
 })
-@ModelPipe({
-  data2model() {
-    return ""
-  }
+@Props({
+  type: "text",
+  title: "name"
 })
 @FiledSignal({
   "$.a": {
@@ -61,12 +75,12 @@ const bools = {
     all: [
       {
         fact: {
-          a: "$state.value",
-          c: js`$.value.age.value * 100`,
+          name: "$state.value",
+          age: js`$.value.userInfo.value?.age?.value * 100`,
         },
         schema: z.object({
-          a: z.string(),
-          c: z.number()
+          name: z.string(),
+          age: z.number()
         })
       }
     ]
@@ -75,50 +89,52 @@ const bools = {
 @Events({
   onChange: [
     {
-      pipe: [
-        map((x) => x)
-      ]
-    },
-    {
-      operator: "onlyone",
-      do: [
-        {
-          decision: D.use('is100'),
-          do: [
-            {
-              pipe: [
-                tap((info) => {
-                  console.log("info", info);
-                }),
-                map((info: string) => {
-                  return info + " isA and isC"
-                })
-              ],
-              effect(info) {
-                this.value.value = info
-              },
-            }
-          ]
-        },
-        {
-          decision: D.not('is100'),
-          do: [
-            {
-              effect(info) {
-                console.log('not 100', info);
-                this.props!.title = Math.round(Math.random() * 100)
-                this.value = "aaa"
-              },
-            }
-          ]
-        }
-      ]
+      // operator: 'switch',
+      // do: [
+      //   {
+      //     decision: D.use('is100'),
+      //     do: [
+      //       {
+      //         pipe: [
+      //           tap((info) => {
+      //             console.log("info", info);
+      //           }),
+      //         ],
+      //         effect(info) {
+      //           this.value.value = info
+      //         },
+      //       }
+      //     ]
+      //   },
+      //   {
+      //     decision: D.not('is100'),
+      //     do: [
+      //       {
+      //         effect(info) {
+      //           this.props!.title = Math.round(Math.random() * 100)
+      //           this.value.value = info
+      //         },
+      //       }
+      //     ]
+      //   }
+      // ]
+      effect(info) {
+        console.log("effect", info);
+        this.props!.title = Math.round(Math.random() * 100)
+        this.value.value = info
+      },
     },
   ]
 })
 class Name extends Filed {
   constructor() {
     super()
+  }
+  onInit(): void {
+    console.log("onInit");
+  }
+  onDestroy(): void {
+    console.log("onDestroy");
   }
 }
 @Component({
@@ -144,10 +160,27 @@ class Age extends Filed {
   }
 }
 
-const graph = {
-  name: new Name(),
-  age: new Age()
+@Component({
+  id: "userInfo",
+  component: CardComponent,
+  properties: {
+    name: new Name(),
+    age: new Age(),
+  },
+  props: {
+    title: "userInfo"
+  }
+})
+class UserInfo extends Filed {
+  constructor() {
+    super()
+  }
 }
+const graph = {
+  UserInfo: new UserInfo()
+}
+
+
 export const {
   from,
   app
@@ -160,6 +193,6 @@ export const {
     input: InputComponent
   }
 })
-
+console.log(graph);
 const root = createRoot(document.getElementById('root')!);
 root.render(<App app={app} from={from} />);

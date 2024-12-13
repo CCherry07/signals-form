@@ -1,12 +1,15 @@
 import { Decision } from "../boolless";
 import { Step } from "../stream";
 import { ValidateItem } from "../validate";
+import { Filed } from "./fieldControl";
 
 export interface ComponentMetaData {
   id: string;
   component?: any;
   display?: Decision;
   disabled?: Decision;
+  props?: PropsMetaData
+  properties?: { [key: string]: Filed }
 }
 export function Component(metadata: ComponentMetaData): ClassDecorator {
   return function (target: Function) {
@@ -70,6 +73,7 @@ export interface DecoratorInject<T = any, D = any> {
   component?: any;
   display?: Decision;
   disabled?: Decision;
+  properties?: { [key: string]: Filed }
   value?: T;
   props?: PropsMetaData;
   validator?: ValidatorMetaData;
