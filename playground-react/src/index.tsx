@@ -6,7 +6,6 @@ import {
   Events,
   Signal as FiledSignal,
   D, Filed, Component, ModelPipe,
-  Props,
   js
 } from "@rxform/core"
 import InputComponent from "./components/Input"
@@ -30,6 +29,10 @@ const bools = {
   component: InputComponent,
   disabled: D.or('isA', 'isC'),
   display: D.and('isA', 'isC'),
+  props: {
+    type: "text",
+    title: "name"
+  }
 })
 @ModelPipe({
   data2model() {
@@ -103,7 +106,8 @@ const bools = {
             {
               effect(info) {
                 console.log('not 100', info);
-                this.value.value = info
+                this.props!.title = Math.round(Math.random() * 100)
+                this.value = "aaa"
               },
             }
           ]
@@ -112,24 +116,18 @@ const bools = {
     },
   ]
 })
-@Props({
-  type: "text",
-  title: "name"
-})
 class Name extends Filed {
   constructor() {
     super()
   }
 }
-
-
 @Component({
   id: "age",
   component: InputComponent,
-})
-@Props({
-  type: "number",
-  title: "age"
+  props: {
+    type: "number",
+    title: "age"
+  }
 })
 @Validator({
   initiative: {
