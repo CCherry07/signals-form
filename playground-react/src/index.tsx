@@ -107,7 +107,6 @@ class Open extends Filed {
         [
           {
             effect(info) {
-              this.props!.title = Math.round(Math.random() * 100)
               this.value.value = info
             },
           }
