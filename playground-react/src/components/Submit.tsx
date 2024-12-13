@@ -1,5 +1,5 @@
 import React from "react";
-
+import { Button } from "antd"
 interface Props {
   from: any;
 }
@@ -13,5 +13,5 @@ export function Submit(props: Props) {
       console.log("form model", err);
     });
   };
-  return <button type="submit" onClick={handleSubmit}>submit</button>;
+  return <Button onClick={handleSubmit}>submit</Button>;
 }

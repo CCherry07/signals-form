@@ -1,4 +1,5 @@
 import React from 'react';
+import { Checkbox, Form } from "antd"
 interface Props {
   errors: any;
   value: any
@@ -6,13 +7,13 @@ interface Props {
   type: "number" | "text" | "checkbox",
   title: string
 }
-export default function Checkbox(props: Props) {
-  const { onChange, value, errors, type, title } = props
+export default function (props: Props) {
+  const { onChange, value, title } = props
   return <div>
-    <h1>{title} {value}</h1>
-    <input type={type} value={value} onChange={(e) => {
-      onChange(e.target.checked)
-    }} />
-    <div style={{ color: "red" }}>{JSON.stringify(errors)}</div>
+    <Form.Item label={title}>
+      <Checkbox checked={value} onChange={(e)=>{
+        onChange(e.target.checked)
+      }} />
+    </Form.Item>
   </div>
 }

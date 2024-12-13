@@ -1,0 +1,16 @@
+import { Form, InputNumber } from "antd"
+import React from "react";
+interface Props {
+  errors: any;
+  value: any
+  onChange: any
+  type: "number" | "text",
+  title: string
+  isDisabled: boolean
+}
+export default function (props: Props) {
+  const { onChange, value, errors, title, isDisabled } = props;
+  return <Form.Item label={title}>
+    <InputNumber disabled={isDisabled} value={value} onChange={onChange} />
+  </Form.Item>
+}

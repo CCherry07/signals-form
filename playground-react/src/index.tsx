@@ -11,36 +11,32 @@ import {
 } from "@rxform/core"
 import InputComponent from "./components/Input"
 import CheckboxComponent from "./components/Checkbox"
+import InputNumber from "./components/InputNumber"
 import { Card as CardComponent } from './components/Card';
 import { createForm } from "@rxform/react"
 import { App } from "./App"
-import { map, tap } from 'rxjs';
 import { z } from 'zod';
 
 interface Context {
   userInfo: Signal<{
     name: Signal<string>,
     age: Signal<number>
+    open: Signal<boolean>
   }>
-  a: Signal<boolean>
 }
-
 const bools = {
   isCherry: (context: Signal<Context>) => context.value.userInfo.value.name.value === 'cherry',
-  isTom: (context: Signal<Context>) => context.value.userInfo.value.name.value === 'tom',
-  isA: (context: Signal<Context>) => context.value.userInfo.value.name.value === 'A',
-  is100: (context: Signal<Context>) => context.value.userInfo.value.age.value === 100,
-  isDisabled: (context: Signal<Context>) => context.value.a.value === true,
+  isAgeEq100: (context: Signal<Context>) => context.value.userInfo.value.age.value === 100,
+  isDisabled: (context: Signal<Context>) => context.value.userInfo.value.open.value === true,
 }
 @Component({
-  id: "a",
+  id: "open",
   component: CheckboxComponent,
   props: {
-    type: "checkbox",
-    title: "A"
+    title: "是否开启"
   }
 })
-class A extends Filed {
+class Open extends Filed {
   constructor() {
     super()
   }
@@ -50,7 +46,7 @@ class A extends Filed {
   id: "name",
   component: InputComponent,
   disabled: D.or('isA', 'isC'),
-  display: D.and('isDisabled', 'is100').not(),
+  display: D.and('isDisabled', 'isAgeEq100').not(),
 })
 @Props({
   type: "text",
@@ -79,10 +75,10 @@ class A extends Filed {
       {
         fact: {
           name: "$state.value",
-          age: js`$.value.userInfo.value?.age?.value * 100`,
+          age: js`$.value.userInfo.value.age.value`,
         },
         schema: z.object({
-          name: z.string(),
+          name: z.string().max(10).min(2),
           age: z.number()
         })
       }
@@ -140,7 +136,8 @@ class Name extends Filed {
 }
 @Component({
   id: "age",
-  component: InputComponent,
+  component: InputNumber,
+  disabled: D.use('isCherry'),
   props: {
     type: "number",
     title: "age"
@@ -167,6 +164,7 @@ class Age extends Filed {
   properties: {
     name: new Name(),
     age: new Age(),
+    open: new Open()
   },
   props: {
     title: "userInfo"
@@ -179,7 +177,6 @@ class UserInfo extends Filed {
 }
 const graph = {
   UserInfo: new UserInfo(),
-  a: new A()
 }
 
 export const {
