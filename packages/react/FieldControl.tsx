@@ -1,4 +1,4 @@
-import { createElement, ReactNode, useEffect, useState } from 'react';
+import { createElement, ReactNode, useCallback, useEffect, useState } from 'react';
 import { Filed, toValue, run, type DecoratorInject, BoolValues, validate, toDeepValue, get } from "@rxform/core"
 import { batch, computed, untracked } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
@@ -37,7 +37,7 @@ function normalizeProps(filed: Filed) {
 export function FieldControl(props: Props) {
   const { filed, bools } = props;
   const [filedState, setFiledState] = useState(() => normalizeProps(filed))
-  const [events, setEvents] = useState({})
+  const [events, setEvents] = useState<Record<string, Function>>({})
   const model = computed(() => toDeepValue(props.model.value))
   const {
     initiative,
@@ -98,20 +98,34 @@ export function FieldControl(props: Props) {
         )
       }]
     }))
-    const baseEvents = {
-      onChange(info: any) {
-        filed.value.value = info
-      },
-      onBlur(info: any) {
-        filed.value.value = info
-        filed.isBlurred.value = true
-      }
-    }
-    setEvents({
-      ...baseEvents,
-      ...events
-    })
+    setEvents(events)
   }, [])
+
+  const onChange = useCallback((value: any) => {
+    if (events.onChange) {
+      events.onChange(value)
+    } else {
+      filed.value.value = value
+    }
+  }, [events.onChange])
+
+  const onBlur = useCallback((value: any) => {
+    if (events.onBlur) {
+      events.onBlur(value)
+    }else{
+      filed.value.value = value
+    }
+    filed.isFocused.value = false
+    filed.isBlurred.value = true
+  }, [events.onBlur])
+
+  const onFocus = useCallback(() => {
+    if (events.onFocus) {
+      events.onFocus()
+    }
+    filed.isBlurred.value = false
+    filed.isFocused.value = true
+  }, [events.onFocus])
 
   function getChildren(): ReactNode[] {
     if (filed.properties) {
@@ -135,7 +149,10 @@ export function FieldControl(props: Props) {
   },
     createElement(filed.component, {
       ...filedState,
-      ...events
+      ...events,
+      onChange,
+      onBlur,
+      onFocus
     }, getChildren())
   );
 }
