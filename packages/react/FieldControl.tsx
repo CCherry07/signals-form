@@ -1,4 +1,4 @@
-import { createElement, ReactNode, useCallback, useEffect, useState } from 'react';
+import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useState } from 'react';
 import { Filed, toValue, run, type DecoratorInject, BoolValues, validate, toDeepValue, get } from "@rxform/core"
 import { batch, computed, untracked } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
@@ -6,6 +6,7 @@ interface Props {
   filed: Filed & DecoratorInject;
   model: any
   bools: BoolValues
+  resolveComponent: (component: string | FunctionComponent<any> | ComponentClass<any, any>) => string | FunctionComponent<any> | ComponentClass<any, any>
 };
 
 // function bindingMethods(filed: Filed) {
@@ -35,7 +36,7 @@ function normalizeProps(filed: Filed) {
 }
 
 export function FieldControl(props: Props) {
-  const { filed, bools } = props;
+  const { filed, bools, resolveComponent } = props;
   const [filedState, setFiledState] = useState(() => normalizeProps(filed))
   const [events, setEvents] = useState<Record<string, Function>>({})
   const model = computed(() => toDeepValue(props.model.value))
@@ -53,7 +54,7 @@ export function FieldControl(props: Props) {
         })
       }
     })
-    filed.onTrack(()=>{
+    filed.onTrack(() => {
       setFiledState(normalizeProps(filed))
     })
     const onStatesDispose = effect(() => {
@@ -108,7 +109,7 @@ export function FieldControl(props: Props) {
     if (events.onChange) {
       events.onChange(value)
     } else {
-      filed.value.value = value
+      filed.value!.value = value
     }
   }, [events.onChange])
 
@@ -117,7 +118,7 @@ export function FieldControl(props: Props) {
       if (events.onBlur) {
         events.onBlur(value)
       } else {
-        filed.value.value = value
+        filed.value!.value = value
       }
       filed.isFocused.value = false
       filed.isBlurred.value = true
@@ -141,7 +142,8 @@ export function FieldControl(props: Props) {
           key: id,
           filed: child,
           model,
-          bools
+          bools,
+          resolveComponent: props.resolveComponent
         })
       })
     }
@@ -154,7 +156,7 @@ export function FieldControl(props: Props) {
       display: filed.isDisplay.value ? "block" : "none"
     }
   },
-    createElement(filed.component, {
+    createElement(resolveComponent(filed.component), {
       ...filedState,
       ...events,
       onChange,

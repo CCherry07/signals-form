@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { ComponentClass, FunctionComponent } from 'react';
 import { FieldControl } from "./FieldControl";
 import { createRXForm, Filed } from "@rxform/core"
 
 interface FormConfig {
-  components: Record<string, any>;
+  components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
   graph: Record<string, Filed>;
   validatorEngine: string;
   defaultValidatorEngine: string;
@@ -14,7 +14,8 @@ export const createForm = (config: FormConfig) => {
     graph,
     validatorEngine,
     defaultValidatorEngine,
-    boolsConfig
+    boolsConfig,
+    components
   } = config;
   const from = createRXForm({
     validatorEngine,
@@ -22,6 +23,13 @@ export const createForm = (config: FormConfig) => {
     boolsConfig,
     graph,
   })
+
+  function resolveComponent(component: string | FunctionComponent<any> | ComponentClass<any, any>) {
+    if (typeof component === 'string') {
+      return components[component]
+    }
+    return component
+  }
 
   const app = <div>
     {
@@ -31,6 +39,7 @@ export const createForm = (config: FormConfig) => {
           filed={filed} 
           bools={from.bools}
           model={from.model}
+          resolveComponent={resolveComponent}
           />
       })
     }

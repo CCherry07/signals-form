@@ -36,9 +36,9 @@ export interface AbstractModelConstructorOptions<M extends Model> {
   validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: BoolsConfig<M>
-  model: M
-  graph: Record<string, Filed & DecoratorInject>
-  fields: Record<string, Filed & DecoratorInject>
+  model?: M
+  graph?: Record<string, Filed & DecoratorInject>
+  fields?: Record<string, Filed & DecoratorInject>
 }
 
 export class AbstractModel<M> implements AbstractModel<M> {
@@ -54,8 +54,8 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.validatorEngine = validatorEngine;
     this.defaultValidatorEngine = defaultValidatorEngine
     this.bools = setup(boolsConfig, this.model)
-    this.graph = graph
-    this.fields = fields
+    this.graph = graph!
+    this.fields = fields!
   }
 
   updateModel(model: M) {

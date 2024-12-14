@@ -5,7 +5,6 @@ import { Signal, signal } from "@preact/signals-core"
 import { toValue } from "@rxform/shared"
 
 interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M> {
-  graph: Record<string, Filed & DecoratorInject>
 }
 function refreshModel(
   abstractModelMethods: Pick<AbstractModelMathods<Signal<Model>>, 'setFieldValue' | 'setErrors' | 'validateField' | 'setFieldProps'>,
@@ -38,7 +37,7 @@ export function createRXForm(config: FormConfig<Model>) {
     setFieldProps: form.setFieldProps.bind(form)
   }
   const fields = {}
-  const model = refreshModel(methods, config.graph, fields)
+  const model = refreshModel(methods, config.graph!, fields)
   form.init({
     ...config,
     model,
