@@ -1,3 +1,4 @@
+import { Signal } from "@preact/signals-core";
 import { Decision } from "../boolless";
 import { Step } from "../stream";
 import { ValidateItem } from "../validate";
@@ -68,7 +69,7 @@ export function Props(metadata: PropsMetaData): ClassDecorator {
   };
 }
 
-export interface DecoratorInject<T = any, D = any> {
+export interface DecoratorInject<T = Signal<any>, D = any> {
   id?: string;
   component?: any;
   display?: Decision;

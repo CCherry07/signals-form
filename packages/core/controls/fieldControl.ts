@@ -2,6 +2,13 @@ import { effect, signal, Signal } from "@preact/signals-core";
 import { Decision } from "../boolless"
 import { FieldError, FieldErrors } from "../validate"
 import type { DecoratorInject } from "./decorator"
+import { isSignal, toValue } from "@rxform/shared";
+
+export enum FiledUpdateType {
+  Value = "value",
+  Props = "props",
+}
+
 export interface FieldControl<T> {
   readonly value: T;
   readonly id: string;
@@ -9,18 +16,46 @@ export interface FieldControl<T> {
   disabled: Decision;
   display: Decision;
 }
-
-export class Filed<T = any, D = any> implements DecoratorInject<T, D> {
+export interface AbstractModelMethods {
+  setFieldValue: (field: string, value: any) => void;
+  setErrors: (errors: FieldErrors) => void;
+  validateField: (field: string) => Promise<boolean>;
+  setFieldProps: (field: string, props: any) => void;
+}
+export class Filed<T = Signal<any>, D = any> implements DecoratorInject<T, D> {
   value?: T | undefined;
-  tracks: Array<Function> = []
+  private tracks: Array<Function> = []
+  abstractModel: AbstractModelMethods | undefined;
   onBeforeInit?(): void
   onInit?(): void
   onDestroy?(): void
   onDisplay?(): void
   onDisabled?(): void
   onValidate?(): void
-  onUpdate(filed: Partial<Filed>): void {
-    this.tracks.forEach(fn => fn(filed))
+  onUpdate({
+    type,
+    value
+  }: {
+    type: FiledUpdateType,
+    value: any
+  }): void {
+    if (type === "value") {
+      if (!isSignal(this.value)) {
+        // @ts-ignore
+        throw new Error(`field ${this.id!} value is undefined`)
+      }
+      this.value.value = toValue(value)
+    }
+    if (type === "props") {
+      // @ts-ignore
+      if (this.props === undefined) {
+        // @ts-ignore
+        throw new Error(`field ${this.id!} props is undefined`)
+      }
+      // @ts-ignore
+      Object.assign(this.props, value)
+    }
+    this.tracks.forEach(fn => fn({ type, value }))
   }
   onTrack(fn: Function): void {
     this.tracks.push(fn)

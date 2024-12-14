@@ -114,6 +114,9 @@ class Open extends Filed {
         [
           {
             effect(info) {
+              this.abstractModel?.setFieldProps("age", { title: "age" + info })
+              this.abstractModel?.setFieldValue("age", 1)
+              this.abstractModel
               this.value.value = info
             },
           }

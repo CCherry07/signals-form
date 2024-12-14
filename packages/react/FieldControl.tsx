@@ -53,6 +53,9 @@ export function FieldControl(props: Props) {
         })
       }
     })
+    filed.onTrack(()=>{
+      setFiledState(normalizeProps(filed))
+    })
     const onStatesDispose = effect(() => {
       batch(() => {
         filed.isDisplay.value = filed.display?.evaluate(bools) ?? true
