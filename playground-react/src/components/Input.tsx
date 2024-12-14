@@ -6,9 +6,11 @@ interface Props {
   onChange: any
   title: string
   isDisabled: boolean
+  onBlur: Function
+  onFocus: Function
 }
 export default function Input(props: Props) {
-  const { onChange, value, errors, title, isDisabled } = props
+  const { onChange, value, errors, title, isDisabled, onBlur, onFocus } = props
   const errorNode = errors ? <div style={{ color: "red" }}>
     {
       Object.entries(errors).map(([key, value]) => {
@@ -18,9 +20,16 @@ export default function Input(props: Props) {
   </div> : null
   return <div>
     <Form.Item label={title}>
-      <AInput disabled={isDisabled} value={value} onChange={(e) => {
-        onChange(e.target.value)
-      }} />
+      <AInput disabled={isDisabled} value={value}
+        onFocus={() => {
+          onFocus()
+        }}
+        onBlur={(e) => {
+          onBlur(e.target.value)
+        }}
+        onChange={(e) => {
+          onChange(e.target.value)
+        }} />
       {errorNode}
     </Form.Item>
   </div>

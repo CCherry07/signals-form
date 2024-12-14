@@ -1,4 +1,4 @@
-import { batch, signal, Signal } from "@preact/signals-core";
+import { effect, signal, Signal } from "@preact/signals-core";
 import { Decision } from "../boolless"
 import { FieldError, FieldErrors } from "../validate"
 import type { DecoratorInject } from "./decorator"
@@ -13,37 +13,12 @@ export interface FieldControl<T> {
 export class Filed<T = any, D = any> implements DecoratorInject<T, D> {
   value?: T | undefined;
   tracks: Array<Function> = []
-  onBeforeInit(): void {
-  }
-  onInit(): void {
-  }
-  onDestroy(): void {
-  }
-  onDisplay(): void {
-  }
-  onDisabled(): void {
-  }
-  onValidate(): void {
-  }
-  onChange(this: Filed<T, D>, _value: T): T {
-    return _value
-  }
-  onValueChange(this: Filed<T, D>, _value: T): T {
-    return _value
-  }
-  onBlur(this: Filed<T, D>, _value: T): T {
-    batch(() => {
-      this.isFocused.value = false
-      this.isBlurred.value = true
-    })
-    return _value
-  }
-  onFocus(): void {
-    batch(() => {
-      this.isBlurred.value = false
-      this.isFocused.value = true
-    })
-  }
+  onBeforeInit?(): void
+  onInit?(): void
+  onDestroy?(): void
+  onDisplay?(): void
+  onDisabled?(): void
+  onValidate?(): void
   onUpdate(filed: Partial<Filed>): void {
     this.tracks.forEach(fn => fn(filed))
   }
@@ -56,9 +31,11 @@ export class Filed<T = any, D = any> implements DecoratorInject<T, D> {
   public isDestroyed: Signal<boolean> = signal(false)
   public isDisplay: Signal<boolean> = signal(false)
   public isDisabled: Signal<boolean> = signal(false)
-  public isValidate: Signal<boolean> = signal(false)
+  public isValid: Signal<boolean> = signal(true)
   public errors: Signal<FieldErrors> = signal({})
   constructor() {
-
+    effect(() => {
+      this.isValid.value = Object.keys(this.errors.value).length === 0
+    })
   }
 }

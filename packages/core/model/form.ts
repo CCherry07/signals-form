@@ -7,7 +7,6 @@ import { toValue } from "@rxform/shared"
 interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M> {
   graph: Record<string, Filed & DecoratorInject>
 }
-// 递归创建 model 其中field 可能有一个 children
 function refreshModel(graph: Record<string, Filed & DecoratorInject>) {
   return Object.entries(graph).reduce((acc, [, filed]) => {
     const { id, data2model, properties } = filed

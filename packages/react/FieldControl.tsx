@@ -26,7 +26,7 @@ function normalizeProps(filed: Filed) {
     isDestroyed: filed.isDestroyed.value,
     isDisplay: filed.isDisplay.value,
     isDisabled: filed.isDisabled.value,
-    isValidate: filed.isValidate.value,
+    isValid: filed.isValid.value,
     errors: filed.errors.value,
     value: toDeepValue(filed.value),
     // @ts-ignore
@@ -45,7 +45,7 @@ export function FieldControl(props: Props) {
   } = filed.validator ?? {}
 
   useEffect(() => {
-    filed.onInit()
+    filed.onInit?.()
     const onValidateDispose = effect(() => {
       if (signal) {
         validate({ state: filed.value, updateOn: "signal" }, signal.all, untracked(() => bools), model.value).then(errors => {
@@ -76,7 +76,7 @@ export function FieldControl(props: Props) {
       onValidateDispose()
       onStatesDispose()
       onStateDispose()
-      filed.onDestroy()
+      filed.onDestroy?.()
     }
   }, [])
 
@@ -110,21 +110,25 @@ export function FieldControl(props: Props) {
   }, [events.onChange])
 
   const onBlur = useCallback((value: any) => {
-    if (events.onBlur) {
-      events.onBlur(value)
-    }else{
-      filed.value.value = value
-    }
-    filed.isFocused.value = false
-    filed.isBlurred.value = true
+    batch(() => {
+      if (events.onBlur) {
+        events.onBlur(value)
+      } else {
+        filed.value.value = value
+      }
+      filed.isFocused.value = false
+      filed.isBlurred.value = true
+    })
   }, [events.onBlur])
 
   const onFocus = useCallback(() => {
     if (events.onFocus) {
       events.onFocus()
     }
-    filed.isBlurred.value = false
-    filed.isFocused.value = true
+    batch(() => {
+      filed.isBlurred.value = false
+      filed.isFocused.value = true
+    })
   }, [events.onFocus])
 
   function getChildren(): ReactNode[] {
