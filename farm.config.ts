@@ -8,8 +8,13 @@ export default defineConfig({
       format: "esm",
       targetEnv: "library-browser",
     },
+    external: [
+      "@preact/signals-core",
+      "zod",
+      "rxjs",
+      "react"
+    ],
     presetEnv: false,
-    minify: false,
     sourcemap: true,
   }
 });

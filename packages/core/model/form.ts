@@ -21,7 +21,7 @@ function refreshModel(
     filed.abstractModel = abstractModelMethods
     if (properties) {
       const childValue = refreshModel(abstractModelMethods, properties, fields).value
-      filed.value.value = {
+      filed.value!.value = {
         ...filedValue.value,
         ...childValue
       }
