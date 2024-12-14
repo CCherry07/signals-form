@@ -8,7 +8,7 @@ export type Model = Record<string, any>;
 export interface AbstractModel<M extends Signal<Model>> {
   bools: BoolValues;
   submitted: boolean;
-  errors: FieldErrors;
+  errors: Record<string, FieldErrors>;
   model: M;
   validatorEngine: string;
   defaultValidatorEngine: string;
@@ -18,7 +18,8 @@ export interface AbstractModel<M extends Signal<Model>> {
 
 export interface AbstractModelMathods<M extends Signal<Model>> {
   updateModel(model: M): void;
-  setErrors(errors: FieldErrors): void;
+  setErrors(errors: Record<string, FieldErrors>): void;
+  cleanErrors(paths?: string[]): void
   setFieldValue(field: string, value: any): void;
   getFieldValue(field: string): any;
   setFieldProps(field: string, props: any): void;
@@ -62,8 +63,21 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.model.value = model;
   }
 
-  setErrors(errors: FieldErrors) {
-    this.errors = errors;
+  setErrors(errors: Record<string, FieldErrors>) {
+    this.errors = {
+      ...this.errors,
+      ...errors
+    }
+  }
+
+  cleanErrors(paths?: string[]) {
+    if (paths === undefined) {
+      this.errors = {};
+      return;
+    }
+    paths.forEach(p => {
+      delete this.errors[p]
+    })
   }
 
   setFieldValue(field: string, value: any) {
@@ -108,7 +122,16 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   submit() {
+    if (Object.keys(this.errors).length > 0) {
+      return Promise.resolve({
+        errors: this.errors,
+        model: {}
+      });
+    }
     this.submitted = true;
-    return Promise.resolve(toDeepValue(this.model));
+    return Promise.resolve({
+      model: toDeepValue(this.model),
+      errors: this.errors
+    });
   }
 }

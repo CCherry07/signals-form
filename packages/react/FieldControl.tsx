@@ -50,6 +50,13 @@ export function FieldControl(props: Props) {
     const onValidateDispose = effect(() => {
       if (signal) {
         validate({ state: filed.value, updateOn: "signal" }, signal.all, untracked(() => bools), model.value).then(errors => {
+          if (Object.keys(errors).length === 0) {
+            filed.abstractModel?.cleanErrors([String(filed.path)])
+          } else {
+            filed.abstractModel?.setErrors({
+              [String(filed.path)]: errors
+            })
+          }
           filed.errors.value = errors
         })
       }
@@ -143,7 +150,7 @@ export function FieldControl(props: Props) {
           filed: child,
           model,
           bools,
-          resolveComponent: props.resolveComponent
+          resolveComponent
         })
       })
     }

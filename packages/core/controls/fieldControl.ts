@@ -18,12 +18,14 @@ export interface FieldControl<T> {
 }
 export interface AbstractModelMethods {
   setFieldValue: (field: string, value: any) => void;
-  setErrors: (errors: FieldErrors) => void;
+  setErrors: (errors: Record<string, FieldErrors>) => void;
+  cleanErrors: (paths?: string[]) => void;
   validateField: (field: string) => Promise<boolean>;
   setFieldProps: (field: string, props: any) => void;
 }
 export class Filed<T = Signal<any>, D = any> implements DecoratorInject<T, D> {
   value?: T | undefined;
+  path?: string | undefined;
   private tracks: Array<Function> = []
   abstractModel: AbstractModelMethods | undefined;
   onBeforeInit?(): void

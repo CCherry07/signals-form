@@ -107,7 +107,7 @@ class Open extends Filed {
               }),
             ],
             effect(info) {
-              this.value.value = info
+              this.value!.value = info
             },
           }
         ],
@@ -115,9 +115,9 @@ class Open extends Filed {
           {
             effect(info) {
               this.abstractModel?.setFieldProps("age", { title: "age" + info })
-              this.abstractModel?.setFieldValue("age", 1)
+              this.abstractModel?.setFieldValue("age", 12)
               this.abstractModel
-              this.value.value = info
+              this.value!.value = info
             },
           }
         ]
