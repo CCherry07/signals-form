@@ -29,11 +29,11 @@ export function Validator(metadata: ValidatorMetaData): ClassDecorator {
   };
 }
 
-export type SignalMetaData = Record<string, Step>;
-export function Signal(metadata: SignalMetaData): ClassDecorator {
+export type SignalsMetaData = Record<string, Step[]>;
+export function Signals(metadata: SignalsMetaData): ClassDecorator {
   return function (target: Function) {
     Object.assign(target.prototype, {
-      signal: metadata
+      signals: metadata
     });
   };
 }
@@ -77,7 +77,7 @@ export interface DecoratorInject<T = any, D = any> {
   value?: T;
   props?: PropsMetaData;
   validator?: ValidatorMetaData;
-  signal?: SignalMetaData;
+  signals?: SignalsMetaData;
   events?: EventMetaData;
   data2model?: (data?: D) => T;
   model2data?: (model: T) => D;

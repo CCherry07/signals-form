@@ -1,4 +1,4 @@
-import { effect, signal, Signal } from "@preact/signals-core";
+import { signal, Signal } from "@preact/signals-core";
 import { Decision } from "../boolless"
 import { FieldError, FieldErrors } from "../validate"
 import type { DecoratorInject } from "./decorator"
@@ -38,11 +38,7 @@ export class Filed<T = any, D = any> implements DecoratorInject<T, D> {
   onFocus(): void {
     this.isFocused.value = true
   }
-  private onUpdate(filed: {
-    isBlurred: boolean; isFocused: boolean; isInit: boolean; isDestroyed: boolean; isDisplay: boolean; isDisabled: boolean; isValidate: boolean; errors: FieldErrors; value: T | undefined;
-    // @ts-ignore
-    props: any;
-  }): void {
+  onUpdate(filed: Partial<Filed>): void {
     this.tracks.forEach(fn => fn(filed))
   }
   onTrack(fn: Function): void {
@@ -57,6 +53,6 @@ export class Filed<T = any, D = any> implements DecoratorInject<T, D> {
   public isValidate: Signal<boolean> = signal(false)
   public errors: Signal<FieldErrors> = signal({})
   constructor() {
-  
+    
   }
 }

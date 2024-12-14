@@ -8,7 +8,7 @@ export type Step = {
   effect?: (this: Filed & DecoratorInject, info: any) => void;
   operator?: "if" | "ifelse" | "any" | 'switch';
   decision?: Decision;
-  do?: Step[];
+  do?: Step[] | [Step[], Step[]];
   value?: any;
   pipe?: Array<UnaryFunction<any, any>>;
 };
@@ -16,7 +16,7 @@ export type Step = {
 export function run(this: Filed & DecoratorInject, flow: Step[], source: any, bools: BoolValues, context: any) {
   return rx(flow).pipe(reduce((acc, step) => {
     let data = acc
-    const { effect, operator, decision, pipe } = step
+    const { effect, operator, decision, pipe, do: stepToDo } = step
     if (pipe) {
       // @ts-ignore
       of(data).pipe(...pipe).subscribe((v) => {
@@ -26,33 +26,35 @@ export function run(this: Filed & DecoratorInject, flow: Step[], source: any, bo
 
     if (operator === "if") {
       if (decision?.evaluate(bools)) {
-        run.call(this, step.do!, data, bools, context).subscribe()
+        run.call(this, stepToDo as Step[], data, bools, context).subscribe()
       }
     }
 
     if (operator === "ifelse") {
       if (decision?.evaluate(bools)) {
-        run.call(this, step.do!, data, bools, context).subscribe()
+        // @ts-ignore
+        run.call(this, step.do![0], data, bools, context).subscribe()
       } else {
-        run.call(this, step.value!, data, bools, context).subscribe()
+        // @ts-ignore
+        run.call(this, step.do![1], data, bools, context).subscribe()
       }
     }
 
     if (operator === "switch") {
-      const res = step.do!.find((step) => step.decision?.evaluate(bools))
+      const res = (stepToDo as Step[])!.find((step) => step.decision?.evaluate(bools))
       if (res) {
-        run.call(this, res.do!, data, bools, context).subscribe()
+        run.call(this, res.do as Step[], data, bools, context).subscribe()
       }
     }
 
     if (operator === "any") {
-      rx(step.do!).pipe(
+      rx((stepToDo as Step[])!).pipe(
         filter((step) => !!step.decision?.evaluate(bools)),
         map((step) => step.do)
       ).subscribe(
         {
           next: (v) => {
-            run.call(this, v!, data, bools, context).subscribe()
+            run.call(this, v as Step[], data, bools, context).subscribe()
           },
           complete() {
             console.log("any operator completed")

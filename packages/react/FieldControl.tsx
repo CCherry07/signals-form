@@ -1,8 +1,7 @@
 import { createElement, ReactNode, useEffect, useState } from 'react';
-import { Filed, toValue, run, type DecoratorInject, BoolValues, validate, toDeepValue } from "@rxform/core"
-import { batch, untracked } from "@preact/signals-core"
+import { Filed, toValue, run, type DecoratorInject, BoolValues, validate, toDeepValue, get } from "@rxform/core"
+import { batch, computed, untracked } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
-
 interface Props {
   filed: Filed & DecoratorInject;
   model: any
@@ -36,9 +35,10 @@ function normalizeProps(filed: Filed) {
 }
 
 export function FieldControl(props: Props) {
-  const { filed, model, bools } = props;
+  const { filed, bools } = props;
   const [filedState, setFiledState] = useState(() => normalizeProps(filed))
   const [events, setEvents] = useState({})
+  const model = computed(() => toDeepValue(props.model.value))
   const {
     initiative,
     signal
@@ -48,7 +48,7 @@ export function FieldControl(props: Props) {
     filed.onInit()
     const onValidateDispose = effect(() => {
       if (signal) {
-        validate({ state: filed.value, updateOn: "signal" }, signal.all, untracked(() => bools), untracked(() => model)).then(errors => {
+        validate({ state: filed.value, updateOn: "signal" }, signal.all, untracked(() => bools), model.value).then(errors => {
           filed.errors.value = errors
         })
       }
@@ -59,10 +59,20 @@ export function FieldControl(props: Props) {
         filed.isDisabled.value = filed.disabled?.evaluate(bools) ?? false
       })
     })
+
+    const onSignalsDispose = effect(() => {
+      if (filed.signals) {
+        Object.entries(filed.signals).forEach(([signalKey, flow]) => {
+          const signals = computed(() => get({ $: model.value }, signalKey))
+          run.call(filed, flow, signals.value, bools, model).subscribe()
+        })
+      }
+    })
     const onStateDispose = effect(() => {
       setFiledState(normalizeProps(filed))
     })
     return () => {
+      onSignalsDispose()
       onValidateDispose()
       onStatesDispose()
       onStateDispose()
@@ -79,7 +89,7 @@ export function FieldControl(props: Props) {
           {
             complete() {
               if (initiative) {
-                validate({ state: toValue(filed.value), updateOn: e }, initiative.all, bools, model).then(errors => {
+                validate({ state: toValue(filed.value), updateOn: e }, initiative.all, bools, model.value).then(errors => {
                   filed.errors.value = errors
                 })
               }
