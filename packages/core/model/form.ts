@@ -1,5 +1,5 @@
 import { AbstractModel, AbstractModelMathods, AbstractModelConstructorOptions, Model } from "./abstract_model"
-import { Filed } from "../controls/fieldControl"
+import { Field } from "../controls/fieldControl"
 import { DecoratorInject } from "../controls/decorator"
 import { Signal, signal } from "@preact/signals-core"
 import { toValue } from "@rxform/shared"
@@ -8,21 +8,21 @@ interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M>
 }
 function refreshModel(
   abstractModelMethods: Pick<AbstractModelMathods<Signal<Model>>, 'setFieldValue' | 'setErrors' | 'validateField' | 'setFieldProps' | 'cleanErrors'>,
-  graph: Record<string, Filed & DecoratorInject>,
-  fields: Record<string, Filed & DecoratorInject>,
+  graph: Record<string, Field & DecoratorInject>,
+  fields: Record<string, Field & DecoratorInject>,
   path: string,
 ) {
-  return Object.entries(graph).reduce((parent, [, filed]) => {
-    const { id, data2model, properties } = filed
-    const filedValue = signal(data2model ? data2model?.() || toValue(filed?.value) : toValue(filed?.value))
+  return Object.entries(graph).reduce((parent, [, field]) => {
+    const { id, data2model, properties } = field
+    const filedValue = signal(data2model ? data2model?.() || toValue(field?.value) : toValue(field?.value))
     parent.value[id!] = filedValue
-    filed.value = parent.value[id!]
-    fields[id!] = filed
-    filed.path = path ? `${path}.${id}` : id;
-    filed.abstractModel = abstractModelMethods
+    field.value = parent.value[id!]
+    fields[id!] = field
+    field.path = path ? `${path}.${id}` : id;
+    field.abstractModel = abstractModelMethods
     if (properties) {
-      const childValue = refreshModel(abstractModelMethods, properties, fields, filed.path!).value
-      filed.value!.value = {
+      const childValue = refreshModel(abstractModelMethods, properties, fields, field.path!).value
+      field.value!.value = {
         ...filedValue.value,
         ...childValue
       }

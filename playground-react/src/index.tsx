@@ -5,7 +5,7 @@ import {
   Validator,
   Events,
   Signals as FiledSignal,
-  D, Filed, Component,
+  D, Field, Component,
   js,
   Props
 } from "@rxform/core"
@@ -37,7 +37,7 @@ const bools = {
     title: "是否开启"
   }
 })
-class Open extends Filed {
+class Open extends Field {
   constructor() {
     super()
   }
@@ -125,7 +125,7 @@ class Open extends Filed {
     },
   ]
 })
-class Name extends Filed {
+class Name extends Field {
   constructor() {
     super()
   }
@@ -151,7 +151,7 @@ class Name extends Filed {
     ]
   },
 })
-class Age extends Filed {
+class Age extends Field {
   constructor() {
     super()
   }
@@ -168,7 +168,7 @@ class Age extends Filed {
     title: "用户信息"
   }
 })
-class UserInfo extends Filed {
+class UserInfo extends Field {
   constructor() {
     super()
   }

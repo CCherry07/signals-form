@@ -1,10 +1,10 @@
 import React, { ComponentClass, FunctionComponent } from 'react';
 import { FieldControl } from "./FieldControl";
-import { createRXForm, Filed } from "@rxform/core"
+import { createRXForm, Field } from "@rxform/core"
 
 interface FormConfig {
   components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
-  graph: Record<string, Filed>;
+  graph: Record<string, Field>;
   validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
@@ -33,10 +33,10 @@ export const createForm = (config: FormConfig) => {
 
   const app = <div>
     {
-      Object.entries(graph).map(([key, filed]) => {
+      Object.entries(graph).map(([key, field]) => {
         return <FieldControl
           key={key}
-          filed={filed} 
+          field={field} 
           bools={from.bools}
           model={from.model}
           resolveComponent={resolveComponent}

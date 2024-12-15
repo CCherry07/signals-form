@@ -2,7 +2,7 @@ import { Signal } from "@preact/signals-core";
 import { Decision } from "../boolless";
 import { Step } from "../stream";
 import { ValidateItem } from "../validate";
-import { Filed } from "./fieldControl";
+import { Field } from "./fieldControl";
 
 export interface ComponentMetaData {
   id: string;
@@ -10,7 +10,7 @@ export interface ComponentMetaData {
   display?: Decision;
   disabled?: Decision;
   props?: PropsMetaData
-  properties?: { [key: string]: Filed }
+  properties?: { [key: string]: Field }
 }
 export function Component(metadata: ComponentMetaData): ClassDecorator {
   return function (target: Function) {
@@ -74,7 +74,7 @@ export interface DecoratorInject<T = Signal<any>, D = any> {
   component?: any;
   display?: Decision;
   disabled?: Decision;
-  properties?: { [key: string]: Filed }
+  properties?: { [key: string]: Field }
   value?: T;
   props?: PropsMetaData;
   validator?: ValidatorMetaData;

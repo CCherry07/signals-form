@@ -1,107 +1,107 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useState } from 'react';
-import { Filed, toValue, run, type DecoratorInject, BoolValues, validate, toDeepValue, get } from "@rxform/core"
+import { Field, toValue, run, type DecoratorInject, BoolValues, validate, toDeepValue, get } from "@rxform/core"
 import { batch, computed, untracked } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
 interface Props {
-  filed: Filed & DecoratorInject;
+  field: Field & DecoratorInject;
   model: any
   bools: BoolValues
   resolveComponent: (component: string | FunctionComponent<any> | ComponentClass<any, any>) => string | FunctionComponent<any> | ComponentClass<any, any>
 };
 
-// function bindingMethods(filed: Filed) {
+// function bindingMethods(field: Field) {
 //   const methodsMap = {} as Record<string, Function>
-//   Object.getOwnPropertyNames(filed.__proto__).forEach(method => {
-//     if (typeof filed[method] === 'function' && method !== 'constructor' && method !== "data2model" && method !== "model2data" && method !== "component") {
-//       methodsMap[method as any] = filed[method]?.bind(filed)
+//   Object.getOwnPropertyNames(field.__proto__).forEach(method => {
+//     if (typeof field[method] === 'function' && method !== 'constructor' && method !== "data2model" && method !== "model2data" && method !== "component") {
+//       methodsMap[method as any] = field[method]?.bind(field)
 //     }
 //   })
 //   return methodsMap
 // }
 
-function normalizeProps(filed: Filed) {
+function normalizeProps(field: Field) {
   return {
-    isBlurred: filed.isBlurred.value,
-    isFocused: filed.isFocused.value,
-    isInit: filed.isInit.value,
-    isDestroyed: filed.isDestroyed.value,
-    isDisplay: filed.isDisplay.value,
-    isDisabled: filed.isDisabled.value,
-    isValid: filed.isValid.value,
-    errors: filed.errors.value,
-    value: toDeepValue(filed.value),
+    isBlurred: field.isBlurred.value,
+    isFocused: field.isFocused.value,
+    isInit: field.isInit.value,
+    isDestroyed: field.isDestroyed.value,
+    isDisplay: field.isDisplay.value,
+    isDisabled: field.isDisabled.value,
+    isValid: field.isValid.value,
+    errors: field.errors.value,
+    value: toDeepValue(field.value),
     // @ts-ignore
-    ...filed.props
+    ...field.props
   }
 }
 
 export function FieldControl(props: Props) {
-  const { filed, bools, resolveComponent } = props;
-  const [filedState, setFiledState] = useState(() => normalizeProps(filed))
+  const { field, bools, resolveComponent } = props;
+  const [filedState, setFiledState] = useState(() => normalizeProps(field))
   const [events, setEvents] = useState<Record<string, Function>>({})
   const model = computed(() => toDeepValue(props.model.value))
   const {
     initiative,
     signal
-  } = filed.validator ?? {}
+  } = field.validator ?? {}
 
   useEffect(() => {
-    filed.onInit?.()
+    field.onInit?.()
     const onValidateDispose = effect(() => {
       if (signal) {
-        validate({ state: filed.value, updateOn: "signal" }, signal.all, untracked(() => bools), model.value).then(errors => {
+        validate({ state: field.value, updateOn: "signal" }, signal.all, untracked(() => bools), model.value).then(errors => {
           if (Object.keys(errors).length === 0) {
-            filed.abstractModel?.cleanErrors([String(filed.path)])
+            field.abstractModel?.cleanErrors([String(field.path)])
           } else {
-            filed.abstractModel?.setErrors({
-              [String(filed.path)]: errors
+            field.abstractModel?.setErrors({
+              [String(field.path)]: errors
             })
           }
-          filed.errors.value = errors
+          field.errors.value = errors
         })
       }
     })
-    filed.onTrack(() => {
-      setFiledState(normalizeProps(filed))
+    field.onTrack(() => {
+      setFiledState(normalizeProps(field))
     })
     const onStatesDispose = effect(() => {
       batch(() => {
-        filed.isDisplay.value = filed.display?.evaluate(bools) ?? true
-        filed.isDisabled.value = filed.disabled?.evaluate(bools) ?? false
+        field.isDisplay.value = field.display?.evaluate(bools) ?? true
+        field.isDisabled.value = field.disabled?.evaluate(bools) ?? false
       })
     })
 
     const onSignalsDispose = effect(() => {
-      if (filed.signals) {
-        Object.entries(filed.signals).forEach(([signalKey, flow]) => {
+      if (field.signals) {
+        Object.entries(field.signals).forEach(([signalKey, flow]) => {
           const signals = computed(() => get({ $: model.value }, signalKey))
-          run.call(filed, flow, signals.value, bools, model).subscribe()
+          run.call(field, flow, signals.value, bools, model).subscribe()
         })
       }
     })
     const onStateDispose = effect(() => {
-      setFiledState(normalizeProps(filed))
+      setFiledState(normalizeProps(field))
     })
     return () => {
       onSignalsDispose()
       onValidateDispose()
       onStatesDispose()
       onStateDispose()
-      filed.onDestroy?.()
+      field.onDestroy?.()
     }
   }, [])
 
   useEffect(() => {
-    const events = Object.fromEntries(Object.entries(filed.events || {}).map(([e, flow]) => {
+    const events = Object.fromEntries(Object.entries(field.events || {}).map(([e, flow]) => {
       return [e, function (...args: any[]) {
         // @ts-ignore
-        const data = filed[e] ? (filed[e] as Function).apply(filed, args) : args[0]
-        run.call(filed, flow, data, bools, model).subscribe(
+        const data = field[e] ? (field[e] as Function).apply(field, args) : args[0]
+        run.call(field, flow, data, bools, model).subscribe(
           {
             complete() {
               if (initiative) {
-                validate({ state: toValue(filed.value), updateOn: e }, initiative.all, bools, model.value).then(errors => {
-                  filed.errors.value = errors
+                validate({ state: toValue(field.value), updateOn: e }, initiative.all, bools, model.value).then(errors => {
+                  field.errors.value = errors
                 })
               }
             },
@@ -116,7 +116,7 @@ export function FieldControl(props: Props) {
     if (events.onChange) {
       events.onChange(value)
     } else {
-      filed.value!.value = value
+      field.value!.value = value
     }
   }, [events.onChange])
 
@@ -125,10 +125,10 @@ export function FieldControl(props: Props) {
       if (events.onBlur) {
         events.onBlur(value)
       } else {
-        filed.value!.value = value
+        field.value!.value = value
       }
-      filed.isFocused.value = false
-      filed.isBlurred.value = true
+      field.isFocused.value = false
+      field.isBlurred.value = true
     })
   }, [events.onBlur])
 
@@ -137,17 +137,17 @@ export function FieldControl(props: Props) {
       events.onFocus()
     }
     batch(() => {
-      filed.isBlurred.value = false
-      filed.isFocused.value = true
+      field.isBlurred.value = false
+      field.isFocused.value = true
     })
   }, [events.onFocus])
 
   function getChildren(): ReactNode[] {
-    if (filed.properties) {
-      return Object.entries(filed.properties).map(([id, child]) => {
+    if (field.properties) {
+      return Object.entries(field.properties).map(([id, child]) => {
         return createElement(FieldControl, {
           key: id,
-          filed: child,
+          field: child,
           model,
           bools,
           resolveComponent
@@ -158,12 +158,12 @@ export function FieldControl(props: Props) {
   }
 
   return createElement("div", {
-    "data-filed-id": filed.id,
+    "data-field-id": field.id,
     style: {
-      display: filed.isDisplay.value ? "block" : "none"
+      display: field.isDisplay.value ? "block" : "none"
     }
   },
-    createElement(resolveComponent(filed.component), {
+    createElement(resolveComponent(field.component), {
       ...filedState,
       ...events,
       onChange,

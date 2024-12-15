@@ -23,7 +23,7 @@ export interface AbstractModelMethods {
   validateField: (field: string) => Promise<boolean>;
   setFieldProps: (field: string, props: any) => void;
 }
-export class Filed<T = Signal<any>, D = any> implements DecoratorInject<T, D> {
+export class Field<T = Signal<any>, D = any> implements DecoratorInject<T, D> {
   value?: T | undefined;
   path?: string | undefined;
   private tracks: Array<Function> = []
