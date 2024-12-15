@@ -2,7 +2,7 @@ import { effect, signal, Signal } from "@preact/signals-core";
 import { Decision } from "../boolless"
 import { FieldError, FieldErrors } from "../validate"
 import type { DecoratorInject } from "./decorator"
-import { isSignal, toValue } from "@rxform/shared";
+import { isFunction, isSignal, toValue } from "@rxform/shared";
 
 export enum FiledUpdateType {
   Value = "value",
@@ -61,6 +61,10 @@ export class Field<T = Signal<any>, D = any> implements DecoratorInject<T, D> {
   }
   onTrack(fn: Function): void {
     this.tracks.push(fn)
+  }
+  async onSubmit() {
+    // @ts-ignore
+    return isFunction(this.model2data) ? await this.model2data(this.value.value) : this.value.value
   }
   public isBlurred: Signal<boolean> = signal(false)
   public isFocused: Signal<boolean> = signal(false)

@@ -1,7 +1,7 @@
 import { FieldErrors } from "../validate/error/field";
 import { BoolsConfig, setup, type BoolValues } from "../boolless"
 import { Signal } from "@preact/signals-core";
-import { toDeepValue } from "@rxform/shared";
+import { set, toDeepValue } from "@rxform/shared";
 import { Field, FiledUpdateType } from "../controls/fieldControl";
 import { DecoratorInject } from "../controls/decorator";
 export type Model = Record<string, any>;
@@ -121,17 +121,21 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.errors = {};
   }
 
-  submit() {
+  async submit<T>() {
     if (Object.keys(this.errors).length > 0) {
-      return Promise.resolve({
+      return {
         errors: this.errors,
         model: {}
-      });
+      };
     }
+    const model = {} as T
+    await Promise.all(Object.entries(this.fields).map(async ([_, field]) => {
+      return set(model, field.path, await field.onSubmit())
+    }))
     this.submitted = true;
-    return Promise.resolve({
-      model: toDeepValue(this.model),
+    return {
+      model,
       errors: this.errors
-    });
+    };
   }
 }
