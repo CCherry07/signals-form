@@ -7,7 +7,8 @@ import {
   Signals as FiledSignal,
   D, Field, Component,
   js,
-  Props
+  Props,
+  normalizeSignal
 } from "@rxform/core"
 import InputComponent from "./components/Input"
 import CheckboxComponent from "./components/Checkbox"
@@ -26,9 +27,9 @@ interface Model {
   }>
 }
 const bools = {
-  isCherry: (model: Signal<Model>) => model.value.userInfo.value.name.value === 'cherry',
-  isAgeEq100: (model: Signal<Model>) => model.value.userInfo.value.age.value === 100,
-  isOpenDisabled: (model: Signal<Model>) => model.value.userInfo.value.open.value === true,
+  isCherry: (model: Signal<Model>) => normalizeSignal('userInfo.name', model).value === 'cherry',
+  isAgeEq100: (model: Signal<Model>) => normalizeSignal('userInfo.age', model).value === 100,
+  isOpenDisabled: (model: Signal<Model>) => normalizeSignal('userInfo.open', model).value === true,
 }
 @Component({
   id: "open",

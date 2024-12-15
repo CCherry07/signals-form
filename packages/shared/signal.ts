@@ -25,7 +25,7 @@ export function toDeepValue<T>(source: MaybeSignalOrGetter<T>): T {
   } else if (isSignal(source)) {
     return toDeepValue(source.value);
   } else if (Array.isArray(source)) {
-    return source.map(toDeepValue) as T; 
+    return source.map(toDeepValue) as T;
   } else if (typeof source === 'object' && source !== null) {
     return Object.keys(source).reduce((acc, key) => {
       // @ts-ignore
@@ -35,4 +35,36 @@ export function toDeepValue<T>(source: MaybeSignalOrGetter<T>): T {
   } else {
     return source;
   }
+}
+
+
+function parseSignalPath(signalPath: string): Array<string | number> {
+  const pathArray: Array<string | number> = [];
+  const regex = /[^.[\]]+|\[(\d+)\]/g;
+  let match;
+  while ((match = regex.exec(signalPath)) !== null) {
+    if (match[1] !== undefined) {
+      pathArray.push(Number(match[1]));
+    } else {
+      pathArray.push(match[0]);
+    }
+  }
+  return pathArray;
+}
+/**
+ * 
+ * @param path the signal path that needs to be accessed
+ * @param signal signal
+ * @returns signal at the end of the path
+ * @example
+ * normalizeSignal('userInfo.name', model) -> model.value.userInfo.value.name
+ */
+export function normalizeSignal<T, D>(path: string, signal: Signal<T>): Signal<D> {
+  const pathArray = parseSignalPath(path);
+  let current = signal as any;
+  for (let i = 0; i < pathArray.length; i++) {
+    const key = pathArray[i];
+    current = current.value[key];
+  }
+  return current as Signal<D>;
 }
