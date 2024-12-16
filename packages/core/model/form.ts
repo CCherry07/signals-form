@@ -1,6 +1,5 @@
 import { AbstractModel, AbstractModelMathods, AbstractModelConstructorOptions, Model } from "./abstract_model"
 import { Field } from "../controls/fieldControl"
-import { DecoratorInject } from "../controls/decorator"
 import { Signal, signal } from "@preact/signals-core"
 import { toValue } from "@rxform/shared"
 
@@ -8,8 +7,8 @@ interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M>
 }
 function refreshModel(
   abstractModelMethods: Pick<AbstractModelMathods<Signal<Model>>, 'setFieldValue' | 'setErrors' | 'validateField' | 'setFieldProps' | 'cleanErrors'>,
-  graph: Record<string, Field & DecoratorInject>,
-  fields: Record<string, Field & DecoratorInject>,
+  graph: Record<string, Field>,
+  fields: Record<string, Field>,
   path: string,
 ) {
   return Object.entries(graph).reduce((parent, [, field]) => {

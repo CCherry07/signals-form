@@ -1,6 +1,6 @@
 import { Decision } from "../boolless";
 import { Step } from "../stream";
-import { ValidateItem } from "../validate";
+import { ValidateItem } from "../validator";
 import { Field } from "./fieldControl";
 
 export const METADATA_COMPONENT = 'component:metadata'

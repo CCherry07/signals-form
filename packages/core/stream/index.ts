@@ -1,11 +1,10 @@
 import { rx, reduce, filter, map, UnaryFunction, of } from "rxjs";
 import { BoolValues, Decision } from "../boolless";
 import { Field } from "../controls/fieldControl";
-import { DecoratorInject } from "../controls/decorator";
 import { isFunction } from "@rxform/shared";
 
 export type Step = {
-  effect?: (this: Field & DecoratorInject, info: any) => void;
+  effect?: (this: Field, info: any) => void;
   operator?: "if" | "ifelse" | "any" | 'switch';
   decision?: Decision;
   do?: Step[] | [Step[], Step[]];
@@ -13,7 +12,7 @@ export type Step = {
   pipe?: Array<UnaryFunction<any, any>>;
 };
 
-export function run(this: Field & DecoratorInject, flow: Step[], source: any, bools: BoolValues, context: any) {
+export function run(this: Field, flow: Step[], source: any, bools: BoolValues, context: any) {
   return rx(flow).pipe(reduce((acc, step) => {
     let data = acc
     const { effect, operator, decision, pipe, do: stepToDo } = step

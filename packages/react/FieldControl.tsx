@@ -1,9 +1,9 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useState } from 'react';
-import { Field, toValue, run, type DecoratorInject, BoolValues, validate, toDeepValue, get } from "@rxform/core"
+import { Field, toValue, run, BoolValues, validate, toDeepValue, get } from "@rxform/core"
 import { batch, computed, untracked } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
 interface Props {
-  field: Field & DecoratorInject;
+  field: Field;
   model: any
   bools: BoolValues
   resolveComponent: (component: string | FunctionComponent<any> | ComponentClass<any, any>) => string | FunctionComponent<any> | ComponentClass<any, any>

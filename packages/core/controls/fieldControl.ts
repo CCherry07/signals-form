@@ -1,5 +1,5 @@
 import { effect, signal, Signal } from "@preact/signals-core";
-import { FieldErrors } from "../validate"
+import { FieldErrors } from "../validator"
 import { Decision } from "../boolless";
 import { EventMetaData, getComponentMetaData, getEventsMetaData, getModelPipeMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
 import { isFunction, isSignal, toValue } from "@rxform/shared";

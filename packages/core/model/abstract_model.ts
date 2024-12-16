@@ -1,9 +1,8 @@
-import { FieldErrors } from "../validate/error/field";
+import { FieldErrors } from "../validator/error/field";
 import { BoolsConfig, setup, type BoolValues } from "../boolless"
 import { Signal } from "@preact/signals-core";
 import { set, toDeepValue } from "@rxform/shared";
 import { Field, FiledUpdateType } from "../controls/fieldControl";
-import { DecoratorInject } from "../controls/decorator";
 export type Model = Record<string, any>;
 export interface AbstractModel<M extends Signal<Model>> {
   bools: BoolValues;
@@ -12,8 +11,8 @@ export interface AbstractModel<M extends Signal<Model>> {
   model: M;
   validatorEngine: string;
   defaultValidatorEngine: string;
-  graph: Record<string, Field & DecoratorInject>
-  fields: Record<string, Field & DecoratorInject>
+  graph: Record<string, Field>
+  fields: Record<string, Field>
 }
 
 export interface AbstractModelMathods<M extends Signal<Model>> {
@@ -38,8 +37,8 @@ export interface AbstractModelConstructorOptions<M extends Model> {
   defaultValidatorEngine: string;
   boolsConfig: BoolsConfig<M>
   model?: M
-  graph?: Record<string, Field & DecoratorInject>
-  fields?: Record<string, Field & DecoratorInject>
+  graph?: Record<string, Field>
+  fields?: Record<string, Field>
 }
 
 export class AbstractModel<M> implements AbstractModel<M> {
