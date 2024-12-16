@@ -117,6 +117,7 @@ class Open extends Field {
           {
             effect(info) {
               this.abstractModel?.setFieldProps("age", { title: "age" + info })
+              console.log(this.abstractModel);
               this.abstractModel?.setFieldValue("age", 12)
               this.value!.value = info
             },

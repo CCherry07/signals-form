@@ -1,7 +1,7 @@
 import { effect, signal, Signal } from "@preact/signals-core";
 import { FieldErrors } from "../validate"
 import { Decision } from "../boolless";
-import { EventMetaData, getComponentMetaData, getModelPipeMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
+import { EventMetaData, getComponentMetaData, getEventsMetaData, getModelPipeMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
 import { isFunction, isSignal, toValue } from "@rxform/shared";
 
 export enum FiledUpdateType {
@@ -83,9 +83,10 @@ export class Field<T = any, D = any> {
   initFieldMetaDate() {
     const componentMeta = getComponentMetaData(this.constructor)
     const modelpipe = getModelPipeMetaData(this.constructor)
+    const eventsMeta = { events: getEventsMetaData(this.constructor) }
     const validatorMeta = { validator: getValidatorMetaData(this.constructor) }
     const signalsMeta = { signals: getSignalsMetaData(this.constructor) }
     const propsMeta = getPropsMetaData(this.constructor) ? { props: getPropsMetaData(this.constructor) } : {}
-    Object.assign(this, componentMeta, modelpipe, validatorMeta, signalsMeta, propsMeta)
+    Object.assign(this, componentMeta, modelpipe, validatorMeta, signalsMeta, eventsMeta, propsMeta)
   }
 }
