@@ -1,7 +1,7 @@
 import { Decision } from "../boolless";
 import { Step } from "../stream";
 import { ValidateItem } from "../validator";
-import { Field } from "./fieldControl";
+import { Field } from "./field";
 
 export const METADATA_COMPONENT = 'component:metadata'
 export const METADATA_VALIDATOR = 'validator:metadata'
@@ -17,6 +17,7 @@ export interface ComponentMetaData {
   disabled?: Decision;
   props?: PropsMetaData
   properties?: { [key: string]: Field }
+
 }
 export function Component(metadata: ComponentMetaData): ClassDecorator {
   return function (constructor: Function) {

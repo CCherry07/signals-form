@@ -2,7 +2,7 @@ import { FieldErrors } from "../validator/error/field";
 import { BoolsConfig, setup, type BoolValues } from "../boolless"
 import { Signal } from "@preact/signals-core";
 import { set, toDeepValue } from "@rxform/shared";
-import { Field, FiledUpdateType } from "../controls/fieldControl";
+import { Field, FiledUpdateType } from "../controls/field";
 export type Model = Record<string, any>;
 export interface AbstractModel<M extends Signal<Model>> {
   bools: BoolValues;

@@ -1,5 +1,5 @@
-import "reflect-metadata"
-export * from "./controls/fieldControl"
+import "reflect-metadata/lite"
+export * from "./controls/field"
 export * from "./model/form"
 export * from "./controls/decorator"
 export * from "./boolless"

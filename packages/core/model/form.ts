@@ -1,5 +1,5 @@
 import { AbstractModel, AbstractModelMathods, AbstractModelConstructorOptions, Model } from "./abstract_model"
-import { Field } from "../controls/fieldControl"
+import { Field } from "../controls/field"
 import { Signal, signal } from "@preact/signals-core"
 import { toValue } from "@rxform/shared"
 

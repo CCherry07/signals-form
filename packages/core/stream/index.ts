@@ -1,6 +1,6 @@
 import { rx, reduce, filter, map, UnaryFunction, of } from "rxjs";
 import { BoolValues, Decision } from "../boolless";
-import { Field } from "../controls/fieldControl";
+import { Field } from "../controls/field";
 import { isFunction } from "@rxform/shared";
 
 export type Step = {
