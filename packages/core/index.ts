@@ -1,3 +1,4 @@
+import "reflect-metadata"
 export * from "./controls/fieldControl"
 export * from "./model/form"
 export * from "./controls/decorator"

@@ -1,8 +1,14 @@
-import { Signal } from "@preact/signals-core";
 import { Decision } from "../boolless";
 import { Step } from "../stream";
 import { ValidateItem } from "../validate";
 import { Field } from "./fieldControl";
+
+export const METADATA_COMPONENT = 'component:metadata'
+export const METADATA_VALIDATOR = 'validator:metadata'
+export const METADATA_SIGNALS = 'signals:metadata'
+export const METADATA_EVENTS = 'events:metadata'
+export const METADATA_MODEL = 'model:metadata'
+export const METADATA_PROPS = 'props:metadata'
 
 export interface ComponentMetaData {
   id: string;
@@ -13,9 +19,13 @@ export interface ComponentMetaData {
   properties?: { [key: string]: Field }
 }
 export function Component(metadata: ComponentMetaData): ClassDecorator {
-  return function (target: Function) {
-    Object.assign(target.prototype, metadata);
+  return function (constructor: Function) {
+    Reflect.defineMetadata(METADATA_COMPONENT, metadata, constructor);
   };
+}
+
+export function getComponentMetaData(target: Function) {
+  return Reflect.getMetadata(METADATA_COMPONENT, target) as ComponentMetaData;
 }
 
 export interface ValidatorMetaData {
@@ -24,28 +34,34 @@ export interface ValidatorMetaData {
 }
 export function Validator(metadata: ValidatorMetaData): ClassDecorator {
   return function (target: Function) {
-    Object.assign(target.prototype, {
-      validator: metadata
-    });
+    Reflect.defineMetadata(METADATA_VALIDATOR, metadata, target);
   };
+}
+
+export function getValidatorMetaData(target: Function) {
+  return Reflect.getMetadata(METADATA_VALIDATOR, target) as ValidatorMetaData;
 }
 
 export type SignalsMetaData = Record<string, Step[]>;
 export function Signals(metadata: SignalsMetaData): ClassDecorator {
   return function (target: Function) {
-    Object.assign(target.prototype, {
-      signals: metadata
-    });
+    Reflect.defineMetadata(METADATA_SIGNALS, metadata, target);
   };
+}
+
+export function getSignalsMetaData(target: Function) {
+  return Reflect.getMetadata(METADATA_SIGNALS, target) as SignalsMetaData;
 }
 
 export type EventMetaData = Record<string, Step[]>;
 export function Events(metadata: EventMetaData): ClassDecorator {
   return function (target: Function) {
-    Object.assign(target.prototype, {
-      events: metadata
-    });
+    Reflect.defineMetadata(METADATA_EVENTS, metadata, target);
   };
+}
+
+export function getEventsMetaData(target: Function) {
+  return Reflect.getMetadata(METADATA_EVENTS, target) as EventMetaData;
 }
 
 export interface ModelPipeMetaData<T, D> {
@@ -54,8 +70,12 @@ export interface ModelPipeMetaData<T, D> {
 };
 export function ModelPipe<T, D>(metadata: ModelPipeMetaData<T, D>) {
   return function (target: Function) {
-    Object.assign(target.prototype, metadata);
+    Reflect.defineMetadata(METADATA_MODEL, metadata, target);
   };
+}
+
+export function getModelPipeMetaData<T, D>(target: Function) {
+  return Reflect.getMetadata(METADATA_MODEL, target) as ModelPipeMetaData<T, D>;
 }
 
 export interface PropsMetaData {
@@ -63,23 +83,10 @@ export interface PropsMetaData {
 }
 export function Props(metadata: PropsMetaData): ClassDecorator {
   return function (target: Function) {
-    Object.assign(target.prototype, {
-      props: metadata
-    });
+    Reflect.defineMetadata(METADATA_PROPS, metadata, target);
   };
 }
 
-export interface DecoratorInject<T = Signal<any>, D = any> {
-  id?: string;
-  component?: any;
-  display?: Decision;
-  disabled?: Decision;
-  properties?: { [key: string]: Field }
-  value?: T;
-  props?: PropsMetaData;
-  validator?: ValidatorMetaData;
-  signals?: SignalsMetaData;
-  events?: EventMetaData;
-  data2model?: (data?: D) => T;
-  model2data?: (model: T) => D;
+export function getPropsMetaData(target: Function) {
+  return Reflect.getMetadata(METADATA_PROPS, target) as PropsMetaData;
 }

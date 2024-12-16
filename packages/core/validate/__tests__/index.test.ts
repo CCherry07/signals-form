@@ -12,14 +12,14 @@ const context = signal({
     city: signal('重庆')
   }),
   d: signal('dd'),
-  userInfo: signal({ name: signal('Tom'), age: signal(18) })
+  userinfo: signal({ name: signal('Tom'), age: signal(18) })
 })
 
 type Context = typeof context
 
 const bools = {
   isD: (context: Context) => toValue(context).d.value === 'd',
-  isTom: (context: Context) => toValue(context).userInfo.value.name.value === 'Tom',
+  isTom: (context: Context) => toValue(context).userinfo.value.name.value === 'Tom',
 } as const
 
 const boolValues = setup(bools, context) as Record<keyof typeof bools, ReadonlySignal<boolean>>;
@@ -78,10 +78,10 @@ describe("validate", () => {
       {
         fact: {
           $state: "$state",
-          userInfo: {
+          userinfo: {
             addr: "朝阳区",
-            name: "$.value.userInfo.value.name.value",
-            age: "$.value.userInfo.value.age.value"
+            name: "$.value.userinfo.value.name.value",
+            age: "$.value.userinfo.value.age.value"
           }
         },
         schema: z.object({
@@ -92,7 +92,7 @@ describe("validate", () => {
               city: z.string()
             })
           }),
-          userInfo: z.object({
+          userinfo: z.object({
             name: z.string(),
             age: z.number(),
             addr: z.string()

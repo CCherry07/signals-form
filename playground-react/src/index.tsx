@@ -20,20 +20,20 @@ import { z } from 'zod';
 import { map, tap } from 'rxjs';
 
 interface Model {
-  userInfo: Signal<{
+  userinfo: Signal<{
     name: Signal<string>,
     age: Signal<number>
     open: Signal<boolean>
   }>
 }
 const bools = {
-  isCherry: (model: Signal<Model>) => normalizeSignal('userInfo.name', model).value === 'cherry',
-  isAgeEq100: (model: Signal<Model>) => normalizeSignal('userInfo.age', model).value === 100,
-  isOpenDisabled: (model: Signal<Model>) => normalizeSignal('userInfo.open', model).value === true,
+  isCherry: (model: Signal<Model>) => normalizeSignal('userinfo.name', model).value === 'cherry',
+  isAgeEq100: (model: Signal<Model>) => normalizeSignal('userinfo.age', model).value === 100,
+  isOpenDisabled: (model: Signal<Model>) => normalizeSignal('userinfo.open', model).value === true,
 }
 @Component({
-  id: "open",
-  component: CheckboxComponent,
+  id: 'open',
+  component: 'checkbox',
   props: {
     title: "是否开启"
   }
@@ -45,8 +45,8 @@ class Open extends Field {
 }
 
 @Component({
-  id: "name",
-  component: InputComponent,
+  id: 'name',
+  component: 'input',
   disabled: D.or('isA', 'isC'),
   display: D.and('isOpenDisabled', 'isAgeEq100').not(),
 })
@@ -54,7 +54,7 @@ class Open extends Field {
   title: "姓名"
 })
 @FiledSignal({
-  "$.userInfo.open": [
+  "$.userinfo.open": [
     {
       operator: 'if',
       decision: D.use('isOpenDisabled'),
@@ -64,7 +64,7 @@ class Open extends Field {
             map((info) => info ? "open true" : "open false"),
           ],
           effect(info) {
-            console.log("$.userInfo.open", info);
+            console.log("$.userinfo.open", info);
           }
         }
       ]
@@ -75,16 +75,17 @@ class Open extends Field {
   initiative: {
     all: [
       {
+        on: "onChange", // 主动校验，事件符合 则执行
         schema: z.string({ message: "姓名必须是字符" }),
       }
     ]
   },
-  signal: {
+  signal: { // 信号驱动,校验，依赖为 fact
     all: [
       {
         fact: {
           name: "$state.value",
-          age: js`$.userInfo.age`,
+          age: js`$.userinfo.age`,
         },
         schema: z.object({
           name: z.string({ message: "姓名必须是字符" }).max(10, "必须在2-10个字符之间").min(2, "必须在2-10个字符之间"),
@@ -117,7 +118,6 @@ class Open extends Field {
             effect(info) {
               this.abstractModel?.setFieldProps("age", { title: "age" + info })
               this.abstractModel?.setFieldValue("age", 12)
-              this.abstractModel
               this.value!.value = info
             },
           }
@@ -136,7 +136,7 @@ class Name extends Field {
   }
 }
 @Component({
-  id: "age",
+  id: 'age',
   component: InputNumber,
   disabled: D.use('isCherry'),
   props: {
@@ -158,8 +158,8 @@ class Age extends Field {
   }
 }
 @Component({
-  id: "userInfo",
-  component: CardComponent,
+  id: 'userinfo',
+  component: 'card',
   properties: {
     name: new Name(),
     age: new Age(),
@@ -175,7 +175,7 @@ class UserInfo extends Field {
   }
 }
 const graph = {
-  UserInfo: new UserInfo(),
+  UserInfo: new UserInfo()
 }
 
 export const {
@@ -187,7 +187,9 @@ export const {
   boolsConfig: bools,
   graph,
   components: {
-    input: InputComponent
+    input: InputComponent,
+    checkbox: CheckboxComponent,
+    card: CardComponent,
   }
 })
 const root = createRoot(document.getElementById('root')!);

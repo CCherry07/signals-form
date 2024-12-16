@@ -57,7 +57,7 @@ function parseSignalPath(signalPath: string): Array<string | number> {
  * @param signal signal
  * @returns signal at the end of the path
  * @example
- * normalizeSignal('userInfo.name', model) -> model.value.userInfo.value.name
+ * normalizeSignal('userinfo.name', model) -> model.value.userinfo.value.name
  */
 export function normalizeSignal<T, D>(path: string, signal: Signal<T>): Signal<D> {
   const pathArray = parseSignalPath(path);

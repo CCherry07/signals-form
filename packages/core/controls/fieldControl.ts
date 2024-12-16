@@ -1,7 +1,7 @@
 import { effect, signal, Signal } from "@preact/signals-core";
-import { Decision } from "../boolless"
-import { FieldError, FieldErrors } from "../validate"
-import type { DecoratorInject } from "./decorator"
+import { FieldErrors } from "../validate"
+import { Decision } from "../boolless";
+import { EventMetaData, getComponentMetaData, getModelPipeMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
 import { isFunction, isSignal, toValue } from "@rxform/shared";
 
 export enum FiledUpdateType {
@@ -9,13 +9,6 @@ export enum FiledUpdateType {
   Props = "props",
 }
 
-export interface FieldControl<T> {
-  readonly value: T;
-  readonly id: string;
-  error: FieldError | undefined;
-  disabled: Decision;
-  display: Decision;
-}
 export interface AbstractModelMethods {
   setFieldValue: (field: string, value: any) => void;
   setErrors: (errors: Record<string, FieldErrors>) => void;
@@ -23,9 +16,20 @@ export interface AbstractModelMethods {
   validateField: (field: string) => Promise<boolean>;
   setFieldProps: (field: string, props: any) => void;
 }
-export class Field<T = Signal<any>, D = any> implements DecoratorInject<T, D> {
-  value?: T | undefined;
-  path?: string | undefined;
+export class Field<T = any, D = any> {
+  id!: string;
+  value!: Signal<T>;
+  path!: string;
+  component?: any;
+  display?: Decision;
+  disabled?: Decision;
+  properties?: { [key: string]: Field }
+  props?: PropsMetaData;
+  validator?: ValidatorMetaData;
+  signals?: SignalsMetaData;
+  events?: EventMetaData;
+  data2model?: (data?: D) => T;
+  model2data?: (model: T) => D;
   private tracks: Array<Function> = []
   abstractModel: AbstractModelMethods | undefined;
   onBeforeInit?(): void
@@ -43,18 +47,14 @@ export class Field<T = Signal<any>, D = any> implements DecoratorInject<T, D> {
   }): void {
     if (type === "value") {
       if (!isSignal(this.value)) {
-        // @ts-ignore
-        throw new Error(`field ${this.id!} value is undefined`)
+        throw new Error(`field ${this.id} value is undefined`)
       }
       this.value.value = toValue(value)
     }
     if (type === "props") {
-      // @ts-ignore
       if (this.props === undefined) {
-        // @ts-ignore
-        throw new Error(`field ${this.id!} props is undefined`)
+        throw new Error(`field ${this.id} props is undefined`)
       }
-      // @ts-ignore
       Object.assign(this.props, value)
     }
     this.tracks.forEach(fn => fn({ type, value }))
@@ -63,7 +63,6 @@ export class Field<T = Signal<any>, D = any> implements DecoratorInject<T, D> {
     this.tracks.push(fn)
   }
   async onSubmit() {
-    // @ts-ignore
     return isFunction(this.model2data) ? await this.model2data(this.value.value) : this.value.value
   }
   public isBlurred: Signal<boolean> = signal(false)
@@ -75,8 +74,18 @@ export class Field<T = Signal<any>, D = any> implements DecoratorInject<T, D> {
   public isValid: Signal<boolean> = signal(true)
   public errors: Signal<FieldErrors> = signal({})
   constructor() {
+    this.initFieldMetaDate()
     effect(() => {
       this.isValid.value = Object.keys(this.errors.value).length === 0
     })
+  }
+
+  initFieldMetaDate() {
+    const componentMeta = getComponentMetaData(this.constructor)
+    const modelpipe = getModelPipeMetaData(this.constructor)
+    const validatorMeta = { validator: getValidatorMetaData(this.constructor) }
+    const signalsMeta = { signals: getSignalsMetaData(this.constructor) }
+    const propsMeta = getPropsMetaData(this.constructor) ? { props: getPropsMetaData(this.constructor) } : {}
+    Object.assign(this, componentMeta, modelpipe, validatorMeta, signalsMeta, propsMeta)
   }
 }
