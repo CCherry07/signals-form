@@ -71,7 +71,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
     })
   }
 
-  merageModel(model: M) {
+  mergeModel(model: M) {
     batch(() => {
       Object.entries(this.fields).forEach(([_, field]) => {
         if (!field.properties) { // leaf node
