@@ -13,24 +13,7 @@ export function Submit(props: Props) {
       console.log("form model", err);
     });
   };
-  const handleUpdateModel = () => {
-    from.updateModel({
-      userinfo: {
-        name: "test",
-        age: 20
-      }
-    });
-  }
-  const handleMergeModel = () => {
-    from.mergeModel({
-      userinfo: {
-        name: "test1",
-      }
-    });
-  }
   return <Space style={{ marginTop: 20 }}>
-    <Button onClick={handleSubmit}>submit</Button>
-    <Button onClick={handleUpdateModel}>update model</Button>
-    <Button onClick={handleMergeModel}>merage model</Button>
+    <Button variant="filled" type="primary" onClick={handleSubmit}>submit</Button>
   </Space>
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Input as AInput, Form } from "antd"
+import { FieldError } from './Error';
 interface Props {
   errors: any;
   value: any
@@ -8,16 +9,10 @@ interface Props {
   isDisabled: boolean
   onBlur: Function
   onFocus: Function
+  type?: "Group" | "Search" | "TextArea" | "Password" | "OTP" ;
 }
-export default function Input(props: Props) {
-  const { onChange, value, errors, title, isDisabled, onBlur, onFocus } = props
-  const errorNode = errors ? <div style={{ color: "red" }}>
-    {
-      Object.entries(errors).map(([key, value]) => {
-        return <div key={key} color='red'> {key}：{value.message}</div>
-      })
-    }
-  </div> : null
+export default function (props: Props) {
+  const { onChange, value, errors, title, isDisabled, onBlur, onFocus , type } = props
   return <div>
     <Form.Item label={title}>
       <AInput disabled={isDisabled} value={value}
@@ -25,12 +20,12 @@ export default function Input(props: Props) {
           onFocus()
         }}
         onBlur={(e) => {
-          onBlur(e.target.value)
+          onBlur(e.target?.value  ?? e)
         }}
         onChange={(e) => {
-          onChange(e.target.value)
+          onChange(e?.target?.value ?? e)
         }} />
-      {errorNode}
+      <FieldError errors={errors} />
     </Form.Item>
   </div>
 }

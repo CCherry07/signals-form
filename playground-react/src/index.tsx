@@ -10,91 +10,51 @@ import {
   Props,
   normalizeSignal
 } from "@rxform/core"
-import InputComponent from "./components/Input"
-import CheckboxComponent from "./components/Checkbox"
+import Form from "./components/Form"
+import Input from "./components/Input"
+import InputType from "./components/InputType"
+import Checkbox from "./components/Checkbox"
 import InputNumber from "./components/InputNumber"
-import AddrComponent from "./components/Addr"
+import Cascader from './components/Cascader';
+import Select from './components/Select';
 import { Card as CardComponent } from './components/Card';
 import { createForm } from "@rxform/react"
 import { App } from "./App"
 import { z } from 'zod';
 import { map, tap } from 'rxjs';
 
-interface Model {
-  userinfo: Signal<{
-    name: Signal<string>,
-    age: Signal<number>
-    open: Signal<boolean>
-  }>
-}
 const bools = {
-  isCherry: (model: Signal<Model>) => normalizeSignal('userinfo.name', model).value === 'cherry',
-  isAgeEq100: (model: Signal<Model>) => normalizeSignal('userinfo.age', model).value === 100,
-  isOpenDisabled: (model: Signal<Model>) => normalizeSignal('userinfo.open', model).value === true,
+
 }
 @Component({
-  id: 'open',
-  component: 'checkbox',
+  id: 'phone',
+  component: 'inputNumber',
   props: {
-    title: "是否开启"
+    title: "Phone Number"
   }
 })
-class Open extends Field {
+class Phone extends Field {
   constructor() {
     super()
   }
 }
 
 @Component({
-  id: 'name',
+  id: 'email',
   component: 'input',
-  disabled: D.or('isA', 'isC'),
-  hidden: D.and('isOpenDisabled', 'isAgeEq100'),
 })
 @Props({
-  title: "姓名"
-})
-@FiledSignal({
-  "$.userinfo.open": [
-    {
-      operator: 'if',
-      decision: D.use('isOpenDisabled'),
-      do: [
-        {
-          pipe: [
-            map((info) => info ? "open true" : "open false"),
-          ],
-          effect(info) {
-            console.log("$.userinfo.open", info);
-          }
-        }
-      ]
-    }
-  ]
+  title: "E-mail"
 })
 @Validator({
   initiative: {
     all: [
       {
-        on: "onChange", // 主动校验，事件符合 则执行
-        schema: z.string({ message: "姓名必须是字符" }),
+        on: "onChange", 
+        schema: z.string().email({ message: "a is not email" }),
       }
     ]
   },
-  signal: { // 信号驱动,校验，依赖为 fact
-    all: [
-      {
-        fact: {
-          name: "$state.value",
-          age: js`$.userinfo.age`,
-        },
-        schema: z.object({
-          name: z.string({ message: "姓名必须是字符" }).max(10, "必须在2-10个字符之间").min(2, "必须在2-10个字符之间"),
-          age: z.number({ message: "年龄必须是数字" })
-        })
-      }
-    ]
-  }
 })
 @Events({
   onChange: [
@@ -117,8 +77,6 @@ class Open extends Field {
         [
           {
             effect(info) {
-              this.abstractModel.setFieldProps("age", { title: "age" + info })
-              this.abstractModel.setFieldValue("age", Math.random() * 100)
               this.value.value = info
             },
           }
@@ -127,7 +85,7 @@ class Open extends Field {
     },
   ]
 })
-class Name extends Field {
+class Email extends Field {
   constructor() {
     super()
   }
@@ -137,11 +95,12 @@ class Name extends Field {
   }
 }
 @Component({
-  id: 'age',
-  component: InputNumber,
+  id: 'password',
+  component: "inputType",
   disabled: D.use('isCherry'),
   props: {
-    title: "年龄"
+    type: "Password",
+    title: "password"
   }
 })
 @Validator({
@@ -153,33 +112,51 @@ class Name extends Field {
     ]
   },
 })
-class Age extends Field {
+class Password extends Field {
   constructor() {
     super()
   }
 }
 
 @Component({
-  id: "city",
+  id: "nickname",
   component: "input",
   props:{
-    title: "城市"
+    title: "Nickname"
   }
 })
-class City extends Field {
+class Nickname extends Field {
   constructor(){
     super()
   }
 }
 
 @Component({
-  id: "districtAndCounty",
-  component: "input",
+  id: "residence",
+  component: "cascader",
   props:{
-    title: "区县"
+    title: "Habitual Residence",
+    options: [
+      {
+        value: 'zhejiang',
+        label: 'Zhejiang',
+        children: [
+          {
+            value: 'hangzhou',
+            label: 'Hangzhou',
+            children: [
+              {
+                value: 'xihu',
+                label: 'West Lake',
+              },
+            ],
+          },
+        ],
+      },
+    ]
   }
 })
-class Street extends Field {
+class Residence extends Field {
   constructor(){
     super()
   }
@@ -188,14 +165,77 @@ class Street extends Field {
 
 
 @Component({
-  id: "addr",
-  component: "addr",
-  properties:{
-    city: new City(),
-    districtAndCounty: new Street()
+  id: "donation",
+  component: "inputNumber",
+  props:{
+    title: "Donation"
   }
 })
-class Addr extends Field {
+class Donation extends Field {
+  constructor(){
+    super()
+  }
+}
+
+@Component({
+  id: "intro",
+  component: "inputType",
+  props:{
+    title: "Intro",
+    type: "TextArea"
+  }
+})
+class Intro extends Field {
+  constructor(){
+    super()
+  }
+}
+@Component({
+  id: "gender",
+  component: "select",
+  props:{
+    title: "Gender",
+    options: [
+      {
+        value: "male",
+        label: "Male"
+      },
+      {
+        value: "female",
+        label: "Female"
+      },
+      {
+        value: "other",
+        label: "Other"
+      }
+    ]
+  }
+})
+class Gender extends Field {
+  constructor(){
+    super()
+  }
+}
+@Component({
+  id: "captcha",
+  component: "input",
+  props:{
+    title: "Captcha",
+  }
+})
+class Captcha extends Field {
+  constructor(){
+    super()
+  }
+}
+@Component({
+  id: "agreement",
+  component: "checkbox",
+  props:{
+    title: "Captcha",
+  }
+})
+class Agreement extends Field {
   constructor(){
     super()
   }
@@ -203,15 +243,23 @@ class Addr extends Field {
 
 @Component({
   id: 'userinfo',
-  component: 'card',
+  component: 'form',
   properties: {
-    name: new Name(),
-    age: new Age(),
-    open: new Open(),
-    addr: new Addr()
+    email: new Email(),
+    password: new Password(),
+    nickname: new Nickname(),
+    residence: new Residence(),
+    phone: new Phone(),
+    donation: new Donation(),
+    intro: new Intro(),
+    gender: new Gender(),
+    captcha: new Captcha(),
+    agreement: new Agreement()
   },
   props: {
-    title: "用户信息"
+    style:{
+      width: "400px"
+    }
   }
 })
 class UserInfo extends Field {
@@ -232,14 +280,15 @@ export const {
   defaultValidatorEngine: "zod",
   boolsConfig: bools,
   graph,
-  resolvers:{
-    
-  },
   components: {
-    input: InputComponent,
-    checkbox: CheckboxComponent,
+    form: Form,
+    input: Input,
+    checkbox: Checkbox,
     card: CardComponent,
-    addr: AddrComponent
+    inputType: InputType,
+    inputNumber: InputNumber,
+    cascader: Cascader,
+    select: Select
   }
 })
 const root = createRoot(document.getElementById('root')!);
