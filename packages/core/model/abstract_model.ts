@@ -1,6 +1,6 @@
 import { FieldErrors } from "../validator/error/field";
 import { BoolsConfig, setup, type BoolValues } from "../boolless"
-import { Signal } from "@preact/signals-core";
+import { batch, Signal } from "@preact/signals-core";
 import { get, set, toDeepValue } from "@rxform/shared";
 import { Field, FiledUpdateType } from "../controls/field";
 export type Model = Record<string, any>;
@@ -59,10 +59,31 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   updateModel(model: M) {
-    Object.entries(this.fields).forEach(([_, field]) => {
-      if (!field.properties) { // leaf node
-        field.onUpdate({ type: FiledUpdateType.Value, value: get(model, field.path) })
-      }
+    batch(() => {
+      Object.entries(this.fields).forEach(([_, field]) => {
+        if (!field.properties) { // leaf node
+          const value = get(model, field.path)
+          if (value !== field.value.value) {
+            field.onUpdate({ type: FiledUpdateType.Value, value })
+          }
+        }
+      })
+    })
+  }
+
+  merageModel(model: M) {
+    batch(() => {
+      Object.entries(this.fields).forEach(([_, field]) => {
+        if (!field.properties) { // leaf node
+          const value = get(model, field.path)
+          if (typeof value === "undefined") {
+            return;
+          }
+          if (value !== field.value.value) {
+            field.onUpdate({ type: FiledUpdateType.Value, value })
+          }
+        }
+      })
     })
   }
 

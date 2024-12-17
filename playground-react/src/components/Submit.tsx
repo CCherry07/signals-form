@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "antd"
+import { Button, Space } from "antd"
 interface Props {
   from: any;
 }
@@ -13,5 +13,24 @@ export function Submit(props: Props) {
       console.log("form model", err);
     });
   };
-  return <Button onClick={handleSubmit}>submit</Button>;
+  const handleUpdateModel = () => {
+    from.updateModel({
+      userinfo: {
+        name: "test",
+        age: 20
+      }
+    });
+  }
+  const handleMerageModel = () => {
+    from.merageModel({
+      userinfo: {
+        name: "test1",
+      }
+    });
+  }
+  return <Space style={{ marginTop: 20 }}>
+    <Button onClick={handleSubmit}>submit</Button>
+    <Button onClick={handleUpdateModel}>update model</Button>
+    <Button onClick={handleMerageModel}>merage model</Button>
+  </Space>
 }
