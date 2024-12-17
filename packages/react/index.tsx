@@ -1,6 +1,7 @@
 import React, { ComponentClass, FunctionComponent } from 'react';
 import { FieldControl } from "./FieldControl";
-import { createRXForm, Field } from "@rxform/core"
+import { createRXForm, Field , setupValidator } from "@rxform/core"
+import { Resolver } from '@rxform/core/validator/resolvers/type';
 
 interface FormConfig {
   components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
@@ -8,6 +9,9 @@ interface FormConfig {
   validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
+  resolvers?: {
+    validator?: Record<string, Resolver>
+  }
 }
 export const createForm = (config: FormConfig) => {
   const {
@@ -15,7 +19,8 @@ export const createForm = (config: FormConfig) => {
     validatorEngine,
     defaultValidatorEngine,
     boolsConfig,
-    components
+    components,
+    resolvers
   } = config;
   const from = createRXForm({
     validatorEngine,
@@ -23,6 +28,12 @@ export const createForm = (config: FormConfig) => {
     boolsConfig,
     graph,
   })
+
+  if (resolvers?.validator) {
+    Object.entries(resolvers.validator).forEach(([validator, resolver]) => {
+      setupValidator(validator, resolver)
+    })
+  }
 
   function resolveComponent(component: string | FunctionComponent<any> | ComponentClass<any, any>) {
     if (typeof component === 'string') {
@@ -36,11 +47,11 @@ export const createForm = (config: FormConfig) => {
       Object.entries(graph).map(([key, field]) => {
         return <FieldControl
           key={key}
-          field={field} 
+          field={field}
           bools={from.bools}
           model={from.model}
           resolveComponent={resolveComponent}
-          />
+        />
       })
     }
   </div>

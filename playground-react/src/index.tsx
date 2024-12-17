@@ -232,6 +232,9 @@ export const {
   defaultValidatorEngine: "zod",
   boolsConfig: bools,
   graph,
+  resolvers:{
+    
+  },
   components: {
     input: InputComponent,
     checkbox: CheckboxComponent,
