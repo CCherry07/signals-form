@@ -49,7 +49,7 @@ class Open extends Field {
   id: 'name',
   component: 'input',
   disabled: D.or('isA', 'isC'),
-  display: D.and('isOpenDisabled', 'isAgeEq100').not(),
+  hidden: D.and('isOpenDisabled', 'isAgeEq100'),
 })
 @Props({
   title: "姓名"

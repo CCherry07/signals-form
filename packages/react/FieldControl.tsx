@@ -1,4 +1,4 @@
-import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useState } from 'react';
+import { ComponentClass, createElement, FunctionComponent, memo, ReactNode, useCallback, useEffect, useState } from 'react';
 import { Field, toValue, run, BoolValues, validate, toDeepValue, get, FiledUpdateType } from "@rxform/core"
 import { batch, computed, untracked } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
@@ -25,7 +25,7 @@ function normalizeProps(field: Field) {
     isFocused: field.isFocused.value,
     isInit: field.isInit.value,
     isDestroyed: field.isDestroyed.value,
-    isDisplay: field.isDisplay.value,
+    isHidden: field.isHidden.value,
     isDisabled: field.isDisabled.value,
     isValid: field.isValid.value,
     errors: field.errors.value,
@@ -34,7 +34,7 @@ function normalizeProps(field: Field) {
   }
 }
 
-export function FieldControl(props: Props) {
+export const FieldControl = memo(function FieldControl(props: Props) {
   const { field, bools, resolveComponent } = props;
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
   const [events, setEvents] = useState<Record<string, Function>>({})
@@ -65,7 +65,7 @@ export function FieldControl(props: Props) {
     })
     const onStatesDispose = effect(() => {
       batch(() => {
-        field.isDisplay.value = field.display?.evaluate(bools) ?? true
+        field.isHidden.value = field.hidden?.evaluate(bools) ?? false
         field.isDisabled.value = field.disabled?.evaluate(bools) ?? false
       })
     })
@@ -164,9 +164,7 @@ export function FieldControl(props: Props) {
 
   return createElement("div", {
     "data-field-id": field.id,
-    style: {
-      display: field.isDisplay.value ? "block" : "none"
-    }
+    hidden: field.isHidden.value,
   },
     createElement(resolveComponent(field.component), {
       ...filedState,
@@ -176,4 +174,4 @@ export function FieldControl(props: Props) {
       onFocus
     }, getChildren())
   );
-}
+})

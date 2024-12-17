@@ -13,7 +13,7 @@ export const METADATA_PROPS = 'props:metadata'
 export interface ComponentMetaData {
   id: string;
   component?: any;
-  display?: Decision;
+  hidden?: Decision;
   disabled?: Decision;
   props?: PropsMetaData
   properties?: { [key: string]: Field }

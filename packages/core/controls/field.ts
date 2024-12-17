@@ -21,7 +21,7 @@ export class Field<T = any, D = any> {
   value!: Signal<T>;
   path!: string;
   component?: any;
-  display?: Decision;
+  hidden?: Decision;
   disabled?: Decision;
   properties?: { [key: string]: Field }
   props?: PropsMetaData;
@@ -84,7 +84,7 @@ export class Field<T = any, D = any> {
   public isFocused: Signal<boolean> = signal(false)
   public isInit: Signal<boolean> = signal(false)
   public isDestroyed: Signal<boolean> = signal(false)
-  public isDisplay: Signal<boolean> = signal(false)
+  public isHidden: Signal<boolean> = signal(false)
   public isDisabled: Signal<boolean> = signal(false)
   public isValid: Signal<boolean> = signal(true)
   public errors: Signal<FieldErrors> = signal({})
