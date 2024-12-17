@@ -6,7 +6,7 @@ import { toValue } from "@rxform/shared"
 interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M> {
 }
 function refreshModel(
-  abstractModelMethods: Pick<AbstractModelMathods<Signal<Model>>, 'setFieldValue' | 'setErrors' | 'validateField' | 'setFieldProps' | 'cleanErrors'>,
+  abstractModelMethods: Pick<AbstractModelMathods<Signal<Model>>, 'setFieldValue' | 'setErrors' | 'setFieldProps' | 'cleanErrors'>,
   graph: Record<string, Field>,
   fields: Record<string, Field>,
   path: string,
@@ -34,7 +34,6 @@ export function createRXForm(config: FormConfig<Model>) {
   const methods = {
     setFieldValue: form.setFieldValue.bind(form),
     setErrors: form.setErrors.bind(form),
-    validateField: form.validateField.bind(form),
     setFieldProps: form.setFieldProps.bind(form),
     cleanErrors: form.cleanErrors.bind(form)
   }

@@ -13,9 +13,9 @@ export interface AbstractModelMethods {
   setFieldValue: (field: string, value: any) => void;
   setErrors: (errors: Record<string, FieldErrors>) => void;
   cleanErrors: (paths?: string[]) => void;
-  validateField: (field: string) => Promise<boolean>;
   setFieldProps: (field: string, props: any) => void;
 }
+
 export class Field<T = any, D = any> {
   id!: string;
   value!: Signal<T>;
