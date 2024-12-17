@@ -1,8 +1,8 @@
-import { effect, signal, Signal } from "@preact/signals-core";
+import { batch, effect, signal, Signal } from "@preact/signals-core";
 import { FieldErrors } from "../validator"
 import { Decision } from "../boolless";
 import { EventMetaData, getComponentMetaData, getEventsMetaData, getModelPipeMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
-import { isFunction, isSignal, toValue } from "@rxform/shared";
+import { get, isFunction, isSignal, toValue } from "@rxform/shared";
 
 export enum FiledUpdateType {
   Value = "value",
@@ -31,7 +31,7 @@ export class Field<T = any, D = any> {
   data2model?: (data?: D) => T;
   model2data?: (model: T) => D;
   private tracks: Array<Function> = []
-  abstractModel: AbstractModelMethods | undefined;
+  abstractModel!: AbstractModelMethods;
   onBeforeInit?(): void
   onInit?(): void
   onDestroy?(): void
@@ -49,7 +49,22 @@ export class Field<T = any, D = any> {
       if (!isSignal(this.value)) {
         throw new Error(`field ${this.id} value is undefined`)
       }
-      this.value.value = toValue(value)
+      const unSignalValue = toValue(value)
+      if (this.value.value === unSignalValue) {
+        return
+      }
+      if (this.properties) {
+        let properties = this.properties
+        let fieldPath = this.path.length + 1
+        batch(() => {
+          Object.entries(properties).forEach(([_, field]) => {
+            const value = get(unSignalValue, field.path.slice(fieldPath))
+            field.onUpdate({ type: FiledUpdateType.Value, value })
+          })
+        })
+      } else {
+        this.value.value = unSignalValue
+      }
     }
     if (type === "props") {
       if (this.props === undefined) {

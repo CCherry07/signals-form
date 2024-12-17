@@ -1,5 +1,5 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useState } from 'react';
-import { Field, toValue, run, BoolValues, validate, toDeepValue, get } from "@rxform/core"
+import { Field, toValue, run, BoolValues, validate, toDeepValue, get, FiledUpdateType } from "@rxform/core"
 import { batch, computed, untracked } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
 interface Props {
@@ -30,7 +30,6 @@ function normalizeProps(field: Field) {
     isValid: field.isValid.value,
     errors: field.errors.value,
     value: toDeepValue(field.value),
-    // @ts-ignore
     ...field.props
   }
 }
@@ -116,7 +115,10 @@ export function FieldControl(props: Props) {
     if (events.onChange) {
       events.onChange(value)
     } else {
-      field.value!.value = value
+      field.onUpdate({
+        type: FiledUpdateType.Value,
+        value
+      })
     }
   }, [events.onChange])
 
@@ -125,7 +127,10 @@ export function FieldControl(props: Props) {
       if (events.onBlur) {
         events.onBlur(value)
       } else {
-        field.value!.value = value
+        field.onUpdate({
+          type: FiledUpdateType.Value,
+          value
+        })
       }
       field.isFocused.value = false
       field.isBlurred.value = true

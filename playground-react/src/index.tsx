@@ -13,6 +13,7 @@ import {
 import InputComponent from "./components/Input"
 import CheckboxComponent from "./components/Checkbox"
 import InputNumber from "./components/InputNumber"
+import AddrComponent from "./components/Addr"
 import { Card as CardComponent } from './components/Card';
 import { createForm } from "@rxform/react"
 import { App } from "./App"
@@ -116,10 +117,9 @@ class Open extends Field {
         [
           {
             effect(info) {
-              this.abstractModel?.setFieldProps("age", { title: "age" + info })
-              console.log(this.abstractModel);
-              this.abstractModel?.setFieldValue("age", 12)
-              this.value!.value = info
+              this.abstractModel.setFieldProps("age", { title: "age" + info })
+              this.abstractModel.setFieldValue("age", Math.random() * 100)
+              this.value.value = info
             },
           }
         ]
@@ -158,25 +158,70 @@ class Age extends Field {
     super()
   }
 }
+
+@Component({
+  id: "city",
+  component: "input",
+  props:{
+    title: "城市"
+  }
+})
+class City extends Field {
+  constructor(){
+    super()
+  }
+}
+
+@Component({
+  id: "districtAndCounty",
+  component: "input",
+  props:{
+    title: "区县"
+  }
+})
+class Street extends Field {
+  constructor(){
+    super()
+  }
+}
+
+
+
+@Component({
+  id: "addr",
+  component: "addr",
+  properties:{
+    city: new City(),
+    districtAndCounty: new Street()
+  }
+})
+class Addr extends Field {
+  constructor(){
+    super()
+  }
+}
+
 @Component({
   id: 'userinfo',
   component: 'card',
   properties: {
     name: new Name(),
     age: new Age(),
-    open: new Open()
+    open: new Open(),
+    addr: new Addr()
   },
   props: {
     title: "用户信息"
   }
 })
 class UserInfo extends Field {
-  constructor() {
+  constructor(id?: string) {
     super()
+    id && (this.id = id)
   }
 }
 const graph = {
-  UserInfo: new UserInfo()
+  UserInfo: new UserInfo(),
 }
 
 export const {
@@ -191,6 +236,7 @@ export const {
     input: InputComponent,
     checkbox: CheckboxComponent,
     card: CardComponent,
+    addr: AddrComponent
   }
 })
 const root = createRoot(document.getElementById('root')!);
