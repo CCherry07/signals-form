@@ -1,7 +1,7 @@
 import { FieldErrors } from "../validator/error/field";
 import { BoolsConfig, setup, type BoolValues } from "../boolless"
 import { Signal } from "@preact/signals-core";
-import { set, toDeepValue } from "@rxform/shared";
+import { get, set, toDeepValue } from "@rxform/shared";
 import { Field, FiledUpdateType } from "../controls/field";
 export type Model = Record<string, any>;
 export interface AbstractModel<M extends Signal<Model>> {
@@ -59,7 +59,11 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   updateModel(model: M) {
-    this.model.value = model;
+    Object.entries(this.fields).forEach(([_, field]) => {
+      if (!field.properties) { // leaf node
+        field.onUpdate({ type: FiledUpdateType.Value, value: get(model, field.path) })
+      }
+    })
   }
 
   setErrors(errors: Record<string, FieldErrors>) {
