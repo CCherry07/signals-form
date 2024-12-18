@@ -107,7 +107,7 @@ export class Field<T = any, D = any> {
 
       if (this.isHidden.value === false && this.recoverValueOnShown) {
         if (this.$value.value !== undefined) {
-          this.value.value = this.$value.value
+          this.value.value = this.$value.peek()
         }
       }
     })
