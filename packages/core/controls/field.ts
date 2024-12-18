@@ -20,6 +20,8 @@ export class Field<T = any, D = any> {
   id!: string;
   value!: Signal<T>;
   path!: string;
+  recoverValueOnHidden?: boolean
+  recoverValueOnShown?: boolean
   component?: any;
   hidden?: Decision;
   disabled?: Decision;
@@ -89,10 +91,25 @@ export class Field<T = any, D = any> {
   public isValid: Signal<boolean> = signal(true)
   public errors: Signal<FieldErrors> = signal({})
   public isPending: Signal<boolean> = signal(true)
+  public $value: Signal<T> = signal(undefined as unknown as T)
   constructor() {
     this.initFieldMetaDate()
     effect(() => {
       this.isValid.value = Object.keys(this.errors.value).length === 0
+    })
+    effect(() => {
+      if (this.isHidden.value && this.recoverValueOnHidden) {
+        batch(() => {
+          this.$value.value = this.value.peek()
+          this.value.value = undefined as unknown as T
+        })
+      }
+
+      if (this.isHidden.value === false && this.recoverValueOnShown) {
+        if (this.$value.value !== undefined) {
+          this.value.value = this.$value.value
+        }
+      }
     })
   }
   initFieldMetaDate() {

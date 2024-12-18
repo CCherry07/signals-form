@@ -24,8 +24,19 @@ import { App } from "./App"
 import { z } from 'zod';
 import { map, tap } from 'rxjs';
 
-const bools = {
 
+type Model = Signal<{
+  userinfo: Signal<{
+    email: Signal<string>,
+    password: Signal<number>,
+    nickname: Signal<string>,
+    residence: Signal<string[]>
+    phone: Signal<number>,
+    donation: Signal<number>,
+  }>
+}>
+const bools = {
+  isNickname: (model: Model) => model.value.userinfo.value.nickname.value === "cherry"
 }
 @Component({
   id: 'phone',
@@ -43,6 +54,9 @@ class Phone extends Field {
 @Component({
   id: 'email',
   component: 'input',
+  hidden: D.use('isNickname'),
+  recoverValueOnHidden: true,
+  recoverValueOnShown: true,
 })
 @Props({
   title: "E-mail"
@@ -86,9 +100,9 @@ class Phone extends Field {
   ]
 })
 @ModelPipe({
-  data2model(){
-    return new Promise((resolve)=>{
-      setTimeout(()=>{
+  data2model() {
+    return new Promise((resolve) => {
+      setTimeout(() => {
         resolve("chen@163.com")
       }, 5000)
     })
@@ -130,12 +144,12 @@ class Password extends Field {
 @Component({
   id: "nickname",
   component: "input",
-  props:{
+  props: {
     title: "Nickname"
   }
 })
 class Nickname extends Field {
-  constructor(){
+  constructor() {
     super()
   }
 }
@@ -143,7 +157,7 @@ class Nickname extends Field {
 @Component({
   id: "residence",
   component: "cascader",
-  props:{
+  props: {
     title: "Habitual Residence",
     options: [
       {
@@ -166,7 +180,7 @@ class Nickname extends Field {
   }
 })
 class Residence extends Field {
-  constructor(){
+  constructor() {
     super()
   }
 }
@@ -174,12 +188,12 @@ class Residence extends Field {
 @Component({
   id: "donation",
   component: "inputNumber",
-  props:{
+  props: {
     title: "Donation"
   }
 })
 class Donation extends Field {
-  constructor(){
+  constructor() {
     super()
   }
 }
@@ -187,20 +201,20 @@ class Donation extends Field {
 @Component({
   id: "intro",
   component: "inputType",
-  props:{
+  props: {
     title: "Intro",
     type: "TextArea"
   }
 })
 class Intro extends Field {
-  constructor(){
+  constructor() {
     super()
   }
 }
 @Component({
   id: "gender",
   component: "select",
-  props:{
+  props: {
     title: "Gender",
     options: [
       {
@@ -219,31 +233,31 @@ class Intro extends Field {
   }
 })
 class Gender extends Field {
-  constructor(){
+  constructor() {
     super()
   }
 }
 @Component({
   id: "captcha",
   component: "input",
-  props:{
+  props: {
     title: "Captcha",
   }
 })
 class Captcha extends Field {
-  constructor(){
+  constructor() {
     super()
   }
 }
 @Component({
   id: "agreement",
   component: "checkbox",
-  props:{
+  props: {
     title: "Captcha",
   }
 })
 class Agreement extends Field {
-  constructor(){
+  constructor() {
     super()
   }
 }
@@ -264,7 +278,7 @@ class Agreement extends Field {
     agreement: new Agreement()
   },
   props: {
-    style:{
+    style: {
       width: "400px"
     }
   }
