@@ -88,13 +88,13 @@ export class Field<T = any, D = any> {
   public isDisabled: Signal<boolean> = signal(false)
   public isValid: Signal<boolean> = signal(true)
   public errors: Signal<FieldErrors> = signal({})
+  public isPending: Signal<boolean> = signal(true)
   constructor() {
     this.initFieldMetaDate()
     effect(() => {
       this.isValid.value = Object.keys(this.errors.value).length === 0
     })
   }
-
   initFieldMetaDate() {
     const componentMeta = getComponentMetaData(this.constructor)
     const modelpipe = getModelPipeMetaData(this.constructor)

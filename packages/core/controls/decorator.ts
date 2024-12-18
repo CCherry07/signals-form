@@ -16,8 +16,9 @@ export interface ComponentMetaData {
   hidden?: Decision;
   disabled?: Decision;
   props?: PropsMetaData
+  recoverValueOnHidden?: boolean
+  recoverValueOnShown?: boolean
   properties?: { [key: string]: Field }
-
 }
 export function Component(metadata: ComponentMetaData): ClassDecorator {
   return function (constructor: Function) {

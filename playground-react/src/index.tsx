@@ -8,7 +8,8 @@ import {
   D, Field, Component,
   js,
   Props,
-  normalizeSignal
+  normalizeSignal,
+  ModelPipe
 } from "@rxform/core"
 import Form from "./components/Form"
 import Input from "./components/Input"
@@ -50,7 +51,6 @@ class Phone extends Field {
   initiative: {
     all: [
       {
-        on: "onChange", 
         schema: z.string().email({ message: "a is not email" }),
       }
     ]
@@ -84,6 +84,15 @@ class Phone extends Field {
       ],
     },
   ]
+})
+@ModelPipe({
+  data2model(){
+    return new Promise((resolve)=>{
+      setTimeout(()=>{
+        resolve("chen@163.com")
+      }, 5000)
+    })
+  }
 })
 class Email extends Field {
   constructor() {
@@ -161,8 +170,6 @@ class Residence extends Field {
     super()
   }
 }
-
-
 
 @Component({
   id: "donation",
@@ -275,11 +282,12 @@ const graph = {
 export const {
   from,
   app
-} = createForm({
+} = await createForm({
   validatorEngine: "zod",
   defaultValidatorEngine: "zod",
   boolsConfig: bools,
   graph,
+  initMode: "async",
   components: {
     form: Form,
     input: Input,

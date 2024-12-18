@@ -1,6 +1,6 @@
 import { FieldErrors } from "../validator/error/field";
 import { BoolsConfig, setup, type BoolValues } from "../boolless"
-import { batch, Signal } from "@preact/signals-core";
+import { batch, effect, Signal, signal } from "@preact/signals-core";
 import { get, set } from "@rxform/shared";
 import { Field, FiledUpdateType } from "../controls/field";
 export type Model = Record<string, any>;
@@ -13,6 +13,7 @@ export interface AbstractModel<M extends Signal<Model>> {
   defaultValidatorEngine: string;
   graph: Record<string, Field>
   fields: Record<string, Field>
+  isPending: Signal<boolean>
 }
 
 export interface AbstractModelMathods<M extends Signal<Model>> {
@@ -43,7 +44,7 @@ export interface AbstractModelConstructorOptions<M extends Model> {
 
 export class AbstractModel<M> implements AbstractModel<M> {
   constructor() {
-
+    this.isPending = signal(false)
   }
 
   init(options: AbstractModelConstructorOptions<M>) {
@@ -56,6 +57,9 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.bools = setup(boolsConfig, this.model)
     this.graph = graph!
     this.fields = fields!
+    effect(() => {
+      this.isPending.value = Object.entries(this.fields ?? {}).every(([_key, field]) => !field.isPending.value)
+    })
   }
 
   updateModel(model: M) {
