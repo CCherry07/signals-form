@@ -4,9 +4,7 @@ import { Signal } from "@preact/signals-core"
 import {
   Validator,
   Events,
-  Signals as FiledSignal,
   D, Field, Component,
-  js,
   Props,
   normalizeSignal,
   ModelPipe
@@ -22,7 +20,7 @@ import { Card as CardComponent } from './components/Card';
 import { createForm } from "@rxform/react"
 import { App } from "./App"
 import { z } from 'zod';
-import { map, tap } from 'rxjs';
+import { tap } from 'rxjs';
 
 
 type Model = Signal<{
@@ -36,7 +34,7 @@ type Model = Signal<{
   }>
 }>
 const bools = {
-  isNickname: (model: Model) => model.value.userinfo.value.nickname.value === "cherry"
+  isNickname: (model: Model) => normalizeSignal('userinfo.nickname', model).value === "cherry"
 }
 @Component({
   id: 'phone',

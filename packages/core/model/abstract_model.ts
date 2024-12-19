@@ -58,7 +58,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.graph = graph!
     this.fields = fields!
     effect(() => {
-      this.isPending.value = Object.entries(this.fields ?? {}).every(([_key, field]) => !field.isPending.value)
+      this.isPending.value = Object.entries(this.fields ?? {}).some(([_key, field]) => field.isPending.value)
     })
   }
 
