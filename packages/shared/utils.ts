@@ -10,3 +10,6 @@ export function isString(value: any): value is string {
 export function isFunction(value: any): value is Function {
   return Object.prototype.toString.call(value) === "[object Function]";
 }
+export function isDepsEq(newDeps: any, oldDeps: any): boolean {
+  return Object.is(newDeps, oldDeps);
+}

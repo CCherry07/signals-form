@@ -3,18 +3,13 @@ import { FieldErrors } from "../validator"
 import { Decision } from "../boolless";
 import { EventMetaData, getComponentMetaData, getEventsMetaData, getModelPipeMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
 import { get, isFunction, isSignal, toValue } from "@rxform/shared";
+import { AbstractModelMethods } from "../model/abstract_model";
 
 export enum FiledUpdateType {
   Value = "value",
   Props = "props",
 }
 
-export interface AbstractModelMethods {
-  setFieldValue: (field: string, value: any) => void;
-  setErrors: (errors: Record<string, FieldErrors>) => void;
-  cleanErrors: (paths?: string[]) => void;
-  setFieldProps: (field: string, props: any) => void;
-}
 
 export class Field<T = any, D = any> {
   id!: string;
@@ -98,17 +93,17 @@ export class Field<T = any, D = any> {
       this.isValid.value = Object.keys(this.errors.value).length === 0
     })
     effect(() => {
-      if (this.isHidden.value && this.recoverValueOnHidden) {
-        batch(() => {
-          this.$value.value = this.value.peek()
-          this.value.value = undefined as unknown as T
-        })
-      }
-
-      if (this.isHidden.value === false && this.recoverValueOnShown) {
-        if (this.$value.value !== undefined) {
-          this.value.value = this.$value.peek()
+      const { isHidden, recoverValueOnHidden, recoverValueOnShown, value, $value } = this;
+      if (isHidden.value && recoverValueOnHidden) return;
+      if (recoverValueOnShown && value) {
+        if (!isHidden.value) {
+          value.value = $value.peek();
+        } else {
+          $value.value = value.value;
         }
+      }
+      if (isHidden.value && !recoverValueOnShown) {
+        value.value = undefined as unknown as T;
       }
     })
   }

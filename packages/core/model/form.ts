@@ -1,6 +1,6 @@
-import { AbstractModel, AbstractModelMathods, AbstractModelConstructorOptions, Model } from "./abstract_model"
+import { AbstractModel, AbstractModelConstructorOptions, Model, AbstractModelMethods } from "./abstract_model"
 import { Field } from "../controls/field"
-import { Signal, signal } from "@preact/signals-core"
+import { signal } from "@preact/signals-core"
 import { isFunction, toValue } from "@rxform/shared"
 import { isPromise } from "rxjs/internal/Observable";
 
@@ -8,7 +8,7 @@ interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M>
   initMode: 'async' | 'sync';
 }
 async function syncBindingModel(
-  abstractModelMethods: Pick<AbstractModelMathods<Signal<Model>>, 'setFieldValue' | 'setErrors' | 'setFieldProps' | 'cleanErrors'>,
+  abstractModelMethods: AbstractModelMethods,
   graph: Record<string, Field>,
   fields: Record<string, Field>,
   path: string,
@@ -41,7 +41,7 @@ async function syncBindingModel(
 }
 
 function asyncBindingModel(
-  abstractModelMethods: Pick<AbstractModelMathods<Signal<Model>>, 'setFieldValue' | 'setErrors' | 'setFieldProps' | 'cleanErrors'>,
+  abstractModelMethods: AbstractModelMethods,
   graph: Record<string, Field>,
   fields: Record<string, Field>,
   path: string,
@@ -79,11 +79,12 @@ function asyncBindingModel(
 }
 export async function createRXForm(config: FormConfig<Model>) {
   const form = new AbstractModel()
-  const methods = {
+  const methods: AbstractModelMethods = {
     setFieldValue: form.setFieldValue.bind(form),
     setErrors: form.setErrors.bind(form),
     setFieldProps: form.setFieldProps.bind(form),
-    cleanErrors: form.cleanErrors.bind(form)
+    cleanErrors: form.cleanErrors.bind(form),
+    onSubscribe: form.onSubscribe.bind(form)
   }
   const fields = {}
   const model = config.initMode === 'async' ? asyncBindingModel(methods, config.graph!, fields, "") : await syncBindingModel(methods, config.graph!, fields, "")

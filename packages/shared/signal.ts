@@ -68,3 +68,5 @@ export function normalizeSignal<T, D>(path: string, signal: Signal<T>): Signal<D
   }
   return current as Signal<D>;
 }
+
+export type SignalValue<T> = T extends Signal<infer S> ? S : T;

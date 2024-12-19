@@ -16,6 +16,14 @@ export interface AbstractModel<M extends Signal<Model>> {
   isPending: Signal<boolean>
 }
 
+interface SubscribeProps<M> {
+  bools: BoolValues;
+  submitted: boolean;
+  errors: Record<string, FieldErrors>;
+  model: M;
+  isPending: Signal<boolean>
+}
+
 export interface AbstractModelMathods<M extends Signal<Model>> {
   updateModel(model: M): void;
   setErrors(errors: Record<string, FieldErrors>): void;
@@ -29,9 +37,16 @@ export interface AbstractModelMathods<M extends Signal<Model>> {
   validateFields(fields: string[]): Promise<boolean>;
   validateFieldsAndScroll(fields: string[]): Promise<boolean>;
   validateFieldsAndScrollToFirstError(fields: string[]): Promise<boolean>;
+  /**
+   * 
+   * @param fn 收集依赖的函数，在依赖变化时执行，返回一个清理函数，用于取消订阅
+   * @param deps 依赖数组，当依赖变化时，重新执行 fn
+   */
+  onSubscribe(fn: (props: SubscribeProps<M>) => void, deps: any[]): () => void;
   reset(): void;
   submit(): Promise<Model>;
 }
+export type AbstractModelMethods = Pick<AbstractModelMathods<Signal<Model>>, 'setFieldValue' | 'setErrors' | 'setFieldProps' | 'cleanErrors' | 'onSubscribe'>
 
 export interface AbstractModelConstructorOptions<M extends Model> {
   validatorEngine: string;
@@ -42,11 +57,39 @@ export interface AbstractModelConstructorOptions<M extends Model> {
   fields?: Record<string, Field>
 }
 
+interface Track {
+  fn: Function
+  deps: any[]
+}
+const tracksMap = new Map<string, Record<string, any>>()
+const buildTrackKey = (fn: Function, deps: any[]) => {
+  return fn.toString() + deps.toString() + fn.name
+}
 export class AbstractModel<M> implements AbstractModel<M> {
   constructor() {
     this.isPending = signal(false)
   }
-
+  onSubscribe(fn: (props: SubscribeProps<M>) => void , deps: any[]) {
+    if (deps){
+      const tracks = tracksMap.get(fn.toString())
+      if (!tracks) {
+        
+      }
+      return
+    }
+    
+    // tracks.add(fn.toString())
+    return effect(() => {
+      const cleanup = fn({
+        bools: this.bools,
+        submitted: this.submitted,
+        errors: this.errors,
+        model: this.model,
+        isPending: this.isPending
+      })
+      return cleanup;
+    })
+  };
   init(options: AbstractModelConstructorOptions<M>) {
     const { validatorEngine, defaultValidatorEngine, boolsConfig, model = {}, graph, fields } = options;
     this.submitted = false;

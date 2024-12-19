@@ -1,5 +1,5 @@
 import { ComponentClass, createElement, FunctionComponent, memo, ReactNode, useCallback, useEffect, useState } from 'react';
-import { Field, toValue, run, BoolValues, validate, toDeepValue, get, FiledUpdateType } from "@rxform/core"
+import { Field, toValue, BoolValues, validate, toDeepValue, get, FiledUpdateType } from "@rxform/core"
 import { batch, computed, untracked } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
 interface Props {
@@ -72,9 +72,9 @@ export const FieldControl = memo(function FieldControl(props: Props) {
 
     const onSignalsDispose = effect(() => {
       if (field.signals) {
-        Object.entries(field.signals).forEach(([signalKey, flow]) => {
+        Object.entries(field.signals).forEach(([signalKey, fn]) => {
           const signals = computed(() => get({ $: model.value }, signalKey))
-          run.call(field, flow, signals.value, bools, model).subscribe()
+          fn.call(field, signals.value, bools, model.peek())
         })
       }
     })
@@ -91,21 +91,14 @@ export const FieldControl = memo(function FieldControl(props: Props) {
   }, [])
 
   useEffect(() => {
-    const events = Object.fromEntries(Object.entries(field.events || {}).map(([e, flow]) => {
-      return [e, function (...args: any[]) {
-        // @ts-ignore
-        const data = field[e] ? (field[e] as Function).apply(field, args) : args[0]
-        run.call(field, flow, data, bools, model).subscribe(
-          {
-            complete() {
-              if (initiative) {
-                validate({ state: toValue(field.value), updateOn: e }, initiative.all, bools, model.value).then(errors => {
-                  field.errors.value = errors
-                })
-              }
-            },
-          }
-        )
+    const events = Object.fromEntries(Object.entries(field.events || {}).map(([e, fn]) => {
+      return [e, function (data: any) {
+        fn.call(field, data, bools, model.peek())
+        if (initiative) {
+          validate({ state: toValue(field.value), updateOn: e }, initiative.all, bools, model.value).then(errors => {
+            field.errors.value = errors
+          })
+        }
       }]
     }))
     setEvents(events)

@@ -1,5 +1,5 @@
+import { SignalValue } from "@rxform/shared";
 import { Decision } from "../boolless";
-import { Step } from "../stream";
 import { ValidateItem } from "../validator";
 import { Field } from "./field";
 
@@ -44,7 +44,7 @@ export function getValidatorMetaData(target: Function) {
   return Reflect.getMetadata(METADATA_VALIDATOR, target) as ValidatorMetaData;
 }
 
-export type SignalsMetaData = Record<string, Step[]>;
+export type SignalsMetaData = Record<string, (this: Field, value: SignalValue<Field['value']>) => void>;
 export function Signals(metadata: SignalsMetaData): ClassDecorator {
   return function (target: Function) {
     Reflect.defineMetadata(METADATA_SIGNALS, metadata, target);
@@ -55,7 +55,7 @@ export function getSignalsMetaData(target: Function) {
   return Reflect.getMetadata(METADATA_SIGNALS, target) as SignalsMetaData;
 }
 
-export type EventMetaData = Record<string, Step[]>;
+export type EventMetaData = Record<string, (this: Field, value: SignalValue<Field['value']>) => void>;
 export function Events(metadata: EventMetaData): ClassDecorator {
   return function (target: Function) {
     Reflect.defineMetadata(METADATA_EVENTS, metadata, target);

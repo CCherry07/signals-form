@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Signal } from "@preact/signals-core"
+import type { Signal } from "@preact/signals-core"
 import {
   Validator,
   Events,
@@ -20,8 +20,6 @@ import { Card as CardComponent } from './components/Card';
 import { createForm } from "@rxform/react"
 import { App } from "./App"
 import { z } from 'zod';
-import { tap } from 'rxjs';
-
 
 type Model = Signal<{
   userinfo: Signal<{
@@ -53,7 +51,6 @@ class Phone extends Field {
   id: 'email',
   component: 'input',
   hidden: D.use('isNickname'),
-  recoverValueOnHidden: true,
   recoverValueOnShown: true,
 })
 @Props({
@@ -63,46 +60,25 @@ class Phone extends Field {
   initiative: {
     all: [
       {
-        schema: z.string().email({ message: "a is not email" }),
+        schema: z.string().email({ message: "E-mail is not a valid email address" }),
       }
     ]
   },
 })
 @Events({
-  onChange: [
-    {
-      operator: 'ifelse',
-      decision: D.use("isAgeEq100"),
-      do: [
-        [
-          {
-            pipe: [
-              tap((info) => {
-                console.log("info", info);
-              }),
-            ],
-            effect(info) {
-              this.value!.value = info
-            },
-          }
-        ],
-        [
-          {
-            effect(info) {
-              this.value.value = info
-            },
-          }
-        ]
-      ],
-    },
-  ]
+  onChange(data) {
+    this.abstractModel.onSubscribe(({ bools }) => {
+      console.log(D.use('isNickname').evaluate(bools))
+    },[data])
+    this.value.value = data
+  }
 })
 @ModelPipe({
   data2model() {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve("chen@163.com")
-      }, 5000)
+      }, 500)
     })
   }
 })
