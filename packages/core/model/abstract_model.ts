@@ -75,7 +75,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
   };
   init(options: AbstractModelConstructorOptions<M>) {
     const { validatorEngine, defaultValidatorEngine, boolsConfig, model = {}, graph, fields } = options;
-    this.submitted.value = false;
+    this.submitted = signal(false);
     this.errors = {};
     this.model = model as M;
     this.validatorEngine = validatorEngine;
@@ -163,7 +163,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
       };
     }
     const model = {} as T
-    await Promise.all(Object.entries(this.fields).map(async ([_, field]) => {
+    await Promise.all(Object.values(this.graph).map(async (field) => {
       return set(model, field.path, await field.onSubmit())
     }))
     this.submitted.value = true;

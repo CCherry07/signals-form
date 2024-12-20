@@ -2,7 +2,7 @@ import { batch, effect, signal, Signal } from "@preact/signals-core";
 import { FieldErrors } from "../validator"
 import { Decision } from "../boolless";
 import { EventMetaData, getComponentMetaData, getEventsMetaData, getModelPipeMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
-import { get, isFunction, isSignal, toValue } from "@rxform/shared";
+import { get, isFunction, isSignal, set, toDeepValue, toValue } from "@rxform/shared";
 import { AbstractModelMethods } from "../model/abstract_model";
 
 export enum FiledUpdateType {
@@ -75,7 +75,18 @@ export class Field<T = any, D = any> {
     this.tracks.push(fn)
   }
   async onSubmit() {
-    return isFunction(this.model2data) ? await this.model2data(this.value.value) : this.value.value
+    const fieldPathLength = this.path.length+1
+    if (isFunction(this.model2data)) {
+      return await this.model2data(toDeepValue(this.value.peek()))
+    }else if (this.properties){
+      const model: any = {}
+      await Promise.all(Object.values(this.properties).map(async (field) => {
+        return set(model, field.path.slice(fieldPathLength), await field.onSubmit())
+      }))
+      return model
+    } else {
+      return this.value.peek()
+    }
   }
   public isBlurred: Signal<boolean> = signal(false)
   public isFocused: Signal<boolean> = signal(false)
@@ -98,11 +109,12 @@ export class Field<T = any, D = any> {
       if (recoverValueOnShown && value) {
         if (!isHidden.value) {
           value.value = $value.peek();
+          return
         } else {
-          $value.value = value.value;
+          $value.value = value.peek();
         }
       }
-      if (isHidden.value && !recoverValueOnShown) {
+      if (isHidden.value) {
         value.value = undefined as unknown as T;
       }
     })
