@@ -1,6 +1,6 @@
 import { ComponentClass, createElement, FunctionComponent, memo, ReactNode, useCallback, useEffect, useState } from 'react';
-import { Field, toValue, BoolValues, validate, toDeepValue, get, FiledUpdateType, normalizeSignal } from "@rxform/core"
-import { batch, computed, untracked } from "@preact/signals-core"
+import { Field, toValue, BoolValues, validate, toDeepValue, FiledUpdateType, normalizeSignal } from "@rxform/core"
+import { batch, computed, untracked, signal } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
 interface Props {
   field: Field;
@@ -41,14 +41,14 @@ export const FieldControl = memo(function FieldControl(props: Props) {
   const model = computed(() => toDeepValue(props.model.value))
   const {
     initiative,
-    signal
+    signal: signalValidator
   } = field.validator ?? {}
 
   useEffect(() => {
     field.onInit?.()
     const onValidateDispose = effect(() => {
-      if (signal) {
-        validate({ state: field.value, updateOn: "signal" }, signal.all, untracked(() => bools), model.value).then(errors => {
+      if (signalValidator) {
+        validate({ state: field.value, updateOn: "signal" }, signalValidator.all, untracked(() => bools), model.value).then(errors => {
           if (Object.keys(errors).length === 0) {
             field.abstractModel?.cleanErrors([String(field.path)])
           } else {
@@ -73,8 +73,8 @@ export const FieldControl = memo(function FieldControl(props: Props) {
     const onSignalsDispose = effect(() => {
       if (field.signals) {
         Object.entries(field.signals).forEach(([signalKey, fn]) => {
-          const signals = computed(() => normalizeSignal(signalKey, model).value)
-          fn.call(field, signals.value, bools, model.value)
+          const signalValue = computed(() => normalizeSignal(signalKey, signal({ $: model.value })).value)
+          fn.call(field, signalValue.value, bools, model.value)
         })
       }
     })
