@@ -103,8 +103,11 @@ export class LeafNode {
   constructor(name: string | (() => string)) {
     this.name = toValue(name) as string;
   }
-  evaluate(context: BoolValues): boolean {
-    const ctx = toValue(context) as Record<string, MaybeSignal<boolean>>;
+  evaluate(values: BoolValues): boolean {
+    const ctx = toValue(values) as Record<string, MaybeSignal<boolean>>;
+    if (ctx[this.name] === undefined) {
+      throw new Error(`Unknown bool config: ${this.name}`);
+    }
     return toValue(ctx[this.name]);
   }
 }

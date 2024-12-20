@@ -7,6 +7,7 @@ export type Model = Record<string, any>;
 export interface AbstractModel<M extends Signal<Model>> {
   bools: BoolValues;
   submitted: Signal<boolean>;
+  submiting: Signal<boolean>;
   errors: Record<string, FieldErrors>;
   model: M;
   validatorEngine: string;
@@ -76,6 +77,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
   init(options: AbstractModelConstructorOptions<M>) {
     const { validatorEngine, defaultValidatorEngine, boolsConfig, model = {}, graph, fields } = options;
     this.submitted = signal(false);
+    this.submiting = signal(false);
     this.errors = {};
     this.model = model as M;
     this.validatorEngine = validatorEngine;
@@ -159,7 +161,12 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   async submit<T>() {
+    batch(() => {
+      this.submitted.value = false;
+      this.submiting.value = true;
+    })
     if (Object.keys(this.errors).length > 0) {
+      this.submiting.value = false;
       return {
         errors: this.errors,
         model: {}
@@ -169,7 +176,10 @@ export class AbstractModel<M> implements AbstractModel<M> {
     await Promise.all(Object.values(this.graph).map(async (field) => {
       return set(model, field.path, await field.onSubmit())
     }))
-    this.submitted.value = true;
+    batch(() => {
+      this.submitted.value = true;
+      this.submiting.value = false;
+    })
     return {
       model,
       errors: this.errors

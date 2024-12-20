@@ -91,7 +91,7 @@ class Email extends Field {
 @Component({
   id: 'password',
   component: "inputType",
-  disabled: D.use('isCherry'),
+  disabled: D.use('isNickname'),
   props: {
     type: "Password",
     title: "password"
@@ -161,6 +161,15 @@ class Residence extends Field {
   component: "inputNumber",
   props: {
     title: "Donation"
+  }
+})
+@ModelPipe({
+  model2data(model: number) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(model / 2)
+      }, 500)
+    })
   }
 })
 class Donation extends Field {

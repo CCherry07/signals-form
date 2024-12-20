@@ -10,10 +10,12 @@ interface Parops {
 }
 export function App(props: Parops) {
   const [state, setState] = useState(false)
+  const [submiting, setSubmitted] = useState(false)
   const [model, setModel] = useState({} as any)
   useEffect(() => {
     effect(() => {
       setState(props.from.isPending.value)
+      setSubmitted(props.from.submiting.value)
     })
     effect(() => {
       setModel(toDeepValue(props.from.model.value))
@@ -23,7 +25,7 @@ export function App(props: Parops) {
     <div style={{ marginBottom: 20 }}>
       model: {JSON.stringify(model, null, 2)}
     </div>
-    <Spin spinning={state}>
+    <Spin spinning={state || submiting}>
       {props.app}
       <Submit from={props.from} />
     </Spin>
