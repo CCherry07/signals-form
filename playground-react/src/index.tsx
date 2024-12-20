@@ -67,9 +67,6 @@ class Phone extends Field {
 })
 @Events({
   onChange(data) {
-    this.abstractModel.onSubscribe(({ bools }) => {
-      console.log(D.use('isNickname').evaluate(bools))
-    },[data])
     this.value.value = data
   }
 })
