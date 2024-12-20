@@ -1,7 +1,9 @@
 import { SignalValue } from "@rxform/shared";
-import { Decision } from "../boolless";
+import { BoolValues, Decision } from "../boolless";
 import { ValidateItem } from "../validator";
 import { Field } from "./field";
+import { Signal } from "@preact/signals-core";
+import { Model } from "../model/abstract_model";
 
 export const METADATA_COMPONENT = 'component:metadata'
 export const METADATA_VALIDATOR = 'validator:metadata'
@@ -44,7 +46,7 @@ export function getValidatorMetaData(target: Function) {
   return Reflect.getMetadata(METADATA_VALIDATOR, target) as ValidatorMetaData;
 }
 
-export type SignalsMetaData = Record<string, (this: Field, value: SignalValue<Field['value']>) => void>;
+export type SignalsMetaData = Record<string, (this: Field, value: SignalValue<Field['value']>, bools: BoolValues, model: Signal<Model>) => void>;
 export function Signals(metadata: SignalsMetaData): ClassDecorator {
   return function (target: Function) {
     Reflect.defineMetadata(METADATA_SIGNALS, metadata, target);
