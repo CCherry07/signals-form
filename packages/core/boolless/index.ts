@@ -25,15 +25,14 @@ export type Node = Decision | LeafNode;
 export const D = {
   and: createAndDecision,
   or: createOrDecision,
-  not: (left: string | Node) => {
-    if (typeof left === 'string') {
-      return new Decision(OperatorEnum.NOT, new LeafNode(left), new LeafNode(left));
+  not: (node: string | Node) => {
+    if (typeof node === 'string') {
+      return new Decision(OperatorEnum.NOT, new LeafNode(node));
     }
-    return new Decision(OperatorEnum.NOT, left, left);
+    return new Decision(OperatorEnum.NOT, node);
   },
-  use: (left: string | Node) => {
-    const node = typeof left === 'string' ? new LeafNode(left) : left;
-    return new Decision(OperatorEnum.USE, node, node);
+  use: (node: string | Node) => {
+    return new Decision(OperatorEnum.USE, typeof node === 'string' ? new LeafNode(node) : node);
   },
 }
 

@@ -254,6 +254,20 @@ class Agreement extends Field {
     }
   }
 })
+@ModelPipe({
+  data2model(){
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          password: 123456,
+          phone: 12345678901,
+          donation: 100,
+          intro: "I am a good man",
+        })
+      })
+    })
+  }
+})
 class UserInfo extends Field {
   constructor(id?: string) {
     super()

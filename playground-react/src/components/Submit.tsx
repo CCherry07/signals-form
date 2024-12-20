@@ -15,5 +15,6 @@ export function Submit(props: Props) {
   };
   return <Space style={{ marginTop: 20 }}>
     <Button variant="filled" type="primary" onClick={handleSubmit}>submit</Button>
+    <Button variant="filled" type="primary" onClick={() => from.reset()}>reset</Button>
   </Space>
 }

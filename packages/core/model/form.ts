@@ -2,8 +2,6 @@ import { AbstractModel, AbstractModelConstructorOptions, Model, AbstractModelMet
 import { Field } from "../controls/field"
 import { signal } from "@preact/signals-core"
 import { isFunction, toValue } from "@rxform/shared"
-import { isPromise } from "rxjs/internal/Observable";
-
 interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M> {
   initMode: 'async' | 'sync';
 }
@@ -47,33 +45,17 @@ function asyncBindingModel(
   path: string,
 ) {
   return Object.entries(graph).reduce((parent, [, field]) => {
-    const { id, data2model, properties } = field
+    const { id, properties } = field
     const filedValue = signal()
-    if (isFunction(data2model)) {
-      field.isPending.value = true
-      const data = data2model()
-      if (isPromise(data)) {
-        data.then((value) => {
-          filedValue.value = value
-          field.isPending.value = false
-        })
-      }
-    } else {
-      field.isPending.value = false
-      filedValue.value = toValue(field?.value)
-    }
     parent.value[id!] = filedValue
     field.value = parent.value[id!]
     fields[id!] = field
     field.path = path ? `${path}.${id}` : id;
     field.abstractModel = abstractModelMethods
     if (properties) {
-      const childValue = asyncBindingModel(abstractModelMethods, properties, fields, field.path!)?.value
-      field.value!.value = {
-        ...filedValue?.value ?? {},
-        ...childValue
-      }
+      field.value!.value = asyncBindingModel(abstractModelMethods, properties, fields, field.path!)?.value
     }
+    field.reset()
     return parent
   }, signal({} as any))
 }

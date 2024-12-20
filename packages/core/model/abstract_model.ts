@@ -152,6 +152,9 @@ export class AbstractModel<M> implements AbstractModel<M> {
 
   reset() {
     this.submitted.value = false;
+    Object.values(this.graph).map((field) => {
+      field.reset()
+    })
     this.errors = {};
   }
 

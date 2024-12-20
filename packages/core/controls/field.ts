@@ -4,6 +4,7 @@ import { Decision } from "../boolless";
 import { EventMetaData, getComponentMetaData, getEventsMetaData, getModelPipeMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
 import { get, isFunction, isSignal, set, toDeepValue, toValue } from "@rxform/shared";
 import { AbstractModelMethods } from "../model/abstract_model";
+import { isPromise } from "rxjs/internal/Observable";
 
 export enum FiledUpdateType {
   Value = "value",
@@ -75,10 +76,10 @@ export class Field<T = any, D = any> {
     this.tracks.push(fn)
   }
   async onSubmit() {
-    const fieldPathLength = this.path.length+1
+    const fieldPathLength = this.path.length + 1
     if (isFunction(this.model2data)) {
       return await this.model2data(toDeepValue(this.value.peek()))
-    }else if (this.properties){
+    } else if (this.properties) {
       const model: any = {}
       await Promise.all(Object.values(this.properties).map(async (field) => {
         return set(model, field.path.slice(fieldPathLength), await field.onSubmit())
@@ -88,6 +89,7 @@ export class Field<T = any, D = any> {
       return this.value.peek()
     }
   }
+
   public isBlurred: Signal<boolean> = signal(false)
   public isFocused: Signal<boolean> = signal(false)
   public isInit: Signal<boolean> = signal(false)
@@ -127,5 +129,103 @@ export class Field<T = any, D = any> {
     const signalsMeta = { signals: getSignalsMetaData(this.constructor) }
     const propsMeta = getPropsMetaData(this.constructor) ? { props: getPropsMetaData(this.constructor) } : {}
     Object.assign(this, componentMeta, modelpipe, validatorMeta, signalsMeta, eventsMeta, propsMeta)
+  }
+
+  resetState() {
+    this.isInit.value = true
+    this.isPending.value = true
+    this.isDisabled.value = false
+    this.isHidden.value = false
+    this.isBlurred.value = false
+    this.isFocused.value = false
+    this.isDestroyed.value = false
+    this.isValid.value = true
+    this.errors.value = {}
+    this.$value.value = undefined as unknown as T
+  }
+
+  resetModel(model: T | Promise<T>) {
+    const filedValue: any = isFunction(this.data2model) ? this.data2model() : model;
+    if (this.properties) {
+      const fields = Object.values(this.properties!)
+      if (isPromise(filedValue)) {
+        this.isPending.value = true
+        filedValue.then((value) => {
+          fields.forEach((field) => {
+            field.resetModel(value?.[field.id])
+          })
+          this.isPending.value = false
+        })
+      } else {
+        fields.forEach((field) => {
+          field.resetModel(filedValue?.[field.id])
+        })
+        this.isPending.value = false
+      }
+    } else {
+      if (isPromise(filedValue)) {
+        this.isPending.value = true
+        filedValue.then((value) => {
+          this.value.value = value
+          this.isPending.value = false
+        })
+      } else {
+        this.value.value = filedValue!
+        this.isPending.value = false
+      }
+    }
+  }
+
+  reset(model?: T) {
+    this.resetState()
+    const filedValue: any = isFunction(this.data2model) ? this.data2model() : model;
+    if (this.properties) {
+      const fields = Object.values(this.properties!)
+      if (isPromise(filedValue)) {
+        filedValue.then((value) => {
+          fields.forEach((field) => {
+            field.reset(value?.[field.id])
+          })
+          this.isPending.value = false
+        })
+      } else {
+        fields.forEach((field) => {
+          field.reset(filedValue?.[field.id])
+        })
+        this.isPending.value = false
+      }
+    } else {
+      if (isPromise(filedValue)) {
+        filedValue.then((value) => {
+          this.value.value = value
+          this.isPending.value = false
+        })
+      } else {
+        this.value.value = filedValue!
+        this.isPending.value = false
+      }
+    }
+  }
+
+  init(model?: T) {
+    this.value = signal(undefined as unknown as T)
+    this.resetState()
+    const filedValue: any = isFunction(this.data2model)? this.data2model() : model;
+    if (this.properties) {
+      const fields = Object.values(this.properties!)
+      if (isPromise(filedValue)) {
+        filedValue.then((value) => {
+          fields.forEach((field) => {
+            field.init(value?.[field.id])
+          })
+          this.isPending.value = false
+        })
+      } else {
+        fields.forEach((field) => {
+          field.init(filedValue?.[field.id])
+        })
+        this.isPending.value = false
+      }
+    }
   }
 }
