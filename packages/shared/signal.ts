@@ -70,3 +70,21 @@ export function normalizeSignal<T, D>(path: string, signal: Signal<T>): Signal<D
 }
 
 export type SignalValue<T> = T extends Signal<infer S> ? S : T;
+
+export function toRaw<T>(source: MaybeSignalOrGetter<T>): T {
+  if (isFunction(source)) {
+    return toRaw(source());
+  } else if (isSignal(source)) {
+    return toRaw(source.peek());
+  } else if (Array.isArray(source)) {
+    return source.map(toRaw) as T;
+  } else if (typeof source === 'object' && source !== null) {
+    return Object.keys(source).reduce((acc, key) => {
+      // @ts-ignore
+      acc[key] = toRaw(source[key]);
+      return acc;
+    }, {} as Record<string, any>) as T;
+  } else {
+    return source;
+  }
+}

@@ -33,9 +33,11 @@ export class Field<T = any, D = any> {
   onBeforeInit?(): void
   onInit?(): void
   onDestroy?(): void
-  onDisplay?(): void
   onDisabled?(): void
   onValidate?(): void
+  onHidden?(): void
+  onMounted?(): void
+  onUnmounted?(): void
   onUpdate({
     type,
     value

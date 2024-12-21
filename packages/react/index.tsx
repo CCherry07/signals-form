@@ -17,7 +17,7 @@ interface FormConfig {
     validator?: Record<string, Resolver>
   }
 }
-export const createForm = async (config: FormConfig) => {
+export const createForm = (config: FormConfig) => {
   const {
     graph,
     validatorEngine,
@@ -27,7 +27,7 @@ export const createForm = async (config: FormConfig) => {
     resolvers,
     initMode = 'async'
   } = config;
-  const from = await createRXForm({
+  const from = createRXForm({
     validatorEngine,
     defaultValidatorEngine,
     boolsConfig,

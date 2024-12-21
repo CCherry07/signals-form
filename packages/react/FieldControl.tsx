@@ -1,4 +1,4 @@
-import { ComponentClass, createElement, FunctionComponent, memo, ReactNode, useCallback, useEffect, useState } from 'react';
+import { ComponentClass, createElement, FunctionComponent, memo, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Field, toValue, BoolValues, validate, toDeepValue, FiledUpdateType, normalizeSignal } from "@rxform/core"
 import { batch, computed, untracked, signal } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
@@ -37,7 +37,6 @@ function normalizeProps(field: Field) {
 export const FieldControl = memo(function FieldControl(props: Props) {
   const { field, bools, resolveComponent } = props;
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
-  const [events, setEvents] = useState<Record<string, Function>>({})
   const model = computed(() => toDeepValue(props.model.value))
   const {
     initiative,
@@ -45,7 +44,7 @@ export const FieldControl = memo(function FieldControl(props: Props) {
   } = field.validator ?? {}
 
   useEffect(() => {
-    field.onInit?.()
+    field.onMounted?.()
     const onValidateDispose = effect(() => {
       if (signalValidator) {
         validate({ state: field.value, updateOn: "signal" }, signalValidator.all, untracked(() => bools), model.value).then(errors => {
@@ -87,12 +86,14 @@ export const FieldControl = memo(function FieldControl(props: Props) {
       onStatesDispose()
       onStateDispose()
       field.onDestroy?.()
+      field.onUnmounted?.()
+      field.isDestroyed.value = true
     }
   }, [])
 
-  useEffect(() => {
-    const events = Object.fromEntries(Object.entries(field.events || {}).map(([e, fn]) => {
-      return [e, function (data: any) {
+  const events = useMemo(() => {
+    return Object.fromEntries(Object.entries(field.events || {}).map(([e, fn]) => {
+      return [e, function (data?: any) {
         fn.call(field, data)
         if (initiative) {
           validate({ state: toValue(field.value), updateOn: e }, initiative.all, bools, model.value).then(errors => {
@@ -101,7 +102,6 @@ export const FieldControl = memo(function FieldControl(props: Props) {
         }
       }]
     }))
-    setEvents(events)
   }, [])
 
   const onChange = useCallback((value: any) => {

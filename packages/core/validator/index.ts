@@ -13,7 +13,7 @@ export interface ValidateItem {
   schema: any
   engine?: string
   fact?: string | object
-  on?: string
+  updateOn?: string
   needValidate?: Decision
   factoryOptions?: FactoryOptions
   schemaOptions?: any
@@ -62,7 +62,7 @@ const getFactValue = (fact: string | Object | Array<string>, state: any, context
 export const validate = async <T>({ state, updateOn: _updateOn }: State<T>, validates: ValidateItem[], boolsConfig: BoolValues, context: any): Promise<FieldErrors> => {
   const fieldErrors = {} as FieldErrors
   for (const item of validates) {
-    const { schema, engine = 'zod', fact, on: updateOn, schemaOptions, factoryOptions, needValidate } = item
+    const { schema, engine = 'zod', fact, updateOn, schemaOptions, factoryOptions, needValidate } = item
     if (needValidate instanceof Decision && needValidate.not().evaluate(boolsConfig)) continue
     if (typeof updateOn === "string" && updateOn !== _updateOn) continue
     if (!isFunction(validatorResolvers[engine])) {
