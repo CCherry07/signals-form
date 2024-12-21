@@ -46,14 +46,15 @@ function asyncBindingModel(
 ) {
   return Object.entries(graph).reduce((parent, [, field]) => {
     const { id, properties } = field
+    field.onBeforeInit?.()
     const filedValue = signal()
-    parent.value[id!] = filedValue
+    parent.value[id] = filedValue
     field.value = parent.value[id!]
-    fields[id!] = field
+    fields[id] = field
     field.path = path ? `${path}.${id}` : id;
     field.abstractModel = abstractModelMethods
     if (properties) {
-      field.value!.value = asyncBindingModel(abstractModelMethods, properties, fields, field.path!)?.value
+      field.value.value = asyncBindingModel(abstractModelMethods, properties, fields, field.path!)?.value
     }
     field.reset()
     field.onInit?.()

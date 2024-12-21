@@ -11,7 +11,6 @@ export enum FiledUpdateType {
   Props = "props",
 }
 
-
 export class Field<T = any, D = any> {
   id!: string;
   value!: Signal<T>;
@@ -33,11 +32,11 @@ export class Field<T = any, D = any> {
   onBeforeInit?(): void
   onInit?(): void
   onDestroy?(): void
-  onDisabled?(): void
-  onValidate?(): void
-  onHidden?(): void
+  onDisabled?(state: boolean): void
+  onHidden?(state: boolean): void
   onMounted?(): void
   onUnmounted?(): void
+  onValidate?(): void
   onUpdate({
     type,
     value
@@ -104,15 +103,27 @@ export class Field<T = any, D = any> {
   public $value: Signal<T> = signal(undefined as unknown as T)
   constructor() {
     this.initFieldMetaDate()
+    // validate
     effect(() => {
       this.isValid.value = Object.keys(this.errors.value).length === 0
     })
+
+    // disabled
+    effect(() => {
+      this.onDisabled?.(this.isDisabled.value)
+    })
+
+    // recover value when hidden and shown
     effect(() => {
       const { isHidden, recoverValueOnHidden, recoverValueOnShown, value, $value } = this;
-      if (isHidden.value && recoverValueOnHidden) return;
+      if (isHidden.value && recoverValueOnHidden) {
+        this.onHidden?.(this.isHidden.peek())
+        return
+      };
       if (recoverValueOnShown && value) {
         if (!isHidden.value) {
           value.value = $value.peek();
+          this.onHidden?.(this.isHidden.peek())
           return
         } else {
           $value.value = value.peek();
@@ -120,6 +131,7 @@ export class Field<T = any, D = any> {
       }
       if (isHidden.value) {
         value.value = undefined as unknown as T;
+        this.onHidden?.(this.isHidden.peek())
       }
     })
   }
