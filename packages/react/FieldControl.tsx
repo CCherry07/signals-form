@@ -1,11 +1,10 @@
 import { ComponentClass, createElement, FunctionComponent, memo, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { Field, toValue, BoolValues, validate, toDeepValue, FiledUpdateType, normalizeSignal } from "@rxform/core"
+import { Field, toValue, validate, toDeepValue, FiledUpdateType, normalizeSignal } from "@rxform/core"
 import { batch, computed, untracked, signal } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
 interface Props {
   field: Field;
   model: any
-  bools: BoolValues
   resolveComponent: (component: string | FunctionComponent<any> | ComponentClass<any, any>) => string | FunctionComponent<any> | ComponentClass<any, any>
 };
 
@@ -35,7 +34,7 @@ function normalizeProps(field: Field) {
 }
 
 export const FieldControl = memo(function FieldControl(props: Props) {
-  const { field, bools, resolveComponent } = props;
+  const { field, resolveComponent } = props;
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
   const model = computed(() => toDeepValue(props.model.value))
   const {
@@ -47,7 +46,7 @@ export const FieldControl = memo(function FieldControl(props: Props) {
     field.onMounted?.()
     const onValidateDispose = effect(() => {
       if (signalValidator) {
-        validate({ state: field.value, updateOn: "signal" }, signalValidator.all, untracked(() => bools), model.value).then(errors => {
+        validate({ state: field.value, updateOn: "signal" }, signalValidator.all, untracked(() => field.bools), model.value).then(errors => {
           if (Object.keys(errors).length === 0) {
             field.abstractModel?.cleanErrors([String(field.path)])
           } else {
@@ -64,8 +63,8 @@ export const FieldControl = memo(function FieldControl(props: Props) {
     })
     const onStatesDispose = effect(() => {
       batch(() => {
-        field.isHidden.value = field.hidden?.evaluate(bools) ?? false
-        field.isDisabled.value = field.disabled?.evaluate(bools) ?? false
+        field.isHidden.value = field.hidden?.evaluate(field.bools) ?? false
+        field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
       })
     })
 
@@ -73,7 +72,7 @@ export const FieldControl = memo(function FieldControl(props: Props) {
       if (field.signals) {
         Object.entries(field.signals).forEach(([signalKey, fn]) => {
           const signalValue = computed(() => normalizeSignal(signalKey, signal({ $: model.value })).value)
-          fn.call(field, signalValue.value, bools, model.value)
+          fn.call(field, signalValue.value, field.bools, model.value)
         })
       }
     })
@@ -96,7 +95,7 @@ export const FieldControl = memo(function FieldControl(props: Props) {
       return [e, function (data?: any) {
         fn.call(field, data)
         if (initiative) {
-          validate({ state: toValue(field.value), updateOn: e }, initiative.all, bools, model.value).then(errors => {
+          validate({ state: toValue(field.value), updateOn: e }, initiative.all, field.bools, model.value).then(errors => {
             field.errors.value = errors
           })
         }
@@ -147,7 +146,6 @@ export const FieldControl = memo(function FieldControl(props: Props) {
           key: id,
           field: child,
           model,
-          bools,
           resolveComponent
         })
       })

@@ -54,7 +54,6 @@ export const createForm = (config: FormConfig) => {
         return <FieldControl
           key={key}
           field={field}
-          bools={from.bools}
           model={from.model}
           resolveComponent={resolveComponent}
         />

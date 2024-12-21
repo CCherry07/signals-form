@@ -3,6 +3,8 @@ import { BoolsConfig, setup, type BoolValues } from "../boolless"
 import { batch, effect, Signal, signal } from "@preact/signals-core";
 import { get, set } from "@rxform/shared";
 import { Field, FiledUpdateType } from "../controls/field";
+import { Resolver } from "../validator/resolvers/type";
+import { validatorResolvers } from "../validator";
 export type Model = Record<string, any>;
 export interface AbstractModel<M extends Signal<Model>> {
   bools: BoolValues;
@@ -15,6 +17,8 @@ export interface AbstractModel<M extends Signal<Model>> {
   graph: Record<string, Field>
   fields: Record<string, Field>
   isPending: Signal<boolean>
+
+  validatorResolvers: Record<string, Resolver>
 }
 
 interface SubscribeProps<M> {
@@ -38,11 +42,6 @@ export interface AbstractModelMathods<M extends Signal<Model>> {
   validateFields(fields: string[]): Promise<boolean>;
   validateFieldsAndScroll(fields: string[]): Promise<boolean>;
   validateFieldsAndScrollToFirstError(fields: string[]): Promise<boolean>;
-  /**
-   * 
-   * @param fn 收集依赖的函数，在依赖变化时执行，返回一个清理函数，用于取消订阅
-   * @param deps 依赖数组，当依赖变化时，重新执行 fn
-   */
   onSubscribe(fn: (props: SubscribeProps<M>) => void): () => void;
   reset(): void;
   submit(): Promise<Model>;
@@ -60,6 +59,7 @@ export interface AbstractModelConstructorOptions<M extends Model> {
 
 export class AbstractModel<M> implements AbstractModel<M> {
   constructor() {
+    this.validatorResolvers = validatorResolvers
     this.isPending = signal(false)
   }
   onSubscribe(fn: (props: SubscribeProps<M>) => void) {
@@ -82,17 +82,21 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.model = model as M;
     this.validatorEngine = validatorEngine;
     this.defaultValidatorEngine = defaultValidatorEngine
-    this.bools = setup(boolsConfig, this.model)
+    this.bools = Object.freeze(setup(boolsConfig, this.model))
+    Object.values(fields!)!.forEach((field) => {
+      field.bools = this.bools
+    })
     this.graph = graph!
     this.fields = fields!
+
     effect(() => {
-      this.isPending.value = Object.entries(this.fields ?? {}).some(([_key, field]) => field.isPending.value)
+      this.isPending.value = Object.values(this.fields ?? {}).some((field) => field.isPending.value)
     })
   }
 
   updateModel(model: M) {
     batch(() => {
-      Object.entries(this.fields).forEach(([_, field]) => {
+      Object.values(this.fields).forEach((field) => {
         if (!field.properties) { // leaf node
           const value = get(model, field.path)
           if (value !== field.value.value) {

@@ -19,11 +19,11 @@ export interface ValidateItem {
   schemaOptions?: any
 }
 
-const validatorResolvers: Record<string, Resolver> = {
+export const validatorResolvers: Record<string, Resolver> = {
   zod: zodResolver
 }
 
-export const setup = (validator: string, resolver: Resolver) => {
+export function setup(validator: string, resolver: Resolver){
   if (!isProd && validatorResolvers[validator]) {
     console.warn(`${validator} is already registered`);
   }

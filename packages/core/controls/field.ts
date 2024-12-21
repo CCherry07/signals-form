@@ -1,6 +1,6 @@
 import { batch, effect, signal, Signal } from "@preact/signals-core";
 import { FieldErrors } from "../validator"
-import { Decision } from "../boolless";
+import { BoolValues, Decision } from "../boolless";
 import { EventMetaData, getComponentMetaData, getEventsMetaData, getModelPipeMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
 import { get, isFunction, isSignal, set, toDeepValue, toValue } from "@rxform/shared";
 import { AbstractModelMethods } from "../model/abstract_model";
@@ -15,6 +15,7 @@ export class Field<T = any, D = any> {
   id!: string;
   value!: Signal<T>;
   path!: string;
+  bools!: BoolValues;
   recoverValueOnHidden?: boolean
   recoverValueOnShown?: boolean
   component?: any;
