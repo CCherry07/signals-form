@@ -44,7 +44,7 @@ function asyncBindingModel(
   fields: Record<string, Field>,
   path: string,
 ) {
-  return Object.entries(graph).reduce((parent, [, field]) => {
+  return graph.reduce((parent, field) => {
     const { id, properties } = field
     field.onBeforeInit?.()
     const filedValue = signal()

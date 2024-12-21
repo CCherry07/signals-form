@@ -283,14 +283,14 @@ class UserInfo extends Field {
     id && (this.id = id)
   }
 }
-const graph = {
-  UserInfo: new UserInfo(),
-}
+const graph = [
+  new UserInfo()
+]
 
 export const {
   from,
   app
-} = await createForm({
+} = createForm({
   validatorEngine: "zod",
   defaultValidatorEngine: "zod",
   boolsConfig: bools,

@@ -1,11 +1,11 @@
 import React, { ComponentClass, FunctionComponent } from 'react';
 import { FieldControl } from "./FieldControl";
-import { createRXForm, Field , setupValidator } from "@rxform/core"
+import { createRXForm, Field, setupValidator } from "@rxform/core"
 import { Resolver } from '@rxform/core/validator/resolvers/type';
 
 interface FormConfig {
   components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
-  graph: Record<string, Field>;
+  graph: Field[];
   validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;

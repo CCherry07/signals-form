@@ -158,10 +158,16 @@ export class AbstractModel<M> implements AbstractModel<M> {
 
   reset() {
     this.submitted.value = false;
-    Object.values(this.graph).map((field) => {
+    this.graph.forEach((field) => {
       field.reset()
     })
     this.errors = {};
+  }
+
+  resetModel() {
+    this.graph.map((field) => {
+      field.resetModel()
+    })
   }
 
   async submit<T>() {

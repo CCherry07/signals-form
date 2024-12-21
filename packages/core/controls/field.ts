@@ -159,7 +159,7 @@ export class Field<T = any, D = any> {
     this.$value.value = undefined as unknown as T
   }
 
-  resetModel(model: T | Promise<T>) {
+  resetModel(model?: T | Promise<T>) {
     const filedValue: any = isFunction(this.data2model) ? this.data2model() : model;
     if (this.properties) {
       const fields = Object.values(this.properties!)
