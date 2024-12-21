@@ -50,9 +50,9 @@ export const createForm = (config: FormConfig) => {
 
   const app = <div>
     {
-      Object.entries(graph).map(([key, field]) => {
+      graph.map((field) => {
         return <FieldControl
-          key={key}
+          key={field.path}
           field={field}
           model={from.model}
           resolveComponent={resolveComponent}
