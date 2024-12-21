@@ -67,7 +67,6 @@ export const FieldControl = memo(function FieldControl(props: Props) {
         field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
       })
     })
-
     const onSignalsDispose = effect(() => {
       if (field.signals) {
         Object.entries(field.signals).forEach(([signalKey, fn]) => {

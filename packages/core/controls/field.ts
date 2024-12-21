@@ -21,7 +21,7 @@ export class Field<T = any, D = any> {
   component?: any;
   hidden?: Decision;
   disabled?: Decision;
-  properties?: { [key: string]: Field }
+  properties?: Field[]
   props?: PropsMetaData;
   validator?: ValidatorMetaData;
   signals?: SignalsMetaData;
@@ -195,7 +195,7 @@ export class Field<T = any, D = any> {
     this.resetState()
     const filedValue: any = isFunction(this.data2model) ? this.data2model() : model;
     if (this.properties) {
-      const fields = Object.values(this.properties!)
+      const fields = this.properties!
       if (isPromise(filedValue)) {
         filedValue.then((value) => {
           fields.forEach((field) => {
@@ -225,7 +225,7 @@ export class Field<T = any, D = any> {
   init(model?: T) {
     this.value = signal(undefined as unknown as T)
     this.resetState()
-    const filedValue: any = isFunction(this.data2model)? this.data2model() : model;
+    const filedValue: any = isFunction(this.data2model) ? this.data2model() : model;
     if (this.properties) {
       const fields = Object.values(this.properties!)
       if (isPromise(filedValue)) {

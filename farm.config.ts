@@ -11,7 +11,6 @@ export default defineConfig({
     external: [
       "@preact/signals-core",
       "zod",
-      "rxjs",
       "react"
     ],
     presetEnv: false,

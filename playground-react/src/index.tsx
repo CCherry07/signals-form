@@ -245,18 +245,18 @@ class Agreement extends Field {
 @Component({
   id: 'userinfo',
   component: 'form',
-  properties: {
-    email: new Email(),
-    password: new Password(),
-    nickname: new Nickname(),
-    residence: new Residence(),
-    phone: new Phone(),
-    donation: new Donation(),
-    intro: new Intro(),
-    gender: new Gender(),
-    captcha: new Captcha(),
-    agreement: new Agreement()
-  },
+  properties: [
+    new Email(),
+    new Password(),
+    new Nickname(),
+    new Residence(),
+    new Phone(),
+    new Donation(),
+    new Intro(),
+    new Gender(),
+    new Captcha(),
+    new Agreement()
+  ],
   props: {
     style: {
       width: "400px"
@@ -264,7 +264,7 @@ class Agreement extends Field {
   }
 })
 @ModelPipe({
-  data2model(){
+  data2model() {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({

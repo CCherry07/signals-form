@@ -14,7 +14,7 @@ export interface AbstractModel<M extends Signal<Model>> {
   model: M;
   validatorEngine: string;
   defaultValidatorEngine: string;
-  graph: Record<string, Field>
+  graph: Field[]
   fields: Record<string, Field>
   isPending: Signal<boolean>
 
@@ -53,7 +53,7 @@ export interface AbstractModelConstructorOptions<M extends Model> {
   defaultValidatorEngine: string;
   boolsConfig: BoolsConfig<M>
   model?: M
-  graph?: Record<string, Field>
+  graph?: Field[]
   fields?: Record<string, Field>
 }
 
@@ -109,7 +109,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
 
   mergeModel(model: M) {
     batch(() => {
-      Object.entries(this.fields).forEach(([_, field]) => {
+      Object.values(this.fields).forEach((field) => {
         if (!field.properties) { // leaf node
           const value = get(model, field.path)
           if (typeof value === "undefined") {

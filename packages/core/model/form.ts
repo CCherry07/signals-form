@@ -40,7 +40,7 @@ interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M>
 
 function asyncBindingModel(
   abstractModelMethods: AbstractModelMethods,
-  graph: Record<string, Field>,
+  graph: Field[],
   fields: Record<string, Field>,
   path: string,
 ) {
@@ -50,8 +50,8 @@ function asyncBindingModel(
     const filedValue = signal()
     parent.value[id] = filedValue
     field.value = parent.value[id!]
-    fields[id] = field
     field.path = path ? `${path}.${id}` : id;
+    fields[field.path] = field
     field.abstractModel = abstractModelMethods
     if (properties) {
       field.value.value = asyncBindingModel(abstractModelMethods, properties, fields, field.path!)?.value
