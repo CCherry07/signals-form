@@ -58,9 +58,11 @@ export interface AbstractModelConstructorOptions<M extends Model> {
 }
 
 export class AbstractModel<M> implements AbstractModel<M> {
-  constructor() {
+  id: string;
+  constructor(id: string) {
     this.validatorResolvers = validatorResolvers
     this.isPending = signal(false)
+    this.id = id
   }
   onSubscribe(fn: (props: SubscribeProps<M>) => void) {
     return effect(() => {

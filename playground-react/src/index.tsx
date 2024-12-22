@@ -295,7 +295,7 @@ export const {
   defaultValidatorEngine: "zod",
   boolsConfig: bools,
   graph,
-  initMode: "async",
+  id: 'form1',
   components: {
     form: Form,
     input: Input,

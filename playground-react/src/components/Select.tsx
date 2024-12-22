@@ -1,7 +1,6 @@
 import { Form, Select } from "antd"
 import React from "react";
 import { FieldError } from "./Error";
-const { Option } = Select
 
 export default function (props: any) {
   const { title, value, onChange, options, } = props;
@@ -12,7 +11,7 @@ export default function (props: any) {
         onChange={onChange}
       >
         {options.map((option: any) => (
-          <Option key={option.value} value={option.value}>{option.label}</Option>
+          <Select.Option key={option.value} value={option.value}>{option.label}</Select.Option>
         ))}
       </Select>
       <FieldError errors={props.errors} />

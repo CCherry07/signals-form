@@ -3,7 +3,7 @@ import { Field } from "../controls/field"
 import { signal } from "@preact/signals-core"
 // import { isFunction, toValue } from "@rxform/shared"
 interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M> {
-  initMode: 'async' | 'sync';
+  id: string
 }
 // async function syncBindingModel(
 //   abstractModelMethods: AbstractModelMethods,
@@ -62,7 +62,7 @@ function asyncBindingModel(
   }, signal({} as any))
 }
 export function createRXForm(config: FormConfig<Model>) {
-  const form = new AbstractModel()
+  const form = new AbstractModel(config.id)
   const methods: AbstractModelMethods = {
     setFieldValue: form.setFieldValue.bind(form),
     setErrors: form.setErrors.bind(form),

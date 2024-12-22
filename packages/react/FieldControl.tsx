@@ -1,4 +1,4 @@
-import { ComponentClass, createElement, FunctionComponent, memo, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Field, toValue, validate, toDeepValue, FiledUpdateType, normalizeSignal } from "@rxform/core"
 import { batch, computed, untracked, signal } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
@@ -32,8 +32,7 @@ function normalizeProps(field: Field) {
     ...field.props
   }
 }
-
-export const FieldControl = memo(function FieldControl(props: Props) {
+export function FieldControl(props: Props) {
   const { field, resolveComponent } = props;
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
   const model = computed(() => toDeepValue(props.model.value))
@@ -140,9 +139,9 @@ export const FieldControl = memo(function FieldControl(props: Props) {
 
   function getChildren(): ReactNode[] {
     if (field.properties) {
-      return Object.entries(field.properties).map(([id, child]) => {
+      return (field.properties).map((child) => {
         return createElement(FieldControl, {
-          key: id,
+          key: child.path,
           field: child,
           model,
           resolveComponent
@@ -164,4 +163,4 @@ export const FieldControl = memo(function FieldControl(props: Props) {
       onFocus
     }, getChildren())
   );
-})
+}

@@ -9,10 +9,7 @@ interface FormConfig {
   validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
-  /**
-   * @default async
-   */
-  initMode: 'async' | 'sync';
+  id: string;
   resolvers?: {
     validator?: Record<string, Resolver>
   }
@@ -25,14 +22,14 @@ export const createForm = (config: FormConfig) => {
     boolsConfig,
     components,
     resolvers,
-    initMode = 'async'
+    id
   } = config;
   const from = createRXForm({
+    id,
     validatorEngine,
     defaultValidatorEngine,
     boolsConfig,
     graph,
-    initMode
   })
 
   if (resolvers?.validator) {

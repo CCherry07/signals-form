@@ -1,47 +1,31 @@
-// 如何处理表单组的数据
+import { AbstractModel, Model } from "./abstract_model"
 
 export class FormGroup {
-  private controls: { [key: string]: any };
-
-  constructor(controls: { [key: string]: any }) {
-    this.controls = controls;
+  models: Map<string, Model>;
+  form: Map<string, AbstractModel<any>>;
+  constructor() {
+    this.models = new Map();
+    this.form = new Map();
   }
 
-  getControl(name: string): any {
-    return this.controls[name];
+  addControl(id: string, model: Model) {
+    this.models.set(id, model);
   }
 
-  setControl(name: string, control: any): void {
-    this.controls[name] = control;
+  removeControl(id: string) {
+    this.models.delete(id);
   }
 
-  removeControl(name: string): void {
-    delete this.controls[name];
+  get(id: string) {
+    return this.models.get(id);
   }
 
-  getValue(): { [key: string]: any } {
-    const value: { [key: string]: any } = {};
-    for (const key in this.controls) {
-      if (this.controls.hasOwnProperty(key)) {
-        value[key] = this.controls[key].value;
-      }
-    }
-    return value;
+  changeModel(id: string) {
+    const model = this.get(id);
+    this.form.updateModel(model);
   }
 
-  setValue(value: { [key: string]: any }): void {
-    for (const key in value) {
-      if (value.hasOwnProperty(key) && this.controls[key]) {
-        this.controls[key].value = value[key];
-      }
-    }
-  }
-
-  reset(): void {
-    for (const key in this.controls) {
-      if (this.controls.hasOwnProperty(key)) {
-        this.controls[key].reset();
-      }
-    }
+  changeForm() {
+    
   }
 }
