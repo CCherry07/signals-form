@@ -6,8 +6,8 @@ import { Resolver } from '@rxform/core/validator/resolvers/type';
 interface FormConfig {
   components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
   graph: Field[];
-  validatorEngine: string;
-  defaultValidatorEngine: string;
+  validatorEngine?: string;
+  defaultValidatorEngine?: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
   id: string;
   resolvers?: {
@@ -17,8 +17,8 @@ interface FormConfig {
 export const createForm = (config: FormConfig) => {
   const {
     graph,
-    validatorEngine,
-    defaultValidatorEngine,
+    validatorEngine = 'zod',
+    defaultValidatorEngine = 'zod',
     boolsConfig,
     components,
     resolvers,

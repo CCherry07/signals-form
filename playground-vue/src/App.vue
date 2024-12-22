@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+
+const props = defineProps<{
+  app: any,
+  form: any
+}>()
+console.log(props);
+
 </script>
 
 <template>
   <div>
-    <a href="https://farmfe.org/" target="_blank">
-      <img src="./assets/logo.png" class="logo" alt="Farm logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+    <component :is="props.app" :form="form" />
   </div>
-  <HelloWorld msg="Farm + Vue" />
 </template>
 
 <style scoped>
