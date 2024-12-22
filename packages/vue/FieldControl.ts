@@ -1,5 +1,5 @@
-import { createVNode, defineComponent, onBeforeMount, onScopeDispose, onUnmounted, ref } from "vue";
-import type { PropType, VNode } from 'vue';
+import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
+import type { Component, DefineComponent, PropType, VNode } from 'vue';
 import { FiledUpdateType, normalizeSignal, toDeepValue, toValue, validate, type Field } from "@rxform/core"
 import { batch, computed, effect, signal, untracked } from "@preact/signals-core";
 
@@ -23,12 +23,12 @@ export const FieldControl = defineComponent({
   props: {
     field: Object as PropType<Field>,
     model: Object as PropType<Record<string, any>>,
-    resolveComponent: Function as PropType<(component: string | VNode) => VNode>
+    resolveComponent: Function as PropType<(component: string | Component | DefineComponent) => Component | DefineComponent>
   },
   setup(props) {
     const { initiative, signal: signalValidator } = props.field?.validator ?? {}
     const field = props.field!
-    const filedState = ref(normalizeProps(field))
+    const filedState = shallowRef(normalizeProps(field))
     const cleanups: Function[] = [];
     onBeforeMount(() => {
       const onValidateDispose = effect(() => {
@@ -123,7 +123,7 @@ export const FieldControl = defineComponent({
     function getChildren(): VNode[] {
       if (field.properties) {
         return (field.properties).map((child) => {
-          return createVNode(FieldControl, {
+          return h(FieldControl, {
             key: child.path,
             field: child,
             model: props.model,
@@ -134,7 +134,7 @@ export const FieldControl = defineComponent({
       return []
     }
 
-    onUnmounted(()=>{
+    onUnmounted(() => {
       field.onDestroy?.()
       field.onUnmounted?.()
       field.isDestroyed.value = true
@@ -142,13 +142,12 @@ export const FieldControl = defineComponent({
 
     return () => {
       const component = props.resolveComponent!(field.component)
-      return createVNode('div', { hidden: filedState.value.isHidden }, createVNode(component, {
+      return h('div', { hidden: filedState.value.isHidden, "data-field-id": field.id }, h(component, {
         ...filedState.value,
         onChange,
         onBlur,
         onFocus,
-        children: getChildren()
-      }))
+      }, getChildren))
     }
   }
 })

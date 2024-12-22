@@ -1,14 +1,17 @@
 import { createApp, createVNode } from 'vue';
-import './style.css';
 import App from './App.vue';
 import { createForm } from "@rxform/vue"
 import { Field, Component, normalizeSignal } from '@rxform/core';
 import Form from "./components/From.vue"
 import { Signal } from '@preact/signals-core';
+import Input from './components/Input.vue';
 
 @Component({
   id: "nickname",
   component: "input",
+  props: {
+    title: "Nickname"
+  }
 })
 class Nickname extends Field {
   constructor() {
@@ -18,7 +21,12 @@ class Nickname extends Field {
 
 @Component({
   id: "userinfo",
-  component: "from",
+  component: "form",
+  props: {
+    style: {
+      width: "400px",
+    }
+  },
   properties: [
     new Nickname()
   ]
@@ -44,14 +52,16 @@ const bools = {
 const graph = [
   new UserInfo()
 ]
-const { from, app } = createForm({
+const { form, app } = createForm({
   graph,
   boolsConfig: bools,
   id: "from-vue",
   components: {
-    form: Form
+    form: Form,
+    input: Input
   }
 })
 createApp(createVNode(App, {
-  from, app
+  form,
+  app
 })).mount('#app');

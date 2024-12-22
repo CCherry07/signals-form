@@ -1,10 +1,10 @@
 import { FieldControl } from "./FieldControl";
 import { createRXForm, Field, setupValidator } from "@rxform/core"
 import { Resolver } from '@rxform/core/validator/resolvers/type';
-import { Component, createVNode, DefineComponent } from "vue";
+import { Component, DefineComponent, h } from "vue";
 
 interface FormConfig {
-  components: Record<string, string | Component | DefineComponent>;
+  components: Record<string, Component | DefineComponent>;
   graph: Field[];
   validatorEngine?: string;
   defaultValidatorEngine?: string;
@@ -24,7 +24,7 @@ export const createForm = (config: FormConfig) => {
     resolvers,
     id
   } = config;
-  const from = createRXForm({
+  const form = createRXForm({
     id,
     validatorEngine,
     defaultValidatorEngine,
@@ -38,24 +38,24 @@ export const createForm = (config: FormConfig) => {
     })
   }
 
-  function resolveComponent(component: string | Component | DefineComponent) {
+  function resolveComponent(component: string | Component | DefineComponent): Component | DefineComponent {
     if (typeof component === 'string') {
       return components[component]
     }
     return component
   }
-  const app = createVNode('div', null, graph.map((field) => {
-    return createVNode(FieldControl, {
+  const app = h('div', null, graph.map((field) => {
+    return h(FieldControl, {
       key: field.path,
       field: field,
-      model: from.model,
-      resolveComponent: resolveComponent
+      model: form.model,
+      resolveComponent
     })
   }))
 
   return {
     app,
-    from
+    form
   }
 }
 
