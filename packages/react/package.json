@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "main": "index.tsx",
   "scripts": {
-    "dev": "farm dev"
+    "build": "farm build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@farmfe/plugin-react": "^1.2.6",
     "@rxform/core": "workspace:*"
   }
 }

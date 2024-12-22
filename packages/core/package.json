@@ -6,6 +6,9 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "scripts": {
+    "build": "farm build"
+  },
   "dependencies": {
     "@rxform/shared": "workspace:*",
     "reflect-metadata": "^0.2.2"

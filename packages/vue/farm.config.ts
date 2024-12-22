@@ -2,7 +2,7 @@ import { defineConfig } from '@farmfe/core';
 export default defineConfig({
   compilation: {
     input: {
-      index: "./index.tsx"
+      index: "./index.ts"
     },
     output: {
       format: "esm",

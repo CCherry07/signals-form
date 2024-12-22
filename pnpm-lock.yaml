@@ -63,6 +63,9 @@ importers:
 
   packages/react:
     dependencies:
+      '@farmfe/plugin-react':
+        specifier: ^1.2.6
+        version: 1.2.6
       '@rxform/core':
         specifier: workspace:*
         version: link:../core
