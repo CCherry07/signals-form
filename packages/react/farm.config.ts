@@ -9,8 +9,8 @@ export default defineConfig({
       targetEnv: "library-browser",
     },
     external: [
-      "@preact/signals-core",
-      "zod",
+      "@rxform/core",
+      "react",
     ],
     presetEnv: false,
     sourcemap: true,
