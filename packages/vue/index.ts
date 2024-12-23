@@ -1,5 +1,5 @@
 import { FieldControl } from "./FieldControl";
-import { createRXForm, Field, setupValidator } from "@rxform/core"
+import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
 import { Resolver } from '@rxform/core/validator/resolvers/type';
 import { Component, DefineComponent, h } from "vue";
 
@@ -59,3 +59,53 @@ export const createForm = (config: FormConfig) => {
   }
 }
 
+export const createGroupForm = () => {
+  const formGroup = createRXGroupForm()
+  const apps = new Map()
+  const createApp = (config: FormConfig) => {
+    const form = formGroup.create({
+      validatorEngine: config.validatorEngine ?? 'zod',
+      defaultValidatorEngine: config.defaultValidatorEngine ?? 'zod',
+      ...config,
+    }).form!
+    function resolveComponent(component: string | Component | DefineComponent): Component | DefineComponent {
+      if (typeof component === 'string') {
+        return config.components[component]
+      }
+      return component
+    }
+    const app = h('div', null, form.graph.map((field) => {
+      return h(FieldControl, {
+        key: field.path,
+        field: field,
+        model: form.model,
+        resolveComponent
+      })
+    }))
+    return {
+      app,
+      form
+    }
+  }
+  return {
+    add(config: FormConfig) {
+      const { app, form } = createApp(config)
+      apps.set(config.id, app)
+      formGroup.add(config.id, form)
+      return {
+        app,
+        form
+      }
+    },
+    remove(id: string) {
+      apps.delete(id)
+      formGroup.remove(id)
+    },
+    get(id: string) {
+      return {
+        form: formGroup.get(id),
+        app: apps.get(id)
+      }
+    },
+  }
+}

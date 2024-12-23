@@ -1,6 +1,18 @@
-import { AbstractModel, AbstractModelMethods, Model } from "./abstract_model"
-import { asyncBindingModel, FormConfig } from "./form"
+import { Field } from "../controls/field";
+import { Resolver } from "../validator/resolvers/type";
+import { AbstractModel, AbstractModelMethods } from "./abstract_model"
+import { asyncBindingModel } from "./form"
 
+interface FormConfig {
+  graph: Field[];
+  validatorEngine: string;
+  defaultValidatorEngine: string;
+  boolsConfig: Record<string, (...args: any[]) => boolean>;
+  id: string;
+  resolvers?: {
+    validator?: Record<string, Resolver>
+  }
+}
 export class FormGroup {
   form?: AbstractModel<any>;
   forms: Map<string, AbstractModel<any>>;
@@ -8,7 +20,7 @@ export class FormGroup {
     this.forms = new Map();
   }
 
-  create(config: FormConfig<Model>) {
+  create(config: FormConfig) {
     const form = new AbstractModel(config.id)
     const methods: AbstractModelMethods = {
       setFieldValue: form.setFieldValue.bind(form),
@@ -24,7 +36,6 @@ export class FormGroup {
       model,
       fields
     })
-    this.add(config.id, form);
     return this;
   }
 
@@ -40,15 +51,6 @@ export class FormGroup {
 
   get(id: string) {
     return this.forms.get(id);
-  }
-
-  use(id: string) {
-    const form = this.forms.get(id);
-    if (!form) {
-      throw new Error("form is not defined")
-    }
-    this.form = form;
-    return this;
   }
 }
 
