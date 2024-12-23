@@ -51,7 +51,7 @@ export function createGraph(graph: (typeof Field | Field)[]): Field[] {
     const field = isFunction(Field) ? new Field() : Field
     const { properties } = field
     if (properties) {
-      field.properties = createGraph(properties as any)
+      field.properties = createGraph(properties)
     }
     return field
   })
