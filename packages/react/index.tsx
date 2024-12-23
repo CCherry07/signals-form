@@ -73,13 +73,14 @@ export const createGroupForm = () => {
       validatorEngine: config.validatorEngine ?? 'zod',
       defaultValidatorEngine: config.defaultValidatorEngine ?? 'zod',
       ...config,
-    }).form!
+    })
     function resolveComponent(component: string | FunctionComponent<any> | ComponentClass<any, any>) {
       if (typeof component === 'string') {
         return config.components[component]
       }
       return component
     }
+    
     if (config.resolvers?.validator) {
       Object.entries(config.resolvers.validator).forEach(([validator, resolver]) => {
         setupValidator(validator, resolver)

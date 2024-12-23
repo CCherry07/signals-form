@@ -36,7 +36,7 @@ export class FormGroup {
       model,
       fields
     })
-    return this;
+    return form;
   }
 
   add(id: string, form: AbstractModel<any>) {

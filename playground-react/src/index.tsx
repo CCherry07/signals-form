@@ -17,7 +17,7 @@ import InputNumber from "./components/InputNumber"
 import Cascader from './components/Cascader';
 import Select from './components/Select';
 import { Card as CardComponent } from './components/Card';
-import { createForm } from "@rxform/react"
+import { createForm, createGroupForm } from "@rxform/react"
 import { App } from "./App"
 import { z } from 'zod';
 
@@ -290,7 +290,7 @@ const graph = [
 export const {
   form,
   app
-} = createForm({
+} = createGroupForm().add({
   validatorEngine: "zod",
   defaultValidatorEngine: "zod",
   boolsConfig: bools,
