@@ -5,7 +5,7 @@ import { Component, DefineComponent, h } from "vue";
 
 interface FormConfig {
   components: Record<string, Component | DefineComponent>;
-  graph: Field[];
+  graph: typeof Field[];
   validatorEngine?: string;
   defaultValidatorEngine?: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
@@ -44,7 +44,7 @@ export const createForm = (config: FormConfig) => {
     }
     return component
   }
-  const app = h('div', null, graph.map((field) => {
+  const app = h('div', null, form.graph.map((field) => {
     return h(FieldControl, {
       key: field.path,
       field: field,

@@ -1,10 +1,10 @@
 import { Field } from "../controls/field";
 import { Resolver } from "../validator/resolvers/type";
 import { AbstractModel, AbstractModelMethods } from "./abstract_model"
-import { asyncBindingModel } from "./form"
+import { asyncBindingModel, createGraph } from "./form"
 
 interface FormConfig {
-  graph: Field[];
+  graph: typeof Field[];
   validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
@@ -30,9 +30,11 @@ export class FormGroup {
       onSubscribe: form.onSubscribe.bind(form)
     }
     const fields = {}
-    const model = asyncBindingModel(methods, config.graph!, fields, "")
+    const graph = createGraph(config.graph)
+    const model = asyncBindingModel(methods, graph, fields, "")
     form.init({
       ...config,
+      graph,
       model,
       fields
     })

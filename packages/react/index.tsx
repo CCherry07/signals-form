@@ -5,7 +5,7 @@ import { Resolver } from '@rxform/core/validator/resolvers/type';
 
 interface FormConfig {
   components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
-  graph: Field[];
+  graph: (typeof Field)[];
   validatorEngine?: string;
   defaultValidatorEngine?: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
@@ -16,12 +16,12 @@ interface FormConfig {
 }
 export const createForm = (config: FormConfig) => {
   const {
-    graph,
     validatorEngine = 'zod',
     defaultValidatorEngine = 'zod',
     boolsConfig,
     components,
     resolvers,
+    graph,
     id
   } = config;
   const form = createRXForm({
@@ -29,7 +29,7 @@ export const createForm = (config: FormConfig) => {
     validatorEngine,
     defaultValidatorEngine,
     boolsConfig,
-    graph,
+    graph
   })
 
   if (resolvers?.validator) {
@@ -47,7 +47,7 @@ export const createForm = (config: FormConfig) => {
 
   const app = <div>
     {
-      graph.map((field) => {
+      form.graph.map((field) => {
         return <FieldControl
           key={field.path}
           field={field}

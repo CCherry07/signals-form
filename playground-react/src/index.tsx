@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Signal } from "@preact/signals-core"
+import { cloneDeep } from "lodash-es"
 import {
   Validator,
   Events,
@@ -246,16 +247,16 @@ class Agreement extends Field {
   id: 'userinfo',
   component: 'form',
   properties: [
-    new Email(),
-    new Password(),
-    new Nickname(),
-    new Residence(),
-    new Phone(),
-    new Donation(),
-    new Intro(),
-    new Gender(),
-    new Captcha(),
-    new Agreement()
+    Email,
+    Password,
+    Nickname,
+    Residence,
+    Phone,
+    Donation,
+    Intro,
+    Gender,
+    Captcha,
+    Agreement
   ],
   props: {
     style: {
@@ -283,18 +284,20 @@ class UserInfo extends Field {
     id && (this.id = id)
   }
 }
-const graph = [
-  new UserInfo()
+const graph1 = [
+  UserInfo
 ]
 
-export const {
-  form,
-  app
-} = createGroupForm().add({
+const graph2 = [
+  UserInfo
+]
+
+const formGroup = createGroupForm()
+const form1 = formGroup.add({
   validatorEngine: "zod",
   defaultValidatorEngine: "zod",
   boolsConfig: bools,
-  graph,
+  graph: graph1,
   id: 'form1',
   components: {
     form: Form,
@@ -307,5 +310,30 @@ export const {
     select: Select
   }
 })
+const form2 = formGroup.add({
+  validatorEngine: "zod",
+  defaultValidatorEngine: "zod",
+  boolsConfig: {
+    isNickname: (model: Model) => normalizeSignal('userinfo.nickname', model).value === "cherry"
+  },
+  graph: graph2,
+  id: 'form2',
+  components: {
+    form: Form,
+    input: Input,
+    checkbox: Checkbox,
+    card: CardComponent,
+    inputType: InputType,
+    inputNumber: InputNumber,
+    cascader: Cascader,
+    select: Select
+  }
+})
 const root = createRoot(document.getElementById('root')!);
-root.render(<App app={app} form={form} />);
+root.render(<App apps={[
+  form1.app,
+  form2.app
+]} forms={[
+  form1.form,
+  form2.form
+]} />);

@@ -1,9 +1,17 @@
-import { AbstractModel, AbstractModelConstructorOptions, Model, AbstractModelMethods } from "./abstract_model"
+import { AbstractModel, Model, AbstractModelMethods } from "./abstract_model"
 import { Field } from "../controls/field"
 import { signal } from "@preact/signals-core"
+import { BoolsConfig } from "../boolless";
+import { isFunction } from "@rxform/shared";
 // import { isFunction, toValue } from "@rxform/shared"
-export interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M> {
+export interface FormConfig<M extends Model> {
   id: string
+  validatorEngine: string;
+  defaultValidatorEngine: string;
+  boolsConfig: BoolsConfig<M>
+  model?: M;
+  graph?: typeof Field[]
+  fields?: Record<string, Field>
 }
 // async function syncBindingModel(
 //   abstractModelMethods: AbstractModelMethods,
@@ -38,6 +46,17 @@ export interface FormConfig<M extends Model> extends AbstractModelConstructorOpt
 //   }, Promise.resolve(signal({} as any)))
 // }
 
+export function createGraph(graph: (typeof Field | Field)[]): Field[] {
+  return graph.map(Field => {
+    const field = isFunction(Field) ? new Field() : Field
+    const { properties } = field
+    if (properties) {
+      field.properties = createGraph(properties as any)
+    }
+    return field
+  })
+}
+
 export function asyncBindingModel(
   abstractModelMethods: AbstractModelMethods,
   graph: Field[],
@@ -71,9 +90,11 @@ export function createRXForm(config: FormConfig<Model>) {
     onSubscribe: form.onSubscribe.bind(form)
   }
   const fields = {}
-  const model = asyncBindingModel(methods, config.graph!, fields, "")
+  const graph = createGraph(config.graph!)
+  const model = asyncBindingModel(methods, graph!, fields, "")
   form.init({
     ...config,
+    graph,
     model,
     fields
   })

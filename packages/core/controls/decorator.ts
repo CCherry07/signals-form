@@ -20,7 +20,7 @@ export interface ComponentMetaData {
   props?: PropsMetaData
   recoverValueOnHidden?: boolean
   recoverValueOnShown?: boolean
-  properties?: Field[]
+  properties?: typeof Field[]
 }
 export function Component(metadata: ComponentMetaData): ClassDecorator {
   return function (constructor: Function) {
