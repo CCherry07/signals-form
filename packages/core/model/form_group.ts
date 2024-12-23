@@ -1,31 +1,62 @@
-import { AbstractModel, Model } from "./abstract_model"
+import { AbstractModel, AbstractModelMethods, Model } from "./abstract_model"
+import { asyncBindingModel, FormConfig } from "./form"
 
 export class FormGroup {
-  models: Map<string, Model>;
-  form: Map<string, AbstractModel<any>>;
+  form?: AbstractModel<any>;
+  forms: Map<string, AbstractModel<any>>;
   constructor() {
-    this.models = new Map();
-    this.form = new Map();
+    this.forms = new Map();
   }
 
-  addControl(id: string, model: Model) {
-    this.models.set(id, model);
+  create(config: FormConfig<Model>) {
+    const form = new AbstractModel(config.id)
+    const methods: AbstractModelMethods = {
+      setFieldValue: form.setFieldValue.bind(form),
+      setErrors: form.setErrors.bind(form),
+      setFieldProps: form.setFieldProps.bind(form),
+      cleanErrors: form.cleanErrors.bind(form),
+      onSubscribe: form.onSubscribe.bind(form)
+    }
+    const fields = {}
+    const model = asyncBindingModel(methods, config.graph!, fields, "")
+    form.init({
+      ...config,
+      model,
+      fields
+    })
+    this.add(config.id, form);
+    return this;
   }
 
-  removeControl(id: string) {
-    this.models.delete(id);
+  add(id: string, form: AbstractModel<any>) {
+    this.forms.set(id, form);
+    return this;
+  }
+
+  remove(id: string) {
+    this.forms.delete(id);
+    return this;
   }
 
   get(id: string) {
-    return this.models.get(id);
+    return this.forms.get(id);
   }
 
-  changeModel(id: string) {
-    const model = this.get(id);
-    this.form.updateModel(model);
+  use(id: string) {
+    const form = this.forms.get(id);
+    if (!form) {
+      throw new Error("form is not defined")
+    }
+    this.form = form;
+    return this;
   }
+}
 
-  changeForm() {
-    
+let formGroup: FormGroup | undefined;
+export function createGroupForm() {
+  if (formGroup) {
+    return formGroup
   }
+  formGroup = new FormGroup()
+  return formGroup
 }

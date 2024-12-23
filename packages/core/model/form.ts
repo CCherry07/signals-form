@@ -2,7 +2,7 @@ import { AbstractModel, AbstractModelConstructorOptions, Model, AbstractModelMet
 import { Field } from "../controls/field"
 import { signal } from "@preact/signals-core"
 // import { isFunction, toValue } from "@rxform/shared"
-interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M> {
+export interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M> {
   id: string
 }
 // async function syncBindingModel(
@@ -38,7 +38,7 @@ interface FormConfig<M extends Model> extends AbstractModelConstructorOptions<M>
 //   }, Promise.resolve(signal({} as any)))
 // }
 
-function asyncBindingModel(
+export function asyncBindingModel(
   abstractModelMethods: AbstractModelMethods,
   graph: Field[],
   fields: Record<string, Field>,

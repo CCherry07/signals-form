@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineOptions } from "vue"
 import { Input, Form } from "ant-design-vue"
 interface Props {
   errors: any;

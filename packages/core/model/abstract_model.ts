@@ -5,6 +5,7 @@ import { get, set } from "@rxform/shared";
 import { Field, FiledUpdateType } from "../controls/field";
 import { Resolver } from "../validator/resolvers/type";
 import { validatorResolvers } from "../validator";
+import { asyncBindingModel } from "./form";
 export type Model = Record<string, any>;
 export interface AbstractModel<M extends Signal<Model>> {
   bools: BoolValues;
@@ -52,18 +53,52 @@ export interface AbstractModelConstructorOptions<M extends Model> {
   validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: BoolsConfig<M>
-  model?: M
+  model?: M;
   graph?: Field[]
   fields?: Record<string, Field>
 }
 
 export class AbstractModel<M> implements AbstractModel<M> {
   id: string;
+  models: Map<string, M>;
   constructor(id: string) {
     this.validatorResolvers = validatorResolvers
     this.isPending = signal(false)
     this.id = id
+    this.models = new Map();
   }
+
+  createModel(modelId: string, graph: Field[]) {
+    const methods: AbstractModelMethods = {
+      setFieldValue: this.setFieldValue.bind(this),
+      setErrors: this.setErrors.bind(this),
+      setFieldProps: this.setFieldProps.bind(this),
+      cleanErrors: this.cleanErrors.bind(this),
+      onSubscribe: this.onSubscribe.bind(this)
+    }
+    const fields = {}
+    const model = asyncBindingModel(methods, graph!, fields, "") as M;
+    this.addModel(modelId, model);
+    return model;
+  }
+
+  addModel(modelId: string, model: M) {
+    this.models.set(modelId, model);
+  }
+
+  useModel(modelId: string) {
+    const model = this.models.get(modelId);
+    if (!model) {
+      throw new Error("model is not defined")
+    }
+    this.updateModel(model);
+    return model;
+  }
+
+  removeModel(modelId: string) {
+    this.models.delete(modelId);
+  }
+
   onSubscribe(fn: (props: SubscribeProps<M>) => void) {
     return effect(() => {
       const cleanup = fn({
@@ -82,6 +117,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.submiting = signal(false);
     this.errors = {};
     this.model = model as M;
+    this.addModel("default", model as M);
     this.validatorEngine = validatorEngine;
     this.defaultValidatorEngine = defaultValidatorEngine
     this.bools = Object.freeze(setup(boolsConfig, this.model))
