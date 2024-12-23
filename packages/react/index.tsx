@@ -1,6 +1,6 @@
 import React, { ComponentClass, FunctionComponent } from 'react';
 import { FieldControl } from "./FieldControl";
-import { createRXForm, Field, setupValidator } from "@rxform/core"
+import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
 import { Resolver } from '@rxform/core/validator/resolvers/type';
 
 interface FormConfig {
@@ -24,7 +24,7 @@ export const createForm = (config: FormConfig) => {
     resolvers,
     id
   } = config;
-  const from = createRXForm({
+  const form = createRXForm({
     id,
     validatorEngine,
     defaultValidatorEngine,
@@ -51,7 +51,7 @@ export const createForm = (config: FormConfig) => {
         return <FieldControl
           key={field.path}
           field={field}
-          model={from.model}
+          model={form.model}
           resolveComponent={resolveComponent}
         />
       })
@@ -60,6 +60,67 @@ export const createForm = (config: FormConfig) => {
 
   return {
     app,
-    from
+    form
+  }
+}
+
+
+export const createGroupForm = () => {
+  const formGroup = createRXGroupForm()
+  const apps = new Map()
+  const createApp = (config: FormConfig) => {
+    const form = formGroup.create({
+      validatorEngine: config.validatorEngine ?? 'zod',
+      defaultValidatorEngine: config.defaultValidatorEngine ?? 'zod',
+      ...config,
+    }).form!
+    function resolveComponent(component: string | FunctionComponent<any> | ComponentClass<any, any>) {
+      if (typeof component === 'string') {
+        return config.components[component]
+      }
+      return component
+    }
+    if (config.resolvers?.validator) {
+      Object.entries(config.resolvers.validator).forEach(([validator, resolver]) => {
+        setupValidator(validator, resolver)
+      })
+    }
+    const app = <div>
+    {
+      form.graph.map((field) => {
+        return <FieldControl
+          key={field.path}
+          field={field}
+          model={form.model}
+          resolveComponent={resolveComponent}
+        />
+      })
+    }
+  </div>
+    return {
+      app,
+      form
+    }
+  }
+  return {
+    add(config: FormConfig) {
+      const { app, form } = createApp(config)
+      apps.set(config.id, app)
+      formGroup.add(config.id, form)
+      return {
+        app,
+        form
+      }
+    },
+    remove(id: string) {
+      apps.delete(id)
+      formGroup.remove(id)
+    },
+    get(id: string) {
+      return {
+        form: formGroup.get(id),
+        app: apps.get(id)
+      }
+    },
   }
 }

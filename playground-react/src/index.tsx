@@ -288,7 +288,7 @@ const graph = [
 ]
 
 export const {
-  from,
+  form,
   app
 } = createForm({
   validatorEngine: "zod",
@@ -308,4 +308,4 @@ export const {
   }
 })
 const root = createRoot(document.getElementById('root')!);
-root.render(<App app={app} from={from} />);
+root.render(<App app={app} form={form} />);

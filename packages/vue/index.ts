@@ -74,6 +74,11 @@ export const createGroupForm = () => {
       }
       return component
     }
+    if (config.resolvers?.validator) {
+      Object.entries(config.resolvers.validator).forEach(([validator, resolver]) => {
+        setupValidator(validator, resolver)
+      })
+    }
     const app = h('div', null, form.graph.map((field) => {
       return h(FieldControl, {
         key: field.path,

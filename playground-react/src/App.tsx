@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { ReactNode } from "react";
 import { Submit } from "./components/Submit";
 import { effect } from "@preact/signals-core";
-import { Space, Spin } from "antd";
+import { Spin } from "antd";
 import { toDeepValue } from "@rxform/core";
 interface Parops {
   app: ReactNode,
-  from: any
+  form: any
 }
 export function App(props: Parops) {
   const [state, setState] = useState(false)
@@ -14,11 +14,11 @@ export function App(props: Parops) {
   const [model, setModel] = useState({} as any)
   useEffect(() => {
     effect(() => {
-      setState(props.from.isPending.value)
-      setSubmitted(props.from.submiting.value)
+      setState(props.form.isPending.value)
+      setSubmitted(props.form.submiting.value)
     })
     effect(() => {
-      setModel(toDeepValue(props.from.model.value))
+      setModel(toDeepValue(props.form.model.value))
     })
   }, [])
   return <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100vh" }}>
@@ -27,7 +27,7 @@ export function App(props: Parops) {
     </div>
     <Spin spinning={state || submiting}>
       {props.app}
-      <Submit from={props.from} />
+      <Submit form={props.form} />
     </Spin>
   </div>
 }

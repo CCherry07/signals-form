@@ -1,13 +1,13 @@
 import React from "react";
 import { Button, Space } from "antd"
 interface Props {
-  from: any;
+  form: any;
 }
 export function Submit(props: Props) {
-  const { from } = props;
+  const { form } = props;
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    from.submit().then((res: any) => {
+    form.submit().then((res: any) => {
       console.log("form model", res);
     }).catch((err: any) => {
       console.log("form model", err);
@@ -15,6 +15,6 @@ export function Submit(props: Props) {
   };
   return <Space style={{ marginTop: 20 }}>
     <Button variant="filled" type="primary" onClick={handleSubmit}>submit</Button>
-    <Button variant="filled" type="primary" onClick={() => from.reset()}>reset</Button>
+    <Button variant="filled" type="primary" onClick={() => form.reset()}>reset</Button>
   </Space>
 }
