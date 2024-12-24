@@ -1,10 +1,11 @@
-import { validate, type ValidateItem } from ".."
+import { validate, type ValidateItem, setupValidator } from "@rxform/core"
+import { zodResolver } from "@rxform/resolvers"
+import { toValue } from "@rxform/shared"
 import { z } from "zod"
 import { describe, it, expect } from "vitest"
-import { D, setup } from "../../boolless"
+import { D, setup } from "../../packages/core/boolless"
 import { ReadonlySignal, signal } from "@preact/signals-core"
-import { toValue } from "@rxform/shared"
-
+setupValidator("zod", zodResolver as any)
 const context = signal({
   name: signal('cherry'),
   age: signal(18),

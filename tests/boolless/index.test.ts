@@ -1,5 +1,5 @@
 import { signal } from "@preact/signals-core"
-import { D, Decision, type Node, registerCustomOperator } from ".."
+import { D, Decision, type Node, registerCustomOperator } from "@rxform/core"
 import { test, expect } from "vitest"
 
 registerCustomOperator(

@@ -9,5 +9,6 @@ export {
   setup as setupValidator,
   validate
 } from "./validator"
+export type { ValidateItem } from "./validator"
 
 export { createTemplateLiterals as js } from "@rxform/shared"
