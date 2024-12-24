@@ -104,6 +104,9 @@ export const createGroupForm = () => {
     }
   }
   return {
+    getFormGroup() {
+      return formGroup
+    },
     add(config: FormConfig) {
       const { app, form } = createApp(config)
       apps.set(config.id, app)

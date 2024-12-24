@@ -2,9 +2,8 @@ import { batch, effect, signal, Signal } from "@preact/signals-core";
 import { FieldErrors } from "../validator"
 import { BoolValues, Decision } from "../boolless";
 import { EventMetaData, getComponentMetaData, getEventsMetaData, getModelPipeMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
-import { get, isFunction, isSignal, set, toDeepValue, toValue } from "@rxform/shared";
+import { get, isFunction, isPromise, isSignal, set, toDeepValue, toValue } from "@rxform/shared";
 import { AbstractModelMethods } from "../model/abstract_model";
-import { isPromise } from "rxjs/internal/Observable";
 
 export enum FiledUpdateType {
   Value = "value",

@@ -313,9 +313,7 @@ const form1 = formGroup.add({
 const form2 = formGroup.add({
   validatorEngine: "zod",
   defaultValidatorEngine: "zod",
-  boolsConfig: {
-    isNickname: (model: Model) => normalizeSignal('userinfo.nickname', model).value === "cherry"
-  },
+  boolsConfig: bools,
   graph: graph2,
   id: 'form2',
   components: {
@@ -329,6 +327,8 @@ const form2 = formGroup.add({
     select: Select
   }
 })
+console.log(formGroup.getFormGroup());
+
 const root = createRoot(document.getElementById('root')!);
 root.render(<App apps={[
   form1.app,
