@@ -61,6 +61,83 @@ importers:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.7.2)
 
+  examples/react:
+    dependencies:
+      '@rxform/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@rxform/react':
+        specifier: workspace:*
+        version: link:../../packages/react
+      '@rxform/resolvers':
+        specifier: workspace:*
+        version: link:../../packages/resolvers
+      antd:
+        specifier: ^5.22.5
+        version: 5.22.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@farmfe/cli':
+        specifier: ^1.0.4
+        version: 1.0.4
+      '@farmfe/core':
+        specifier: ^1.6.0
+        version: 1.6.0
+      '@farmfe/plugin-react':
+        specifier: ^1.2.6
+        version: 1.2.6
+      '@types/react':
+        specifier: ^18.3.18
+        version: 18.3.18
+      '@types/react-dom':
+        specifier: ^18.3.5
+        version: 18.3.5(@types/react@18.3.18)
+      core-js:
+        specifier: ^3.39.0
+        version: 3.39.0
+      react-refresh:
+        specifier: ^0.14.2
+        version: 0.14.2
+
+  examples/vue:
+    dependencies:
+      '@rxform/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@rxform/resolvers':
+        specifier: workspace:*
+        version: link:../../packages/resolvers
+      '@rxform/vue':
+        specifier: workspace:*
+        version: link:../../packages/vue
+      ant-design-vue:
+        specifier: ^4.2.6
+        version: 4.2.6(vue@3.5.13(typescript@5.7.2))
+      vue:
+        specifier: ^3.5.13
+        version: 3.5.13(typescript@5.7.2)
+    devDependencies:
+      '@farmfe/cli':
+        specifier: ^1.0.4
+        version: 1.0.4
+      '@farmfe/core':
+        specifier: ^1.6.0
+        version: 1.6.0
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.4
+        version: 5.2.1(vite@5.4.11(@types/node@22.10.2))(vue@3.5.13(typescript@5.7.2))
+      core-js:
+        specifier: ^3.30.1
+        version: 3.39.0
+
   packages/core:
     dependencies:
       '@rxform/shared':
@@ -98,83 +175,6 @@ importers:
       vue:
         specifier: ^3.5.13
         version: 3.5.13(typescript@5.7.2)
-
-  playground-react:
-    dependencies:
-      '@rxform/core':
-        specifier: workspace:*
-        version: link:../packages/core
-      '@rxform/react':
-        specifier: workspace:*
-        version: link:../packages/react
-      '@rxform/resolvers':
-        specifier: workspace:*
-        version: link:../packages/resolvers
-      antd:
-        specifier: ^5.22.5
-        version: 5.22.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      lodash-es:
-        specifier: ^4.17.21
-        version: 4.17.21
-      react:
-        specifier: 18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: 18.3.1
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@farmfe/cli':
-        specifier: ^1.0.4
-        version: 1.0.4
-      '@farmfe/core':
-        specifier: ^1.6.0
-        version: 1.6.0
-      '@farmfe/plugin-react':
-        specifier: ^1.2.6
-        version: 1.2.6
-      '@types/react':
-        specifier: ^18.3.18
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: ^18.3.5
-        version: 18.3.5(@types/react@18.3.18)
-      core-js:
-        specifier: ^3.39.0
-        version: 3.39.0
-      react-refresh:
-        specifier: ^0.14.2
-        version: 0.14.2
-
-  playground-vue:
-    dependencies:
-      '@rxform/core':
-        specifier: workspace:*
-        version: link:../packages/core
-      '@rxform/resolvers':
-        specifier: workspace:*
-        version: link:../packages/resolvers
-      '@rxform/vue':
-        specifier: workspace:*
-        version: link:../packages/vue
-      ant-design-vue:
-        specifier: ^4.2.6
-        version: 4.2.6(vue@3.5.13(typescript@5.7.2))
-      vue:
-        specifier: ^3.5.13
-        version: 3.5.13(typescript@5.7.2)
-    devDependencies:
-      '@farmfe/cli':
-        specifier: ^1.0.4
-        version: 1.0.4
-      '@farmfe/core':
-        specifier: ^1.6.0
-        version: 1.6.0
-      '@vitejs/plugin-vue':
-        specifier: ^5.0.4
-        version: 5.2.1(vite@5.4.11(@types/node@22.10.2))(vue@3.5.13(typescript@5.7.2))
-      core-js:
-        specifier: ^3.30.1
-        version: 3.39.0
 
 packages:
 
