@@ -9,7 +9,7 @@ export const METADATA_COMPONENT = 'component:metadata'
 export const METADATA_VALIDATOR = 'validator:metadata'
 export const METADATA_SIGNALS = 'signals:metadata'
 export const METADATA_EVENTS = 'events:metadata'
-export const METADATA_MODEL = 'model:metadata'
+export const METADATA_ACTIONS = 'actions:metadata'
 export const METADATA_PROPS = 'props:metadata'
 
 export interface ComponentMetaData {
@@ -68,18 +68,18 @@ export function getEventsMetaData(target: Function) {
   return Reflect.getMetadata(METADATA_EVENTS, target) as EventMetaData;
 }
 
-export interface ModelPipeMetaData<T, D> {
-  model2data?: (model: T) => D
-  data2model?: (data: D) => T
+export interface TransferMetaData<T, D> {
+  onDefault?: (model: T) => D
+  onSubmit?: (data: D) => T
 };
-export function ModelPipe<T, D>(metadata: ModelPipeMetaData<T, D>) {
+export function Actions<T, D>(metadata: TransferMetaData<T, D>) {
   return function (target: Function) {
-    Reflect.defineMetadata(METADATA_MODEL, metadata, target);
+    Reflect.defineMetadata(METADATA_ACTIONS, metadata, target);
   };
 }
 
-export function getModelPipeMetaData<T, D>(target: Function) {
-  return Reflect.getMetadata(METADATA_MODEL, target) as ModelPipeMetaData<T, D>;
+export function getActionsMetaData<T, D>(target: Function) {
+  return Reflect.getMetadata(METADATA_ACTIONS, target) as TransferMetaData<T, D>;
 }
 
 export interface PropsMetaData {

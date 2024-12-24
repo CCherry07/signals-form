@@ -1,7 +1,7 @@
 import { batch, effect, signal, Signal } from "@preact/signals-core";
 import { FieldErrors } from "../validator"
 import { BoolValues, Decision } from "../boolless";
-import { EventMetaData, getComponentMetaData, getEventsMetaData, getModelPipeMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
+import { EventMetaData, getActionsMetaData, getComponentMetaData, getEventsMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
 import { get, isFunction, isPromise, isSignal, set, toDeepValue, toValue } from "@rxform/shared";
 import { AbstractModelMethods } from "../model/abstract_model";
 
@@ -25,8 +25,8 @@ export class Field<T = any, D = any> {
   validator?: ValidatorMetaData;
   signals?: SignalsMetaData;
   events?: EventMetaData;
-  data2model?: (data?: D) => T;
-  model2data?: (model: T) => D;
+  onDefault?: (data?: D) => T;
+  onSubmit?: (model: T) => D;
   private tracks: Array<Function> = []
   abstractModel!: AbstractModelMethods;
   onBeforeInit?(): void
@@ -76,14 +76,14 @@ export class Field<T = any, D = any> {
   onTrack(fn: Function): void {
     this.tracks.push(fn)
   }
-  async onSubmit() {
+  async _onSubmit() {
     const fieldPathLength = this.path.length + 1
-    if (isFunction(this.model2data)) {
-      return await this.model2data(toDeepValue(this.value.peek()))
+    if (isFunction(this.onSubmit)) {
+      return await this.onSubmit(toDeepValue(this.value.peek()))
     } else if (this.properties) {
       const model: any = {}
       await Promise.all(Object.values(this.properties).map(async (field) => {
-        return set(model, field.path.slice(fieldPathLength), await field.onSubmit())
+        return set(model, field.path.slice(fieldPathLength), await field._onSubmit())
       }))
       return model
     } else {
@@ -137,12 +137,12 @@ export class Field<T = any, D = any> {
   }
   initFieldMetaDate() {
     const componentMeta = getComponentMetaData(this.constructor)
-    const modelpipe = getModelPipeMetaData(this.constructor)
+    const actions = getActionsMetaData(this.constructor)
     const eventsMeta = { events: getEventsMetaData(this.constructor) }
     const validatorMeta = { validator: getValidatorMetaData(this.constructor) }
     const signalsMeta = { signals: getSignalsMetaData(this.constructor) }
     const propsMeta = getPropsMetaData(this.constructor) ? { props: getPropsMetaData(this.constructor) } : {}
-    Object.assign(this, componentMeta, modelpipe, validatorMeta, signalsMeta, eventsMeta, propsMeta)
+    Object.assign(this, componentMeta, actions, validatorMeta, signalsMeta, eventsMeta, propsMeta)
   }
 
   resetState() {
@@ -159,7 +159,7 @@ export class Field<T = any, D = any> {
   }
 
   resetModel(model?: T | Promise<T>) {
-    const filedValue: any = isFunction(this.data2model) ? this.data2model() : model;
+    const filedValue: any = isFunction(this.onDefault) ? this.onDefault() : model;
     if (this.properties) {
       const fields = Object.values(this.properties!)
       if (isPromise(filedValue)) {
@@ -192,7 +192,7 @@ export class Field<T = any, D = any> {
 
   reset(model?: T) {
     this.resetState()
-    const filedValue: any = isFunction(this.data2model) ? this.data2model() : model;
+    const filedValue: any = isFunction(this.onDefault) ? this.onDefault() : model;
     if (this.properties) {
       const fields = this.properties!
       if (isPromise(filedValue)) {
@@ -224,7 +224,7 @@ export class Field<T = any, D = any> {
   init(model?: T) {
     this.value = signal(undefined as unknown as T)
     this.resetState()
-    const filedValue: any = isFunction(this.data2model) ? this.data2model() : model;
+    const filedValue: any = isFunction(this.onDefault) ? this.onDefault() : model;
     if (this.properties) {
       const fields = Object.values(this.properties!)
       if (isPromise(filedValue)) {

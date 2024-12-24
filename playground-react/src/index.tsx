@@ -1,14 +1,13 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Signal } from "@preact/signals-core"
-import { cloneDeep } from "lodash-es"
 import {
   Validator,
   Events,
   D, Field, Component,
-  Props,
+  Props, Signals as FieldSignals,
   normalizeSignal,
-  ModelPipe
+  Actions
 } from "@rxform/core"
 import Form from "./components/Form"
 import Input from "./components/Input"
@@ -18,7 +17,7 @@ import InputNumber from "./components/InputNumber"
 import Cascader from './components/Cascader';
 import Select from './components/Select';
 import { Card as CardComponent } from './components/Card';
-import { createForm, createGroupForm } from "@rxform/react"
+import { createGroupForm } from "@rxform/react"
 import { App } from "./App"
 import { z } from 'zod';
 
@@ -71,11 +70,18 @@ class Phone extends Field {
     this.value.value = data
   }
 })
-@ModelPipe({
-  data2model() {
+@Actions({
+  onDefault() {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve("chen@163.com")
+      }, 500)
+    })
+  },
+  onSubmit(data) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(data + "@163.com")
       }, 500)
     })
   }
@@ -164,8 +170,8 @@ class Residence extends Field {
     title: "Donation"
   }
 })
-@ModelPipe({
-  model2data(model: number) {
+@Actions({
+  onSubmit(model: number) {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(model / 2)
@@ -264,8 +270,8 @@ class Agreement extends Field {
     }
   }
 })
-@ModelPipe({
-  data2model() {
+@Actions({
+  onDefault() {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
@@ -284,11 +290,7 @@ class UserInfo extends Field {
     id && (this.id = id)
   }
 }
-const graph1 = [
-  UserInfo
-]
-
-const graph2 = [
+const graph = [
   UserInfo
 ]
 
@@ -297,7 +299,7 @@ const form1 = formGroup.add({
   validatorEngine: "zod",
   defaultValidatorEngine: "zod",
   boolsConfig: bools,
-  graph: graph1,
+  graph,
   id: 'form1',
   components: {
     form: Form,
@@ -314,7 +316,7 @@ const form2 = formGroup.add({
   validatorEngine: "zod",
   defaultValidatorEngine: "zod",
   boolsConfig: bools,
-  graph: graph2,
+  graph,
   id: 'form2',
   components: {
     form: Form,

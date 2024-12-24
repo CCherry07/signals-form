@@ -14,7 +14,6 @@ interface FormConfig {
   }
 }
 export class FormGroup {
-  form?: AbstractModel<any>;
   forms: Map<string, AbstractModel<any>>;
   constructor() {
     this.forms = new Map();

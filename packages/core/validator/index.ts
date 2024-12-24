@@ -13,7 +13,7 @@ export interface ValidateItem {
   schema: any
   engine?: string
   fact?: string | object
-  updateOn?: string
+  updateOn?: string | string[]
   needValidate?: Decision
   factoryOptions?: FactoryOptions
   schemaOptions?: any
@@ -23,7 +23,7 @@ export const validatorResolvers: Record<string, Resolver> = {
   zod: zodResolver
 }
 
-export function setup(validator: string, resolver: Resolver){
+export function setup(validator: string, resolver: Resolver) {
   if (!isProd && validatorResolvers[validator]) {
     console.warn(`${validator} is already registered`);
   }
@@ -64,11 +64,11 @@ export const validate = async <T>({ state, updateOn: _updateOn }: State<T>, vali
   for (const item of validates) {
     const { schema, engine = 'zod', fact, updateOn, schemaOptions, factoryOptions, needValidate } = item
     if (needValidate instanceof Decision && needValidate.not().evaluate(boolsConfig)) continue
-    if (typeof updateOn === "string" && updateOn !== _updateOn) continue
+    if (typeof updateOn === "string" && updateOn !== _updateOn || isArray(updateOn) && updateOn.includes(_updateOn)) continue
     if (!isFunction(validatorResolvers[engine])) {
       throw new Error(`validator ${engine} is not registered`)
     }
-    
+
     const validator = validatorResolvers[engine](schema, schemaOptions, factoryOptions)
     const factValue = fact ? getFactValue(fact, state, context) : state
 

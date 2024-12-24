@@ -20,11 +20,11 @@ export interface FormConfig<M extends Model> {
 //   path: string,
 // ) {
 //   return Object.entries(graph).reduce(async (_parent, [, field]) => {
-//     const { id, data2model, properties } = field
+//     const { id, onDefault, properties } = field
 //     const filedValue = signal()
-//     if (isFunction(data2model)) {
+//     if (isFunction(onDefault)) {
 //       field.isPending.value = true
-//       filedValue.value = await data2model()
+//       filedValue.value = await onDefault()
 //       field.isPending.value = false
 //     } else {
 //       filedValue.value = toValue(field?.value)

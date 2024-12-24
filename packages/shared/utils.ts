@@ -14,5 +14,5 @@ export function isDepsEq(newDeps: any, oldDeps: any): boolean {
   return Object.is(newDeps, oldDeps);
 }
 export function isPromise(value: any): value is PromiseLike<any> {
-  return isFunction(value.then)
+  return isFunction(value?.then)
 }
