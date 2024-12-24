@@ -1,10 +1,17 @@
 name: Node CI - Build
-on: workflow_call
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: release
+    name: ci
+    if: contains(github.event.head_commit.message, 'chore(versions)') == false
     steps:
       - uses: actions/checkout@v3
         with:
