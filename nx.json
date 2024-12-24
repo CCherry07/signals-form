@@ -1,0 +1,45 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "defaultBase": "main",
+  "tasksRunnerOptions": {
+    "default": {
+      "options": {
+        "cacheableOperations": [
+          "build"
+        ]
+      }
+    }
+  },
+  "targetDefaults": {
+    "build": {
+      "inputs": [
+        "!{projectRoot}/**/*.md}"
+      ],
+      "dependsOn": [
+        "^build"
+      ],
+      "options": {
+        "commands": [
+          {
+            "command": "npm run build"
+          }
+        ]
+      }
+    },
+    "dev": {
+      "inputs": [
+        "!{projectRoot}/**/*.md}"
+      ],
+      "dependsOn": [
+        "^build"
+      ],
+      "options": {
+        "commands": [
+          {
+            "command": "npm run dev"
+          }
+        ]
+      }
+    }
+  }
+}

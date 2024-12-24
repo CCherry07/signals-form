@@ -1,0 +1,42 @@
+name: Node CI - Build
+on: workflow_call
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: release
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+
+      - name: Enable Corepack
+        id: pnpm-setup
+        run: |
+          corepack enable
+
+      - name: Initliaze .npmrc
+        run: >
+          echo -e "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}\n$(cat .npmrc)" > .npmrc
+          && cat -n .npmrc
+
+      - name: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Packages
+        run: |
+          pnpm run build
+
+      - name: E2E Test
+        run: |
+          pnpm run test:e2e
+          env:
+          CI: true
+          HEADLESS: false
+          PROGRESS: none
+          NODE_ENV: test

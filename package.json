@@ -5,7 +5,8 @@
   "scripts": {
     "play:react": "pnpm --filter playground-react dev",
     "play:vue": "pnpm --filter playground-vue dev",
-    "build": "farm build",
+    "build": "npx nx affected:build",
+    "build:all": "npx nx run-many --target=build",
     "preview": "farm preview",
     "clean": "farm clean",
     "test": "vitest"
@@ -23,7 +24,8 @@
     "react-refresh": "^0.16.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8",
-    "vue":"3.5.13"
+    "vue": "3.5.13",
+    "nx": "20.3.0"
   },
   "packageManager": "pnpm@9.12.3+sha512.cce0f9de9c5a7c95bef944169cc5dfe8741abfb145078c0d508b868056848a87c81e626246cb60967cbd7fd29a6c062ef73ff840d96b3c86c40ac92cf4a813ee",
   "dependencies": {
