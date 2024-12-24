@@ -28,7 +28,7 @@ class Nickname extends Field {
     }
   },
   properties: [
-    new Nickname()
+    Nickname
   ]
 })
 class UserInfo extends Field {
@@ -50,7 +50,7 @@ const bools = {
   isNickname: (model: Model) => normalizeSignal('userinfo.nickname', model).value === "cherry"
 }
 const graph = [
-  new UserInfo()
+  UserInfo
 ]
 const { form, app } = createForm({
   graph,
