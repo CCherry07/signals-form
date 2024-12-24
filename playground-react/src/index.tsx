@@ -20,6 +20,7 @@ import { Card as CardComponent } from './components/Card';
 import { createGroupForm } from "@rxform/react"
 import { App } from "./App"
 import { z } from 'zod';
+import { zodResolver } from "@rxform/resolvers"
 
 type Model = Signal<{
   userinfo: Signal<{
@@ -301,6 +302,11 @@ const form1 = formGroup.add({
   boolsConfig: bools,
   graph,
   id: 'form1',
+  resolvers:{
+    validator: {
+      zod: zodResolver
+    }
+  },
   components: {
     form: Form,
     input: Input,
@@ -318,6 +324,11 @@ const form2 = formGroup.add({
   boolsConfig: bools,
   graph,
   id: 'form2',
+  resolvers:{
+    validator: {
+      zod: zodResolver
+    }
+  },
   components: {
     form: Form,
     input: Input,

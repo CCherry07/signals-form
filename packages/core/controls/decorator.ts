@@ -69,8 +69,8 @@ export function getEventsMetaData(target: Function) {
 }
 
 export interface TransferMetaData<T, D> {
-  onDefault?: (model: T) => D
-  onSubmit?: (data: D) => T
+  onDefault?: (this: Field, model: T) => D
+  onSubmit?: (this:Field, data: D) => T
 };
 export function Actions<T, D>(metadata: TransferMetaData<T, D>) {
   return function (target: Function) {

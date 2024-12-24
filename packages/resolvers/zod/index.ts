@@ -1,6 +1,11 @@
 import { z, ZodError } from "zod";
-import { Resolver } from "../type";
-import { FieldError, FieldErrors } from "../../error/field"
+import { Resolver } from "./type";
+export interface FieldError {
+  message: string
+  type: string
+}
+
+export type FieldErrors = Record<string, FieldError>
 const isZodError = (error: any): error is ZodError =>
   Array.isArray(error?.errors);
 

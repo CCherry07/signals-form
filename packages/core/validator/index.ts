@@ -1,14 +1,9 @@
 import { isProd, isArray, isObject, isString, get, isFunction } from "@rxform/shared"
-import { zodResolver } from "./resolvers/zod"
 import { BoolValues, Decision } from "../boolless"
 
-import type { Resolver, FactoryOptions } from "./resolvers/type"
-import type { FieldErrors, FieldError } from "./error/field"
+import { FactoryOptions, Resolver } from "../resolvers/type"
+import { FieldErrors } from "../controls/field"
 
-export {
-  FieldErrors,
-  FieldError
-}
 export interface ValidateItem {
   schema: any
   engine?: string
@@ -20,7 +15,6 @@ export interface ValidateItem {
 }
 
 export const validatorResolvers: Record<string, Resolver> = {
-  zod: zodResolver
 }
 
 export function setup(validator: string, resolver: Resolver) {

@@ -1,7 +1,7 @@
 import { createApp, createVNode } from 'vue';
 import App from './App.vue';
 import { createForm } from "@rxform/vue"
-import { Field, Component, normalizeSignal } from '@rxform/core';
+import { Field, Component, normalizeSignal,Props } from '@rxform/core';
 import Form from "./components/From.vue"
 import { Signal } from '@preact/signals-core';
 import Input from './components/Input.vue';
@@ -22,14 +22,14 @@ class Nickname extends Field {
 @Component({
   id: "userinfo",
   component: "form",
-  props: {
-    style: {
-      width: "400px",
-    }
-  },
   properties: [
     Nickname
   ]
+})
+@Props({
+  style: {
+    width: "400px",
+  }
 })
 class UserInfo extends Field {
   constructor() {

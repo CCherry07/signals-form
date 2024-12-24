@@ -1,0 +1,12 @@
+{
+  "name": "@rxform/resolvers",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "build": "farm build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

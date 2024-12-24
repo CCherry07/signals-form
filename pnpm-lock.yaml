@@ -76,6 +76,8 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/resolvers: {}
+
   packages/shared:
     dependencies:
       lodash.get:
@@ -102,6 +104,9 @@ importers:
       '@rxform/react':
         specifier: workspace:*
         version: link:../packages/react
+      '@rxform/resolvers':
+        specifier: workspace:*
+        version: link:../packages/resolvers
       antd:
         specifier: ^5.22.5
         version: 5.22.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

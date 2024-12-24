@@ -1,5 +1,4 @@
 import { batch, effect, signal, Signal } from "@preact/signals-core";
-import { FieldErrors } from "../validator"
 import { BoolValues, Decision } from "../boolless";
 import { EventMetaData, getActionsMetaData, getComponentMetaData, getEventsMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
 import { get, isFunction, isPromise, isSignal, set, toDeepValue, toValue } from "@rxform/shared";
@@ -9,6 +8,14 @@ export enum FiledUpdateType {
   Value = "value",
   Props = "props",
 }
+
+export interface FieldError {
+  message: string
+  type: string
+}
+
+export type FieldErrors = Record<string, FieldError>
+
 
 export class Field<T = any, D = any> {
   id!: string;
