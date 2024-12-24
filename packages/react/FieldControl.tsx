@@ -150,6 +150,19 @@ export function FieldControl(props: Props) {
     }
     return []
   }
+  // function getChildren(): Record<string, ReactNode> {
+  //   const slots = {} as Record<string, any>
+  //   if (field.properties) {
+  //     (field.properties).forEach((child) => {
+  //       slots[child.id] = createElement(FieldControl, {
+  //         field: child,
+  //         model: model,
+  //         resolveComponent
+  //       })
+  //     })
+  //   }
+  //   return slots
+  // }
 
   return createElement("div", {
     "data-field-id": field.id,

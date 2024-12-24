@@ -200,7 +200,7 @@ export class Field<T = any, D = any> {
   reset(model?: T) {
     this.resetState()
     const filedValue: any = isFunction(this.onDefault) ? this.onDefault() : model;
-    if (this.properties) {
+    if (this.properties?.length) {
       const fields = this.properties!
       if (isPromise(filedValue)) {
         filedValue.then((value) => {

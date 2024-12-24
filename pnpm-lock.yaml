@@ -147,6 +147,9 @@ importers:
       '@rxform/core':
         specifier: workspace:*
         version: link:../packages/core
+      '@rxform/resolvers':
+        specifier: workspace:*
+        version: link:../packages/resolvers
       '@rxform/vue':
         specifier: workspace:*
         version: link:../packages/vue

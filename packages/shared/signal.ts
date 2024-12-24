@@ -64,7 +64,11 @@ export function normalizeSignal<T, D>(path: string, signal: Signal<T>): Signal<D
   let current = signal as any;
   for (let i = 0; i < pathArray.length; i++) {
     const key = pathArray[i];
-    current = current.value[key];
+    try {
+      current = current.value[key];
+    } catch (error) {
+      throw new Error(`Cannot find signal at path 【${path}】，the error is ${error}`);
+    }
   }
   return current as Signal<D>;
 }

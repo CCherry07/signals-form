@@ -1,5 +1,5 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
-import type { Component, DefineComponent, PropType, VNode } from 'vue';
+import type { Component, DefineComponent, PropType, Slots } from 'vue';
 import { FiledUpdateType, normalizeSignal, toDeepValue, toValue, validate, type Field } from "@rxform/core"
 import { batch, computed, effect, signal, untracked } from "@preact/signals-core";
 
@@ -120,10 +120,11 @@ export const FieldControl = defineComponent({
       cleanups.forEach(cleanup => cleanup())
     })
 
-    function getChildren(): VNode[] {
+    function getChildren(): Slots {
+      const slots = {} as Record<string, () => any>
       if (field.properties) {
-        return (field.properties).map((child) => {
-          return h(FieldControl, {
+        (field.properties).forEach((child) => {
+          slots[child.id] = () => h(FieldControl, {
             key: child.path,
             field: child,
             model: props.model,
@@ -131,7 +132,7 @@ export const FieldControl = defineComponent({
           })
         })
       }
-      return []
+      return slots
     }
 
     onUnmounted(() => {
@@ -147,7 +148,9 @@ export const FieldControl = defineComponent({
         onChange,
         onBlur,
         onFocus,
-      }, getChildren))
+      }, {
+        ...getChildren()
+      }))
     }
   }
 })

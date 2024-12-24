@@ -1,6 +1,6 @@
 import { FieldControl } from "./FieldControl";
 import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
-import { Resolver } from '@rxform/core/validator/resolvers/type';
+import { Resolver } from "@rxform/core/resolvers/type";
 import { Component, DefineComponent, h } from "vue";
 
 interface FormConfig {

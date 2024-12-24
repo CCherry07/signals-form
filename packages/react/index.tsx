@@ -1,7 +1,7 @@
 import React, { ComponentClass, FunctionComponent } from 'react';
 import { FieldControl } from "./FieldControl";
 import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
-import { Resolver } from '@rxform/core/validator/resolvers/type';
+import { Resolver } from '@rxform/core/resolvers/type';
 
 interface FormConfig {
   components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
