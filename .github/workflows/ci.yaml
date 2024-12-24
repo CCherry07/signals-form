@@ -42,8 +42,3 @@ jobs:
       - name: E2E Test
         run: |
           pnpm run test:e2e
-          env:
-          CI: true
-          HEADLESS: false
-          PROGRESS: none
-          NODE_ENV: test
