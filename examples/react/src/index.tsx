@@ -5,7 +5,7 @@ import {
   Validator,
   Events,
   D, Field, Component,
-  Props, Signals as FieldSignals,
+  Props,
   normalizeSignal,
   Actions
 } from "@rxform/core"

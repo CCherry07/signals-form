@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 export type FactoryOptions = {
   /**
    * @default async
@@ -11,9 +9,9 @@ export type FactoryOptions = {
    */
   raw?: boolean;
 }
-export type Resolver = <T extends z.Schema<any, any>>(
-  schema: T,
-  schemaOptions?: Partial<z.ParseParams>,
+export type Resolver = (
+  schema: any,
+  schemaOptions?: Record<string, any>,
   factoryOptions?: FactoryOptions,
 ) => (value: any) => Promise<({
   values: Record<string, any>,
