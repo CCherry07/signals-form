@@ -1,12 +1,14 @@
-import { FieldErrors } from "../validator/error/field";
-import { BoolsConfig, setup, type BoolValues } from "../boolless"
 import { batch, effect, Signal, signal } from "@preact/signals-core";
 import { get, set } from "@rxform/shared";
-import { Field, FiledUpdateType } from "../controls/field";
-import { Resolver } from "../validator/resolvers/type";
+
+import { BoolsConfig, setup, type BoolValues } from "../boolless"
+import { Field, FieldErrors, FiledUpdateType } from "../controls/field";
 import { validatorResolvers } from "../validator";
 import { asyncBindingModel } from "./form";
+import type { Resolver } from "../resolvers/type";
+
 export type Model = Record<string, any>;
+
 export interface AbstractModel<M extends Signal<Model>> {
   bools: BoolValues;
   submitted: Signal<boolean>;
@@ -18,7 +20,6 @@ export interface AbstractModel<M extends Signal<Model>> {
   graph: Field[]
   fields: Record<string, Field>
   isPending: Signal<boolean>
-
   validatorResolvers: Record<string, Resolver>
 }
 
@@ -68,6 +69,27 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.models = new Map();
   }
 
+  init(options: AbstractModelConstructorOptions<M>) {
+    const { validatorEngine, defaultValidatorEngine, boolsConfig, model = {}, graph, fields } = options;
+    this.submitted = signal(false);
+    this.submiting = signal(false);
+    this.errors = {};
+    this.model = model as M;
+    this.addModel("default", model as M);
+    this.validatorEngine = validatorEngine;
+    this.defaultValidatorEngine = defaultValidatorEngine
+    this.bools = Object.freeze(setup(boolsConfig, this.model))
+    Object.values(fields!)!.forEach((field) => {
+      field.bools = this.bools
+    })
+    this.graph = graph!
+    this.fields = fields!
+
+    effect(() => {
+      this.isPending.value = Object.values(this.fields ?? {}).some((field) => field.isPending.value)
+    })
+  }
+
   createModel(modelId: string, graph: Field[]) {
     const methods: AbstractModelMethods = {
       setFieldValue: this.setFieldValue.bind(this),
@@ -111,26 +133,6 @@ export class AbstractModel<M> implements AbstractModel<M> {
       return cleanup;
     })
   };
-  init(options: AbstractModelConstructorOptions<M>) {
-    const { validatorEngine, defaultValidatorEngine, boolsConfig, model = {}, graph, fields } = options;
-    this.submitted = signal(false);
-    this.submiting = signal(false);
-    this.errors = {};
-    this.model = model as M;
-    this.addModel("default", model as M);
-    this.validatorEngine = validatorEngine;
-    this.defaultValidatorEngine = defaultValidatorEngine
-    this.bools = Object.freeze(setup(boolsConfig, this.model))
-    Object.values(fields!)!.forEach((field) => {
-      field.bools = this.bools
-    })
-    this.graph = graph!
-    this.fields = fields!
-
-    effect(() => {
-      this.isPending.value = Object.values(this.fields ?? {}).some((field) => field.isPending.value)
-    })
-  }
 
   updateModel(model: M) {
     batch(() => {

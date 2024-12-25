@@ -1,5 +1,5 @@
 import { Field } from "../controls/field";
-import { Resolver } from "../validator/resolvers/type";
+import { Resolver } from "../resolvers/type";
 import { AbstractModel, AbstractModelMethods } from "./abstract_model"
 import { asyncBindingModel, createGraph } from "./form"
 
