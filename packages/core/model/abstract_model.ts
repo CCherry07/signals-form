@@ -91,12 +91,8 @@ export class AbstractModel<M> implements AbstractModel<M> {
     })
   }
 
-  async createModel(modelId: string) {
-    if (this.models.has(modelId)) {
-      throw new Error(`model ${modelId} is already defined, please use useModel, useOrCreateModel or createModel to create a new model`)
-    }
-    const model = await createModel(this.graph)
-    return model
+  async createModel() {
+    return await createModel(this.graph)
   }
 
   saveModel() {
@@ -104,8 +100,11 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   useOrCreateModel(modelId: string) {
-    if (modelId === this.modelId && process.env.NODE_ENV !== 'production') {
-      throw new Error(`model ${modelId} in use, please use a new model id`)
+    if (modelId === this.modelId) {
+      if (process.env.NODE_ENV !== 'production') {
+        throw new Error(`model ${modelId} in use, please use a new model id`)
+      }
+      return
     }
     this.saveModel();
     const model = this.models.get(modelId);
@@ -130,8 +129,11 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   useModel(modelId: string) {
-    if (modelId === this.modelId && process.env.NODE_ENV !== 'production') {
-      throw new Error(`model ${modelId} in use, please use a new model id`)
+    if (modelId === this.modelId) {
+      if (process.env.NODE_ENV !== 'production') {
+        throw new Error(`model ${modelId} in use, please use a new model id`)
+      }
+      return
     }
     const model = this.models.get(modelId);
     if (!model) {
