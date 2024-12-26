@@ -109,11 +109,11 @@ export class AbstractModel<M> implements AbstractModel<M> {
     }
     this.saveModel();
     const model = this.models.get(modelId);
+    this.modelId = modelId;
     if (model) {
       this.updateModel(model);
     } else {
       this.resetModel();
-      this.modelId = modelId;
     }
   }
 
@@ -130,11 +130,16 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   useModel(modelId: string) {
+    if (modelId === this.modelId && process.env.NODE_ENV !== 'production') {
+      throw new Error(`model ${modelId} in use, please use a new model id`)
+    }
     const model = this.models.get(modelId);
     if (!model) {
       throw new Error(`model ${modelId} is not defined`)
     }
+    this.saveModel();
     this.updateModel(model);
+    this.modelId = modelId;
     return model;
   }
 
