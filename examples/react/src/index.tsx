@@ -340,7 +340,6 @@ const form2 = formGroup.add({
     select: Select
   }
 })
-console.log(formGroup.getFormGroup());
 
 const root = createRoot(document.getElementById('root')!);
 root.render(<App apps={[

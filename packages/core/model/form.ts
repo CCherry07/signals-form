@@ -80,6 +80,20 @@ export function asyncBindingModel(
     return parent
   }, signal({} as any))
 }
+
+export function createModelByGraph(graph: Field[]) {
+  return graph.reduce((parent, field) => {
+    const { id, properties } = field
+    field.onBeforeInit?.()
+    const filedValue = signal()
+    parent.value[id] = filedValue
+    field.value = parent.value[id!]
+    if (properties) {
+      field.value.value = createModelByGraph(properties)?.value
+    }
+    return parent
+  }, signal({} as any))
+}
 export function createRXForm(config: FormConfig<Model>) {
   const form = new AbstractModel(config.id)
   const methods: AbstractModelMethods = {

@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { ReactNode } from "react";
 import { Submit } from "./components/Submit";
 import { effect } from "@preact/signals-core";
-import { Spin } from "antd";
+import { Button, Spin } from "antd";
 import { toDeepValue } from "@rxform/core";
 interface Parops {
   apps: ReactNode[],
   forms: any[]
 }
+let idx = 1
 export function App(props: Parops) {
   const [state, setState] = useState(false)
   const [submiting, setSubmitted] = useState(false)
@@ -24,13 +25,15 @@ export function App(props: Parops) {
   return <div style={{ display: "flex" }}>
     {
       props.apps.map((Node, index) => {
-        return <div key={index} style={{marginRight: "50px"}}>
+        return <div key={index} style={{ marginRight: "50px" }}>
           <div style={{ marginBottom: 20 }}>
             model: {JSON.stringify(model, null, 2)}
           </div>
           <Spin spinning={state || submiting}>
             {Node}
             <Submit form={props.forms[0]} />
+            <Button onClick={() => props.forms[0].useOrCreateModel(++idx)}> add Model </Button>
+            <Button onClick={() => props.forms[0].useModel(2)}> use Model </Button>
           </Spin>
         </div>
       })

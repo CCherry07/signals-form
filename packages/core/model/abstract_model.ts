@@ -1,10 +1,9 @@
 import { batch, effect, Signal, signal } from "@preact/signals-core";
-import { get, set } from "@rxform/shared";
+import { get, set, toDeepValue } from "@rxform/shared";
 
 import { BoolsConfig, setup, type BoolValues } from "../boolless"
 import { Field, FieldErrors, FiledUpdateType } from "../controls/field";
 import { validatorResolvers } from "../validator";
-import { asyncBindingModel } from "./form";
 import type { Resolver } from "../resolvers/type";
 
 export type Model = Record<string, any>;
@@ -61,21 +60,25 @@ export interface AbstractModelConstructorOptions<M extends Model> {
 
 export class AbstractModel<M> implements AbstractModel<M> {
   id: string;
-  models: Map<string, M>;
+  models: Map<string, Model>;
+  modelId: string;
   constructor(id: string) {
     this.validatorResolvers = validatorResolvers
     this.isPending = signal(false)
+    this.submitted = signal(false);
+    this.submiting = signal(false);
     this.id = id
+    this.modelId = 'default'
     this.models = new Map();
+    effect(() => {
+      this.isPending.value = Object.values(this.fields ?? {}).some((field) => field.isPending.value) ?? false
+    })
   }
 
   init(options: AbstractModelConstructorOptions<M>) {
     const { validatorEngine, defaultValidatorEngine, boolsConfig, model = {}, graph, fields } = options;
-    this.submitted = signal(false);
-    this.submiting = signal(false);
     this.errors = {};
     this.model = model as M;
-    this.addModel("default", model as M);
     this.validatorEngine = validatorEngine;
     this.defaultValidatorEngine = defaultValidatorEngine
     this.bools = Object.freeze(setup(boolsConfig, this.model))
@@ -84,28 +87,30 @@ export class AbstractModel<M> implements AbstractModel<M> {
     })
     this.graph = graph!
     this.fields = fields!
-
-    effect(() => {
-      this.isPending.value = Object.values(this.fields ?? {}).some((field) => field.isPending.value)
-    })
   }
 
-  createModel(modelId: string, graph: Field[]) {
-    const methods: AbstractModelMethods = {
-      setFieldValue: this.setFieldValue.bind(this),
-      setErrors: this.setErrors.bind(this),
-      setFieldProps: this.setFieldProps.bind(this),
-      cleanErrors: this.cleanErrors.bind(this),
-      onSubscribe: this.onSubscribe.bind(this)
+  useOrCreateModel(modelId: string) {
+    if (this.models.has(modelId)) {
+      throw new Error("model is already defined")   
     }
-    const fields = {}
-    const model = asyncBindingModel(methods, graph!, fields, "") as M;
-    this.addModel(modelId, model);
-    return model;
+    // save the original model
+    const model = toDeepValue(this.model)
+    this.models.set(this.modelId, model);
+    // reset form model and state, and errors
+    this.reset();
+    this.modelId = modelId;
   }
 
-  addModel(modelId: string, model: M) {
-    this.models.set(modelId, model);
+  getModel() {
+    return this.models;
+  }
+
+  getFormId() {
+    return this.id;
+  }
+
+  getModels(){
+    return this.models;
   }
 
   useModel(modelId: string) {
@@ -134,7 +139,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
     })
   };
 
-  updateModel(model: M) {
+  updateModel(model: Model) {
     batch(() => {
       Object.values(this.fields).forEach((field) => {
         if (!field.properties) { // leaf node
