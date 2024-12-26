@@ -67,7 +67,7 @@ export const createForm = (config: FormConfig) => {
 
 export const createGroupForm = () => {
   const formGroup = createRXGroupForm()
-  const apps = new Map()
+  const apps = new Map<string,JSX.Element>()
   const createApp = (config: FormConfig) => {
     const form = formGroup.create({
       validatorEngine: config.validatorEngine ?? 'zod',

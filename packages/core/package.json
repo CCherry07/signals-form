@@ -7,7 +7,8 @@
   "license": "ISC",
   "description": "",
   "scripts": {
-    "build": "farm build"
+    "build": "farm build",
+    "clean": "farm clean"
   },
   "dependencies": {
     "@rxform/shared": "workspace:*",

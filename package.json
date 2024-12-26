@@ -8,7 +8,7 @@
     "build": "npx nx affected:build",
     "build:all": "npx nx run-many --target=build",
     "preview": "farm preview",
-    "clean": "farm clean",
+    "clean": "rm -rf .nx/cache & npx nx run-many --target=clean",
     "test:e2e": "vitest"
   },
   "devDependencies": {
