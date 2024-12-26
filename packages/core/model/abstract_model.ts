@@ -65,15 +65,13 @@ export class AbstractModel<M> implements AbstractModel<M> {
   modelId: string;
   constructor(id: string) {
     this.validatorResolvers = validatorResolvers
-    this.isPending = signal(false)
+    this.isPending = signal(true)
     this.submitted = signal(false);
     this.submiting = signal(false);
     this.id = id
     this.modelId = 'default'
     this.models = new Map();
-    effect(() => {
-      this.isPending.value = Object.values(this.fields ?? {}).some((field) => field.isPending.value) ?? false
-    })
+
   }
 
   init(options: AbstractModelConstructorOptions<M>) {
@@ -88,6 +86,9 @@ export class AbstractModel<M> implements AbstractModel<M> {
     })
     this.graph = graph!
     this.fields = fields!
+    effect(() => {
+      this.isPending.value = Object.values(this.fields ?? {}).some((field) => field.isPending.value) ?? false
+    })
   }
 
   async createModel(modelId: string) {
@@ -98,11 +99,11 @@ export class AbstractModel<M> implements AbstractModel<M> {
     return model
   }
 
-  useOrCreateModel(modelId: string){
+  useOrCreateModel(modelId: string) {
     const model = this.models.get(modelId);
     if (model) {
       this.resetModel(model);
-    }else {
+    } else {
       this.models.set(modelId, toDeepValue(this.model));
       this.resetModel();
       this.modelId = modelId;
@@ -117,7 +118,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
     return this.id;
   }
 
-  getModels(){
+  getModels() {
     return this.models;
   }
 

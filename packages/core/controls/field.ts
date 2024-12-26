@@ -166,6 +166,7 @@ export class Field<T = any, D = any> {
   }
 
   resetModel(model?: T | Promise<T>) {
+    this.isPending.value = true
     const filedValue: any = isFunction(this.onDefault) ? this.onDefault() : model;
     if (this.properties) {
       const fields = Object.values(this.properties!)
