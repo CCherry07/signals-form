@@ -65,13 +65,12 @@ export class AbstractModel<M> implements AbstractModel<M> {
   modelId: string;
   constructor(id: string) {
     this.validatorResolvers = validatorResolvers
-    this.isPending = signal(true)
+    this.isPending = signal(false)
     this.submitted = signal(false);
     this.submiting = signal(false);
     this.id = id
     this.modelId = 'default'
     this.models = new Map();
-
   }
 
   init(options: AbstractModelConstructorOptions<M>) {

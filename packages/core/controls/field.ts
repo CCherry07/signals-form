@@ -250,4 +250,8 @@ export class Field<T = any, D = any> {
       }
     }
   }
+
+  evaluateDecision(decision: Decision) {
+    return decision.evaluate(this.bools)
+  }
 }
