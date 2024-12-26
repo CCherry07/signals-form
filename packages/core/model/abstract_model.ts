@@ -77,6 +77,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
     const { validatorEngine, defaultValidatorEngine, boolsConfig, model = {}, graph, fields } = options;
     this.errors = {};
     this.model = model as M;
+    this.modelId = 'default'
     this.validatorEngine = validatorEngine;
     this.defaultValidatorEngine = defaultValidatorEngine
     this.bools = Object.freeze(setup(boolsConfig, this.model))
@@ -92,18 +93,25 @@ export class AbstractModel<M> implements AbstractModel<M> {
 
   async createModel(modelId: string) {
     if (this.models.has(modelId)) {
-      throw new Error("model is already defined")
+      throw new Error(`model ${modelId} is already defined, please use useModel, useOrCreateModel or createModel to create a new model`)
     }
     const model = await createModel(this.graph)
     return model
   }
 
+  saveModel() {
+    this.models.set(this.modelId, toDeepValue(this.model));
+  }
+
   useOrCreateModel(modelId: string) {
+    if (modelId === this.modelId && process.env.NODE_ENV !== 'production') {
+      throw new Error(`model ${modelId} in use, please use a new model id`)
+    }
+    this.saveModel();
     const model = this.models.get(modelId);
     if (model) {
-      this.resetModel(model);
+      this.updateModel(model);
     } else {
-      this.models.set(modelId, toDeepValue(this.model));
       this.resetModel();
       this.modelId = modelId;
     }
@@ -124,7 +132,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
   useModel(modelId: string) {
     const model = this.models.get(modelId);
     if (!model) {
-      throw new Error("model is not defined")
+      throw new Error(`model ${modelId} is not defined`)
     }
     this.updateModel(model);
     return model;
