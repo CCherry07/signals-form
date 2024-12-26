@@ -5,6 +5,7 @@ import { BoolsConfig, setup, type BoolValues } from "../boolless"
 import { Field, FieldErrors, FiledUpdateType } from "../controls/field";
 import { validatorResolvers } from "../validator";
 import type { Resolver } from "../resolvers/type";
+import { createModel } from "./utils";
 
 export type Model = Record<string, any>;
 
@@ -89,16 +90,23 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.fields = fields!
   }
 
-  useOrCreateModel(modelId: string) {
+  async createModel(modelId: string) {
     if (this.models.has(modelId)) {
-      throw new Error("model is already defined")   
+      throw new Error("model is already defined")
     }
-    // save the original model
-    const model = toDeepValue(this.model)
-    this.models.set(this.modelId, model);
-    // reset form model and state, and errors
-    this.reset();
-    this.modelId = modelId;
+    const model = await createModel(this.graph)
+    return model
+  }
+
+  useOrCreateModel(modelId: string){
+    const model = this.models.get(modelId);
+    if (model) {
+      this.resetModel(model);
+    }else {
+      this.models.set(modelId, toDeepValue(this.model));
+      this.resetModel();
+      this.modelId = modelId;
+    }
   }
 
   getModel() {
@@ -209,9 +217,9 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.errors = {};
   }
 
-  resetModel() {
+  resetModel(model?: Model) {
     this.graph.map((field) => {
-      field.resetModel()
+      field.resetModel(model ? model[field.id] : undefined)
     })
   }
 

@@ -1,9 +1,7 @@
 import { AbstractModel, Model, AbstractModelMethods } from "./abstract_model"
 import { Field } from "../controls/field"
-import { signal } from "@preact/signals-core"
 import { BoolsConfig } from "../boolless";
-import { isFunction } from "@rxform/shared";
-// import { isFunction, toValue } from "@rxform/shared"
+import { asyncBindingModel, createGraph } from "./utils";
 export interface FormConfig<M extends Model> {
   id: string
   validatorEngine: string;
@@ -13,87 +11,7 @@ export interface FormConfig<M extends Model> {
   graph?: typeof Field[]
   fields?: Record<string, Field>
 }
-// async function syncBindingModel(
-//   abstractModelMethods: AbstractModelMethods,
-//   graph: Record<string, Field>,
-//   fields: Record<string, Field>,
-//   path: string,
-// ) {
-//   return Object.entries(graph).reduce(async (_parent, [, field]) => {
-//     const { id, onDefault, properties } = field
-//     const filedValue = signal()
-//     if (isFunction(onDefault)) {
-//       field.isPending.value = true
-//       filedValue.value = await onDefault()
-//       field.isPending.value = false
-//     } else {
-//       filedValue.value = toValue(field?.value)
-//     }
-//     let parent = await _parent
-//     parent.value[id!] = filedValue
-//     field.value = parent.value[id!]
-//     fields[id!] = field
-//     field.path = path ? `${path}.${id}` : id;
-//     field.abstractModel = abstractModelMethods
-//     if (properties) {
-//       const childValue = (await syncBindingModel(abstractModelMethods, properties, fields, field.path!))?.value
-//       field.value!.value = {
-//         ...filedValue?.value ?? {},
-//         ...childValue
-//       }
-//     }
-//     return parent
-//   }, Promise.resolve(signal({} as any)))
-// }
 
-export function createGraph(graph: (typeof Field | Field)[]): Field[] {
-  return graph.map(Field => {
-    const field = isFunction(Field) ? new Field() : Field
-    const { properties } = field
-    if (properties) {
-      field.properties = createGraph(properties)
-    }
-    return field
-  })
-}
-
-export function asyncBindingModel(
-  abstractModelMethods: AbstractModelMethods,
-  graph: Field[],
-  fields: Record<string, Field>,
-  path: string,
-) {
-  return graph.reduce((parent, field) => {
-    const { id, properties } = field
-    field.onBeforeInit?.()
-    const filedValue = signal()
-    parent.value[id] = filedValue
-    field.value = parent.value[id!]
-    field.path = path ? `${path}.${id}` : id;
-    fields[field.path] = field
-    field.abstractModel = abstractModelMethods
-    if (properties) {
-      field.value.value = asyncBindingModel(abstractModelMethods, properties, fields, field.path!)?.value
-    }
-    field.reset()
-    field.onInit?.()
-    return parent
-  }, signal({} as any))
-}
-
-export function createModelByGraph(graph: Field[]) {
-  return graph.reduce((parent, field) => {
-    const { id, properties } = field
-    field.onBeforeInit?.()
-    const filedValue = signal()
-    parent.value[id] = filedValue
-    field.value = parent.value[id!]
-    if (properties) {
-      field.value.value = createModelByGraph(properties)?.value
-    }
-    return parent
-  }, signal({} as any))
-}
 export function createRXForm(config: FormConfig<Model>) {
   const form = new AbstractModel(config.id)
   const methods: AbstractModelMethods = {

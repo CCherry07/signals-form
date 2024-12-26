@@ -32,7 +32,7 @@ export function App(props: Parops) {
           <Spin spinning={state || submiting}>
             {Node}
             <Submit form={props.forms[0]} />
-            <Button onClick={() => props.forms[0].useOrCreateModel(++idx)}> add Model </Button>
+            <Button onClick={() => props.forms[0].createModel(++idx)}> add Model </Button>
             <Button onClick={() => props.forms[0].useModel(2)}> use Model </Button>
           </Spin>
         </div>
