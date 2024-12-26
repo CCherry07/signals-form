@@ -14,18 +14,19 @@
   "devDependencies": {
     "@farmfe/cli": "^1.0.4",
     "@farmfe/core": "^1.6.0",
+    "@farmfe/js-plugin-dts": "^0.6.4",
     "@farmfe/plugin-react": "^1.2.6",
     "@types/react": "18.3.5",
     "@types/react-dom": "18.3.0",
+    "@vitejs/plugin-vue": "^5.0.4",
     "core-js": "^3.39.0",
+    "nx": "20.3.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "@vitejs/plugin-vue": "^5.0.4",
     "react-refresh": "^0.16.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8",
-    "vue": "3.5.13",
-    "nx": "20.3.0"
+    "vue": "3.5.13"
   },
   "packageManager": "pnpm@9.12.3+sha512.cce0f9de9c5a7c95bef944169cc5dfe8741abfb145078c0d508b868056848a87c81e626246cb60967cbd7fd29a6c062ef73ff840d96b3c86c40ac92cf4a813ee",
   "dependencies": {

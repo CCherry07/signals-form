@@ -1,18 +1,36 @@
 import { defineConfig } from '@farmfe/core';
+import farmDtsPlugin from '@farmfe/js-plugin-dts';
+
+const format = (process.env.FARM_FORMAT as 'esm' | 'cjs') || 'esm';
+const ext = format === 'esm' ? 'mjs' : 'cjs';
+
 export default defineConfig({
   compilation: {
     input: {
-      index: "./index.ts"
+      index: './index.ts',
     },
     output: {
-      format: "esm",
-      targetEnv: "library-browser",
+      path: `dist/${format}`,
+      entryFilename: `[entryName].${ext}`,
+      targetEnv: 'library',
+      format,
+      clean: false,
     },
-    external: [
-      "@preact/signals-core",
-      "zod",
-    ],
+    external: ['!^(\\./|\\.\\./|[A-Za-z]:\\\\|/|^@/).*'],
+    partialBundling: {
+      enforceResources: [
+        {
+          name: 'index',
+          test: ['.+'],
+        },
+      ],
+    },
+    minify: false,
+    sourcemap: false,
     presetEnv: false,
-    sourcemap: true,
-  }
+    lazyCompilation: false,
+    persistentCache: true,
+    externalNodeBuiltins: false,
+  },
+  plugins: [farmDtsPlugin()],
 });
