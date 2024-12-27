@@ -254,4 +254,27 @@ export class Field<T = any, D = any> {
   evaluateDecision(decision: Decision) {
     return decision.evaluate(this.bools)
   }
+
+  setFieldErrors(errors: FieldErrors) {
+    this.setErrors(errors);
+    this.abstractModel.setFieldErrors(this.path, this.errors.value)
+  }
+
+  setErrors(errors: Record<string, FieldError>) {
+    this.errors.value = {
+      ...this.errors.value,
+      ...errors
+    }
+  }
+
+  cleanErrors(paths?: string[]) {
+    if (paths === undefined) {
+      this.errors.value = {};
+      this.abstractModel.cleanErrors([this.path])
+      return;
+    }
+    paths.forEach(p => {
+      delete this.errors.value[p]
+    })
+  }
 }

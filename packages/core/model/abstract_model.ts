@@ -34,6 +34,7 @@ interface SubscribeProps<M> {
 export interface AbstractModelMathods<M extends Signal<Model>> {
   updateModel(model: M): void;
   setErrors(errors: Record<string, FieldErrors>): void;
+  setFieldErrors(field: string, errors: FieldErrors): void;
   cleanErrors(paths?: string[]): void
   setFieldValue(field: string, value: any): void;
   getFieldValue(field: string): any;
@@ -48,7 +49,7 @@ export interface AbstractModelMathods<M extends Signal<Model>> {
   reset(): void;
   submit(): Promise<Model>;
 }
-export type AbstractModelMethods = Pick<AbstractModelMathods<Signal<Model>>, 'setFieldValue' | 'setErrors' | 'setFieldProps' | 'cleanErrors' | 'onSubscribe'>
+export type AbstractModelMethods = Pick<AbstractModelMathods<Signal<Model>>, 'setFieldValue' | 'setFieldErrors' |'setErrors' | 'setFieldProps' | 'cleanErrors' | 'onSubscribe'>
 
 export interface AbstractModelConstructorOptions<M extends Model> {
   validatorEngine: string;
@@ -191,11 +192,16 @@ export class AbstractModel<M> implements AbstractModel<M> {
     })
   }
 
+  setFieldErrors(field: string, errors: FieldErrors) {
+    this.errors[field] = errors;
+    // TODO : 优化，触发了两次
+    this.fields[field].setErrors(errors);
+  }
+
   setErrors(errors: Record<string, FieldErrors>) {
-    this.errors = {
-      ...this.errors,
-      ...errors
-    }
+    Object.entries(errors).forEach(([path, error]) => {
+      this.fields[path].setFieldErrors(error)
+    })
   }
 
   cleanErrors(paths?: string[]) {
@@ -217,7 +223,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   getFieldValue(field: string) {
-    return this.model.value[field]
+    return this.fields[field].value.value;
   }
 
   getFieldError(field: string) {
