@@ -47,10 +47,10 @@ import { z } from 'zod';
   }
 })
 @Actions({
-  onDefault(){
+  setDefaultValue(){
     return 1
   },
-  onSubmit(data) { // 提交的时候，会触发的方法，返回的值会作为字段的最终值
+  onSubmitValue(data) { // 提交的时候，会触发的方法，返回的值会作为字段的最终值
     return data + "1"
   },
 })

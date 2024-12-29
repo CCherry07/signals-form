@@ -72,14 +72,14 @@ class Phone extends Field {
   }
 })
 @Actions({
-  onDefault() {
+  setDefaultValue() {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve("chen@163.com")
       }, 500)
     })
   },
-  onSubmit(data) {
+  onSubmitValue(data) {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(data + "@163.com")
@@ -172,7 +172,7 @@ class Residence extends Field {
   }
 })
 @Actions({
-  onSubmit(model: number) {
+  onSubmitValue(model: number) {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(model / 2)
@@ -272,7 +272,7 @@ class Agreement extends Field {
   }
 })
 @Actions({
-  onDefault() {
+  setDefaultValue() {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({

@@ -32,8 +32,8 @@ export class Field<T = any, D = any> {
   validator?: ValidatorMetaData;
   signals?: SignalsMetaData;
   events?: EventMetaData;
-  onDefault?: (data?: D) => T;
-  onSubmit?: (model: T) => D;
+  setDefaultValue?: (data?: D) => T;
+  onSubmitValue?: (model: T) => D;
   private tracks: Array<Function> = []
   abstractModel!: AbstractModelMethods;
   onBeforeInit?(): void
@@ -85,8 +85,8 @@ export class Field<T = any, D = any> {
   }
   async _onSubmit() {
     const fieldPathLength = this.path.length + 1
-    if (isFunction(this.onSubmit)) {
-      return await this.onSubmit(toDeepValue(this.value.peek()))
+    if (isFunction(this.onSubmitValue)) {
+      return await this.onSubmitValue(toDeepValue(this.value.peek()))
     } else if (this.properties) {
       const model: any = {}
       await Promise.all(Object.values(this.properties).map(async (field) => {
@@ -167,7 +167,7 @@ export class Field<T = any, D = any> {
 
   resetModel(model?: T | Promise<T>) {
     this.isPending.value = true
-    const filedValue: any = isFunction(this.onDefault) ? this.onDefault() : model;
+    const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
     if (this.properties) {
       const fields = Object.values(this.properties!)
       if (isPromise(filedValue)) {
@@ -200,7 +200,7 @@ export class Field<T = any, D = any> {
 
   reset(model?: T) {
     this.resetState()
-    const filedValue: any = isFunction(this.onDefault) ? this.onDefault() : model;
+    const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
     if (this.properties?.length) {
       const fields = this.properties!
       if (isPromise(filedValue)) {
@@ -232,7 +232,7 @@ export class Field<T = any, D = any> {
   init(model?: T) {
     this.value = signal(undefined as unknown as T)
     this.resetState()
-    const filedValue: any = isFunction(this.onDefault) ? this.onDefault() : model;
+    const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
     if (this.properties) {
       const fields = Object.values(this.properties!)
       if (isPromise(filedValue)) {

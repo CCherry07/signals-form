@@ -11,7 +11,7 @@ interface Props {
 // function bindingMethods(field: Field) {
 //   const methodsMap = {} as Record<string, Function>
 //   Object.getOwnPropertyNames(field.__proto__).forEach(method => {
-//     if (typeof field[method] === 'function' && method !== 'constructor' && method !== "onDefault" && method !== "onSubmit" && method !== "component") {
+//     if (typeof field[method] === 'function' && method !== 'constructor' && method !== "setDefaultValue" && method !== "onSubmitValue" && method !== "component") {
 //       methodsMap[method as any] = field[method]?.bind(field)
 //     }
 //   })

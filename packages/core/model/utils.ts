@@ -5,10 +5,10 @@ import { AbstractModelMethods, Model } from "./abstract_model"
 
 export async function createModel(graph: Field[], model?: Model) {
   return Object.entries(graph).reduce(async (_parent, [, field]) => {
-    const { onDefault, properties } = field
+    const { setDefaultValue, properties } = field
     let filedValue = undefined
-    if (isFunction(onDefault)) {
-      filedValue = await onDefault()
+    if (isFunction(setDefaultValue)) {
+      filedValue = await setDefaultValue()
     } else {
       filedValue = model?.[field.id]
     }
@@ -64,11 +64,11 @@ export async function syncBindingModel(
   path: string,
 ) {
   return Object.entries(graph).reduce(async (_parent, [, field]) => {
-    const { id, onDefault, properties } = field
+    const { id, setDefaultValue, properties } = field
     const filedValue = signal()
-    if (isFunction(onDefault)) {
+    if (isFunction(setDefaultValue)) {
       field.isPending.value = true
-      filedValue.value = await onDefault()
+      filedValue.value = await setDefaultValue()
       field.isPending.value = false
     } else {
       filedValue.value = toValue(field?.value)
