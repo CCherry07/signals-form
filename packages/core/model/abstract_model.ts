@@ -257,7 +257,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
     }
     const model = {} as T
     await Promise.all(Object.values(this.graph).map(async (field) => {
-      return set(model, field.path, await field._onSubmit())
+      return set(model, field.path, await field._onSubmitValue())
     }))
     batch(() => {
       this.submitted.value = true;

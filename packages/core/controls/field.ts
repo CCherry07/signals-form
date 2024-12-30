@@ -83,14 +83,14 @@ export class Field<T = any, D = any> {
   onTrack(fn: Function): void {
     this.tracks.push(fn)
   }
-  async _onSubmit() {
+  async _onSubmitValue() {
     const fieldPathLength = this.path.length + 1
     if (isFunction(this.onSubmitValue)) {
       return await this.onSubmitValue(toDeepValue(this.value.peek()))
     } else if (this.properties) {
       const model: any = {}
       await Promise.all(Object.values(this.properties).map(async (field) => {
-        return set(model, field.path.slice(fieldPathLength), await field._onSubmit())
+        return set(model, field.path.slice(fieldPathLength), await field._onSubmitValue())
       }))
       return model
     } else {
