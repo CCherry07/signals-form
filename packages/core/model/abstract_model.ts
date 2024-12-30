@@ -49,7 +49,7 @@ export interface AbstractModelMathods<M extends Signal<Model>> {
   reset(): void;
   submit(): Promise<Model>;
 }
-export type AbstractModelMethods = Pick<AbstractModelMathods<Signal<Model>>, 'setFieldValue' | 'setFieldErrors' |'setErrors' | 'setFieldProps' | 'cleanErrors' | 'onSubscribe'>
+export type AbstractModelMethods = Pick<AbstractModelMathods<Signal<Model>>, 'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors' | 'setFieldProps' | 'cleanErrors' | 'onSubscribe'>
 
 export interface AbstractModelConstructorOptions<M extends Model> {
   validatorEngine: string;
