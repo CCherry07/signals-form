@@ -256,8 +256,7 @@ export class Field<T = any, D = any> {
   }
 
   setFieldErrors(errors: FieldErrors) {
-    this.setErrors(errors);
-    this.abstractModel.setFieldErrors(this.path, this.errors.value)
+    this.abstractModel.setFieldErrors(this.path, errors)
   }
 
   setErrors(errors: Record<string, FieldError>) {

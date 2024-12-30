@@ -194,7 +194,6 @@ export class AbstractModel<M> implements AbstractModel<M> {
 
   setFieldErrors(field: string, errors: FieldErrors) {
     this.errors[field] = errors;
-    // TODO : 优化，触发了两次
     this.fields[field].setErrors(errors);
   }
 
