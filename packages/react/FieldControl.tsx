@@ -1,11 +1,13 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Field, toValue, validate, toDeepValue, FiledUpdateType, normalizeSignal } from "@rxform/core"
-import { batch, computed, untracked, signal } from "@preact/signals-core"
+import { batch, computed, signal } from "@preact/signals-core"
 import { effect } from "@preact/signals-core"
+import { Resolver } from '@rxform/core/resolvers/type';
 interface Props {
   field: Field;
   model: any
   resolveComponent: (component: string | FunctionComponent<any> | ComponentClass<any, any>) => string | FunctionComponent<any> | ComponentClass<any, any>
+  validatorResolvers: Record<string, Resolver>
 };
 
 // function bindingMethods(field: Field) {
@@ -45,7 +47,7 @@ export function FieldControl(props: Props) {
     field.onMounted?.()
     const onValidateDispose = effect(() => {
       if (signalValidator) {
-        validate({ state: field.value, updateOn: "signal" }, signalValidator.all, untracked(() => field.bools), model.value).then(errors => {
+        validate({ state: field.value, updateOn: "signal", boolsConfig: field.bools, model: model.value }, signalValidator.all, props.validatorResolvers).then(errors => {
           if (Object.keys(errors).length === 0) {
             field.abstractModel?.cleanErrors([String(field.path)])
           } else {
@@ -93,7 +95,7 @@ export function FieldControl(props: Props) {
       return [e, function (data?: any) {
         fn.call(field, data)
         if (initiative) {
-          validate({ state: toValue(field.value), updateOn: e }, initiative.all, field.bools, model.value).then(errors => {
+          validate({ state: toValue(field.value), updateOn: e, boolsConfig: field.bools, model: model.value }, initiative.all, props.validatorResolvers).then(errors => {
             field.errors.value = errors
           })
         }
@@ -144,6 +146,7 @@ export function FieldControl(props: Props) {
           key: child.path,
           field: child,
           model,
+          validatorResolvers: props.validatorResolvers,
           resolveComponent
         })
       })

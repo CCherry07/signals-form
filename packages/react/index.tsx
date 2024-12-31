@@ -6,8 +6,8 @@ import { Resolver } from '@rxform/core/resolvers/type';
 interface FormConfig {
   components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
   graph: (typeof Field)[];
-  validatorEngine?: string;
-  defaultValidatorEngine?: string;
+  validatorEngine: string;
+  defaultValidatorEngine: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
   id: string;
   resolvers?: {
@@ -34,7 +34,7 @@ export const createForm = (config: FormConfig) => {
 
   if (resolvers?.validator) {
     Object.entries(resolvers.validator).forEach(([validator, resolver]) => {
-      setupValidator(validator, resolver)
+      setupValidator.call(form, validator, resolver)
     })
   }
 
@@ -52,6 +52,7 @@ export const createForm = (config: FormConfig) => {
           key={field.path}
           field={field}
           model={form.model}
+          validatorResolvers={form.validatorResolvers}
           resolveComponent={resolveComponent}
         />
       })
@@ -67,37 +68,34 @@ export const createForm = (config: FormConfig) => {
 
 export const createGroupForm = () => {
   const formGroup = createRXGroupForm()
-  const apps = new Map<string,JSX.Element>()
+  const apps = new Map<string, JSX.Element>()
   const createApp = (config: FormConfig) => {
-    const form = formGroup.create({
-      validatorEngine: config.validatorEngine ?? 'zod',
-      defaultValidatorEngine: config.defaultValidatorEngine ?? 'zod',
-      ...config,
-    })
+    const form = formGroup.create(config)
     function resolveComponent(component: string | FunctionComponent<any> | ComponentClass<any, any>) {
       if (typeof component === 'string') {
         return config.components[component]
       }
       return component
     }
-    
+
     if (config.resolvers?.validator) {
       Object.entries(config.resolvers.validator).forEach(([validator, resolver]) => {
-        setupValidator(validator, resolver)
+        setupValidator.call(form, validator, resolver)
       })
     }
     const app = <div>
-    {
-      form.graph.map((field) => {
-        return <FieldControl
-          key={field.path}
-          field={field}
-          model={form.model}
-          resolveComponent={resolveComponent}
-        />
-      })
-    }
-  </div>
+      {
+        form.graph.map((field) => {
+          return <FieldControl
+            key={field.path}
+            field={field}
+            model={form.model}
+            validatorResolvers={form.validatorResolvers}
+            resolveComponent={resolveComponent}
+          />
+        })
+      }
+    </div>
     return {
       app,
       form

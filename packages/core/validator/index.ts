@@ -3,6 +3,7 @@ import { BoolValues, Decision } from "../boolless"
 
 import { FactoryOptions, Resolver } from "../resolvers/type"
 import { FieldErrors } from "../controls/field"
+import { AbstractModel } from "../model/abstract_model"
 
 export interface ValidateItem {
   schema: any
@@ -14,46 +15,49 @@ export interface ValidateItem {
   schemaOptions?: any
 }
 
-export const validatorResolvers: Record<string, Resolver> = {
-}
 
-export function setup(validator: string, resolver: Resolver) {
-  if (!isProd && validatorResolvers[validator]) {
+export function setup(this:AbstractModel<any>,validator: string, resolver: Resolver) {
+  if (!isProd && this.validatorResolvers[validator]) {
     console.warn(`${validator} is already registered`);
   }
-  validatorResolvers[validator] = resolver
-}
-
-interface State<T> {
-  state: T
-  updateOn: string
+  this.validatorResolvers[validator] = resolver
 }
 
 /**
  * 
- * @param fact '$.a' | { a: '$.a' , b: "$.b" } $: context
- * @param context Record<string,any>
+ * @param fact '$.a' | { a: '$.a' , b: "$.b" } $: model
+ * @param model Record<string,any>
  * @returns 
  */
-const getFactValue = (fact: string | Object | Array<string>, state: any, context: any): any => {
+const getFactValue = (fact: string | Object | Array<string>, state: any, model: any): any => {
   if (isFunction(fact)) {
-    return fact(state, context)
+    return fact(state, model)
   }
   if (isObject(fact)) {
-    return Object.fromEntries(Object.entries(fact).map(([key, value]) => [key, getFactValue(value, state, context)]))
+    return Object.fromEntries(Object.entries(fact).map(([key, value]) => [key, getFactValue(value, state, model)]))
   }
   if (isArray(fact)) {
-    return fact.map(item => getFactValue(item, state, context))
+    return fact.map(item => getFactValue(item, state, model))
   }
   if (isString(fact)) {
     if (fact.startsWith('$')) {
-      return get({ $: context, $state: state }, fact)
+      return get({ $: model, $state: state }, fact)
     }
   }
   return fact
 }
 
-export const validate = async <T>({ state, updateOn: _updateOn }: State<T>, validates: ValidateItem[], boolsConfig: BoolValues, context: any): Promise<FieldErrors> => {
+
+interface Context<T> {
+  state: T
+  updateOn: string
+  model: Record<string, any>
+  boolsConfig: BoolValues
+}
+
+type ValidatorResolvers = Record<string, Resolver>
+
+export const validate = async <T>({ state, updateOn: _updateOn, model, boolsConfig }: Context<T>, validates: ValidateItem[], validatorResolvers: ValidatorResolvers): Promise<FieldErrors> => {
   const fieldErrors = {} as FieldErrors
   for (const item of validates) {
     const { schema, engine = 'zod', fact, updateOn, schemaOptions, factoryOptions, needValidate } = item
@@ -62,9 +66,8 @@ export const validate = async <T>({ state, updateOn: _updateOn }: State<T>, vali
     if (!isFunction(validatorResolvers[engine])) {
       throw new Error(`validator ${engine} is not registered`)
     }
-
     const validator = validatorResolvers[engine](schema, schemaOptions, factoryOptions)
-    const factValue = fact ? getFactValue(fact, state, context) : state
+    const factValue = fact ? getFactValue(fact, state, model) : state
 
     const { errors } = await validator(factValue)
     Object.assign(fieldErrors, errors)

@@ -19,7 +19,9 @@ export function createRXForm(config: FormConfig<Model>) {
     setErrors: form.setErrors.bind(form),
     setFieldProps: form.setFieldProps.bind(form),
     cleanErrors: form.cleanErrors.bind(form),
-    onSubscribe: form.onSubscribe.bind(form)
+    onSubscribe: form.onSubscribe.bind(form),
+    setFieldErrors: form.setFieldErrors.bind(form),
+    getFieldValue: form.getFieldValue.bind(form),
   }
   const fields = {}
   const graph = createGraph(config.graph!)

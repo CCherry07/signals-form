@@ -3,7 +3,6 @@ import { get, set, toDeepValue } from "@rxform/shared";
 
 import { BoolsConfig, setup, type BoolValues } from "../boolless"
 import { Field, FieldErrors, FiledUpdateType } from "../controls/field";
-import { validatorResolvers } from "../validator";
 import type { Resolver } from "../resolvers/type";
 import { createModel } from "./utils";
 
@@ -65,7 +64,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
   models: Map<string, Model>;
   modelId: string;
   constructor(id: string) {
-    this.validatorResolvers = validatorResolvers
+    this.validatorResolvers = {}
     this.isPending = signal(false)
     this.submitted = signal(false);
     this.submiting = signal(false);
@@ -241,6 +240,10 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.graph.map((field) => {
       field.resetModel(model ? model[field.id] : undefined)
     })
+  }
+
+  onValidate(){
+    
   }
 
   async submit<T>() {

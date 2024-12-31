@@ -2,6 +2,7 @@ import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallow
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
 import { FiledUpdateType, normalizeSignal, toDeepValue, toValue, validate, type Field } from "@rxform/core"
 import { batch, computed, effect, signal, untracked } from "@preact/signals-core";
+import { Resolver } from "@rxform/core/resolvers/type";
 
 function normalizeProps(field: Field) {
   return {
@@ -23,7 +24,8 @@ export const FieldControl = defineComponent({
   props: {
     field: Object as PropType<Field>,
     model: Object as PropType<Record<string, any>>,
-    resolveComponent: Function as PropType<(component: string | Component | DefineComponent) => Component | DefineComponent>
+    resolveComponent: Function as PropType<(component: string | Component | DefineComponent) => Component | DefineComponent>,
+    validatorResolvers: Object as PropType<Record<string, Resolver>>
   },
   setup(props) {
     const { initiative, signal: signalValidator } = props.field?.validator ?? {}
@@ -33,7 +35,7 @@ export const FieldControl = defineComponent({
     onBeforeMount(() => {
       const onValidateDispose = effect(() => {
         if (signalValidator) {
-          validate({ state: field.value, updateOn: "signal" }, signalValidator.all, untracked(() => field.bools), props.model!.value).then(errors => {
+          validate({ state: field.value, updateOn: "signal", boolsConfig: untracked(() => field.bools), model: props.model!.value }, signalValidator.all, props.validatorResolvers!).then(errors => {
             if (Object.keys(errors).length === 0) {
               field.abstractModel?.cleanErrors([String(field.path)])
             } else {
@@ -67,22 +69,22 @@ export const FieldControl = defineComponent({
       })
       cleanups.push(onValidateDispose, onStatesDispose, onSignalsDispose, onStateDispose)
     })
-    const events = computed(() => {
-      return Object.fromEntries(Object.entries(field.events || {}).map(([e, fn]) => {
-        return [e, function (data?: any) {
-          fn.call(field, data)
-          if (initiative) {
-            validate({ state: toValue(field.value), updateOn: e }, initiative.all, field.bools, props.model!.value).then(errors => {
-              field.errors.value = errors
-            })
-          }
-        }]
-      }))
-    })
+    
+    const events = Object.fromEntries(Object.entries(field.events || {}).map(([e, fn]) => {
+      return [e, function (data?: any) {
+        fn.call(field, data)
+        if (initiative) {
+          validate({ state: toValue(field.value), updateOn: e, boolsConfig: field.bools, model: props.model!.value }, initiative.all, props.validatorResolvers!).then(errors => {
+            field.errors.value = errors
+          })
+        }
+      }]
+    }))
+
 
     const onChange = (value: any) => {
-      if (events.value.onChange) {
-        events.value.onChange(value)
+      if (events.onChange) {
+        events.onChange(value)
       } else {
         field.onUpdate({
           type: FiledUpdateType.Value,
@@ -93,8 +95,8 @@ export const FieldControl = defineComponent({
 
     const onBlur = (value: any) => {
       batch(() => {
-        if (events.value.onBlur) {
-          events.value.onBlur(value)
+        if (events.onBlur) {
+          events.onBlur(value)
         } else {
           field.onUpdate({
             type: FiledUpdateType.Value,
@@ -107,8 +109,8 @@ export const FieldControl = defineComponent({
     }
 
     const onFocus = () => {
-      if (events.value.onFocus) {
-        events.value.onFocus()
+      if (events.onFocus) {
+        events.onFocus()
       }
       batch(() => {
         field.isBlurred.value = false
@@ -128,7 +130,8 @@ export const FieldControl = defineComponent({
             key: child.path,
             field: child,
             model: props.model,
-            resolveComponent: props.resolveComponent
+            resolveComponent: props.resolveComponent,
+            validatorResolvers: props.validatorResolvers
           })
         })
       }
