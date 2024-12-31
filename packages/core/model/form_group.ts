@@ -5,7 +5,6 @@ import { asyncBindingModel, createGraph } from "./utils";
 
 interface FormConfig {
   graph: typeof Field[];
-  validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
   id: string;

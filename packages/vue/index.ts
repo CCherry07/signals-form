@@ -6,7 +6,6 @@ import { Component, DefineComponent, h } from "vue";
 interface FormConfig {
   components: Record<string, Component | DefineComponent>;
   graph: typeof Field[];
-  validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
   id: string;
@@ -17,7 +16,6 @@ interface FormConfig {
 export const createForm = (config: FormConfig) => {
   const {
     graph,
-    validatorEngine,
     defaultValidatorEngine,
     boolsConfig,
     components,
@@ -26,7 +24,6 @@ export const createForm = (config: FormConfig) => {
   } = config;
   const form = createRXForm({
     id,
-    validatorEngine,
     defaultValidatorEngine,
     boolsConfig,
     graph,
@@ -50,6 +47,7 @@ export const createForm = (config: FormConfig) => {
       field: field,
       model: form.model,
       validatorResolvers: form.validatorResolvers,
+      defaultValidatorEngine: config.defaultValidatorEngine,
       resolveComponent
     })
   }))
@@ -82,6 +80,7 @@ export const createGroupForm = () => {
         field: field,
         model: form.model,
         validatorResolvers: form.validatorResolvers,
+        defaultValidatorEngine: config.defaultValidatorEngine,
         resolveComponent
       })
     }))

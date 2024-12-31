@@ -51,7 +51,6 @@ export interface AbstractModelMathods<M extends Signal<Model>> {
 export type AbstractModelMethods = Pick<AbstractModelMathods<Signal<Model>>, 'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors' | 'setFieldProps' | 'cleanErrors' | 'onSubscribe'>
 
 export interface AbstractModelConstructorOptions<M extends Model> {
-  validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: BoolsConfig<M>
   model?: M;
@@ -74,11 +73,10 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   init(options: AbstractModelConstructorOptions<M>) {
-    const { validatorEngine, defaultValidatorEngine, boolsConfig, model = {}, graph, fields } = options;
+    const { defaultValidatorEngine, boolsConfig, model = {}, graph, fields } = options;
     this.errors = {};
     this.model = model as M;
     this.modelId = 'default'
-    this.validatorEngine = validatorEngine;
     this.defaultValidatorEngine = defaultValidatorEngine
     this.bools = Object.freeze(setup(boolsConfig, this.model))
     Object.values(fields!)!.forEach((field) => {

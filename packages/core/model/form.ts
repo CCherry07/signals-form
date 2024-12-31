@@ -4,7 +4,6 @@ import { BoolsConfig } from "../boolless";
 import { asyncBindingModel, createGraph } from "./utils";
 export interface FormConfig<M extends Model> {
   id: string
-  validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: BoolsConfig<M>
   model?: M;

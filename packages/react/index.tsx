@@ -16,8 +16,7 @@ interface FormConfig {
 }
 export const createForm = (config: FormConfig) => {
   const {
-    validatorEngine = 'zod',
-    defaultValidatorEngine = 'zod',
+    defaultValidatorEngine,
     boolsConfig,
     components,
     resolvers,
@@ -26,7 +25,6 @@ export const createForm = (config: FormConfig) => {
   } = config;
   const form = createRXForm({
     id,
-    validatorEngine,
     defaultValidatorEngine,
     boolsConfig,
     graph
@@ -52,6 +50,7 @@ export const createForm = (config: FormConfig) => {
           key={field.path}
           field={field}
           model={form.model}
+          defaultValidatorEngine={config.defaultValidatorEngine}
           validatorResolvers={form.validatorResolvers}
           resolveComponent={resolveComponent}
         />
@@ -90,6 +89,7 @@ export const createGroupForm = () => {
             key={field.path}
             field={field}
             model={form.model}
+            defaultValidatorEngine={config.defaultValidatorEngine}
             validatorResolvers={form.validatorResolvers}
             resolveComponent={resolveComponent}
           />

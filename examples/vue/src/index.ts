@@ -132,12 +132,13 @@ const graph = [
   UserInfo
 ]
 const { form, app } = createForm({
+  defaultValidatorEngine: "zod",
   graph,
   boolsConfig: bools,
   id: "from-vue",
   resolvers: {
     validator: {
-      "zod": zodResolver
+      zod: zodResolver
     }
   },
   components: {

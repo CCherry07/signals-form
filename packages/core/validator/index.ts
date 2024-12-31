@@ -16,7 +16,7 @@ export interface ValidateItem {
 }
 
 
-export function setup(this:AbstractModel<any>,validator: string, resolver: Resolver) {
+export function setup(this: AbstractModel<any>, validator: string, resolver: Resolver) {
   if (!isProd && this.validatorResolvers[validator]) {
     console.warn(`${validator} is already registered`);
   }
@@ -51,16 +51,17 @@ const getFactValue = (fact: string | Object | Array<string>, state: any, model: 
 interface Context<T> {
   state: T
   updateOn: string
+  defaultValidatorEngine: string
   model: Record<string, any>
   boolsConfig: BoolValues
 }
 
 type ValidatorResolvers = Record<string, Resolver>
 
-export const validate = async <T>({ state, updateOn: _updateOn, model, boolsConfig }: Context<T>, validates: ValidateItem[], validatorResolvers: ValidatorResolvers): Promise<FieldErrors> => {
+export const validate = async <T>({ state, updateOn: _updateOn, model, boolsConfig, defaultValidatorEngine }: Context<T>, validates: ValidateItem[], validatorResolvers: ValidatorResolvers): Promise<FieldErrors> => {
   const fieldErrors = {} as FieldErrors
   for (const item of validates) {
-    const { schema, engine = 'zod', fact, updateOn, schemaOptions, factoryOptions, needValidate } = item
+    const { schema, engine = defaultValidatorEngine, fact, updateOn, schemaOptions, factoryOptions, needValidate } = item
     if (needValidate instanceof Decision && needValidate.not().evaluate(boolsConfig)) continue
     if (typeof updateOn === "string" && updateOn !== _updateOn || isArray(updateOn) && updateOn.includes(_updateOn)) continue
     if (!isFunction(validatorResolvers[engine])) {

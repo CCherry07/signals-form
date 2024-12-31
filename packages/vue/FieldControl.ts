@@ -1,7 +1,7 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
 import { FiledUpdateType, normalizeSignal, toDeepValue, toValue, validate, type Field } from "@rxform/core"
-import { batch, computed, effect, signal, untracked } from "@preact/signals-core";
+import { batch, computed, effect, signal } from "@preact/signals-core";
 import { Resolver } from "@rxform/core/resolvers/type";
 
 function normalizeProps(field: Field) {
@@ -25,6 +25,7 @@ export const FieldControl = defineComponent({
     field: Object as PropType<Field>,
     model: Object as PropType<Record<string, any>>,
     resolveComponent: Function as PropType<(component: string | Component | DefineComponent) => Component | DefineComponent>,
+    defaultValidatorEngine: String as PropType<string>,
     validatorResolvers: Object as PropType<Record<string, Resolver>>
   },
   setup(props) {
@@ -35,7 +36,13 @@ export const FieldControl = defineComponent({
     onBeforeMount(() => {
       const onValidateDispose = effect(() => {
         if (signalValidator) {
-          validate({ state: field.value, updateOn: "signal", boolsConfig: untracked(() => field.bools), model: props.model!.value }, signalValidator.all, props.validatorResolvers!).then(errors => {
+          validate({
+            state: field.value,
+            updateOn: "signal",
+            defaultValidatorEngine: props.defaultValidatorEngine!,
+            boolsConfig: field.bools,
+            model: props.model!.value
+          }, signalValidator.all, props.validatorResolvers!).then(errors => {
             if (Object.keys(errors).length === 0) {
               field.abstractModel?.cleanErrors([String(field.path)])
             } else {
@@ -69,12 +76,17 @@ export const FieldControl = defineComponent({
       })
       cleanups.push(onValidateDispose, onStatesDispose, onSignalsDispose, onStateDispose)
     })
-    
+
     const events = Object.fromEntries(Object.entries(field.events || {}).map(([e, fn]) => {
       return [e, function (data?: any) {
         fn.call(field, data)
         if (initiative) {
-          validate({ state: toValue(field.value), updateOn: e, boolsConfig: field.bools, model: props.model!.value }, initiative.all, props.validatorResolvers!).then(errors => {
+          validate({
+            state: toValue(field.value),
+            updateOn: e,
+            defaultValidatorEngine: props.defaultValidatorEngine!,
+            boolsConfig: field.bools, model: props.model!.value
+          }, initiative.all, props.validatorResolvers!).then(errors => {
             field.errors.value = errors
           })
         }
@@ -131,7 +143,8 @@ export const FieldControl = defineComponent({
             field: child,
             model: props.model,
             resolveComponent: props.resolveComponent,
-            validatorResolvers: props.validatorResolvers
+            validatorResolvers: props.validatorResolvers,
+            defaultValidatorEngine: props.defaultValidatorEngine
           })
         })
       }

@@ -6,6 +6,7 @@ import { Resolver } from '@rxform/core/resolvers/type';
 interface Props {
   field: Field;
   model: any
+  defaultValidatorEngine: string;
   resolveComponent: (component: string | FunctionComponent<any> | ComponentClass<any, any>) => string | FunctionComponent<any> | ComponentClass<any, any>
   validatorResolvers: Record<string, Resolver>
 };
@@ -47,7 +48,12 @@ export function FieldControl(props: Props) {
     field.onMounted?.()
     const onValidateDispose = effect(() => {
       if (signalValidator) {
-        validate({ state: field.value, updateOn: "signal", boolsConfig: field.bools, model: model.value }, signalValidator.all, props.validatorResolvers).then(errors => {
+        validate({
+          state: field.value, updateOn: "signal",
+          defaultValidatorEngine: props.defaultValidatorEngine,
+          boolsConfig: field.bools,
+          model: model.value
+        }, signalValidator.all, props.validatorResolvers).then(errors => {
           if (Object.keys(errors).length === 0) {
             field.abstractModel?.cleanErrors([String(field.path)])
           } else {
@@ -95,7 +101,13 @@ export function FieldControl(props: Props) {
       return [e, function (data?: any) {
         fn.call(field, data)
         if (initiative) {
-          validate({ state: toValue(field.value), updateOn: e, boolsConfig: field.bools, model: model.value }, initiative.all, props.validatorResolvers).then(errors => {
+          validate({
+            state: toValue(field.value),
+            updateOn: e,
+            defaultValidatorEngine: props.defaultValidatorEngine,
+            boolsConfig: field.bools,
+            model: model.value
+          }, initiative.all, props.validatorResolvers).then(errors => {
             field.errors.value = errors
           })
         }
@@ -146,6 +158,7 @@ export function FieldControl(props: Props) {
           key: child.path,
           field: child,
           model,
+          defaultValidatorEngine: props.defaultValidatorEngine,
           validatorResolvers: props.validatorResolvers,
           resolveComponent
         })
