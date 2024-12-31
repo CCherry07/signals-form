@@ -6,7 +6,6 @@ import { Resolver } from '@rxform/core/resolvers/type';
 interface FormConfig {
   components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
   graph: (typeof Field)[];
-  validatorEngine: string;
   defaultValidatorEngine: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
   id: string;

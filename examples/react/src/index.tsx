@@ -297,7 +297,6 @@ const graph = [
 
 const formGroup = createGroupForm()
 const form1 = formGroup.add({
-  validatorEngine: "zod",
   defaultValidatorEngine: "zod",
   boolsConfig: bools,
   graph,
@@ -319,7 +318,6 @@ const form1 = formGroup.add({
   }
 })
 const form2 = formGroup.add({
-  validatorEngine: "zod",
   defaultValidatorEngine: "zod",
   boolsConfig: bools,
   graph,
