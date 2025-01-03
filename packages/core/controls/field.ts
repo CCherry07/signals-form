@@ -1,4 +1,4 @@
-import { batch, effect, signal, Signal } from "@preact/signals-core";
+import { batch, effect, signal, Signal, computed, ReadonlySignal } from "@preact/signals-core";
 import { BoolValues, Decision } from "../boolless";
 import { EventMetaData, getActionsMetaData, getComponentMetaData, getEventsMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
 import { get, isFunction, isPromise, isSignal, set, toDeepValue, toValue } from "@rxform/shared";
@@ -16,10 +16,9 @@ export interface FieldError {
 
 export type FieldErrors = Record<string, FieldError>
 
-
 export class Field<T = any, D = any> {
   id!: string;
-  value!: Signal<T>;
+  _value!: ReadonlySignal<T>;
   path!: string;
   bools!: BoolValues;
   recoverValueOnHidden?: boolean
@@ -44,6 +43,16 @@ export class Field<T = any, D = any> {
   onMounted?(): void
   onUnmounted?(): void
   onValidate?(): void
+
+  get value() {
+    return this._value.value
+  }
+  get peek(){
+    return this._value.peek()
+  }
+  set value(v: T) {
+    this.abstractModel.setFieldValue(this.path, v)
+  }
   onUpdate({
     type,
     value
@@ -86,7 +95,7 @@ export class Field<T = any, D = any> {
   async _onSubmitValue() {
     const fieldPathLength = this.path.length + 1
     if (isFunction(this.onSubmitValue)) {
-      return await this.onSubmitValue(toDeepValue(this.value.peek()))
+      return await this.onSubmitValue(toDeepValue(this.peek))
     } else if (this.properties) {
       const model: any = {}
       await Promise.all(Object.values(this.properties).map(async (field) => {
@@ -94,7 +103,7 @@ export class Field<T = any, D = any> {
       }))
       return model
     } else {
-      return this.value.peek()
+      return this.peek
     }
   }
 
@@ -107,9 +116,10 @@ export class Field<T = any, D = any> {
   public isValid: Signal<boolean> = signal(true)
   public errors: Signal<FieldErrors> = signal({})
   public isPending: Signal<boolean> = signal(true)
-  public $value: Signal<T> = signal(undefined as unknown as T)
+  public $value: T = undefined as unknown as T
   constructor() {
     this.initFieldMetaDate()
+    this._value = computed(() => this.abstractModel.getFieldValue(this.path))
     // validate
     effect(() => {
       this.isValid.value = Object.keys(this.errors.value).length === 0
@@ -122,22 +132,22 @@ export class Field<T = any, D = any> {
 
     // recover value when hidden and shown
     effect(() => {
-      const { isHidden, recoverValueOnHidden, recoverValueOnShown, value, $value } = this;
+      const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
       if (isHidden.value && recoverValueOnHidden) {
         this.onHidden?.(this.isHidden.peek())
         return
       };
-      if (recoverValueOnShown && value) {
+      if (recoverValueOnShown && this.value) {
         if (!isHidden.value) {
-          value.value = $value.peek();
+          this.value = this.$value;
           this.onHidden?.(this.isHidden.peek())
           return
         } else {
-          $value.value = value.peek();
+          this.$value = this.peek;
         }
       }
       if (isHidden.value) {
-        value.value = undefined as unknown as T;
+        this.value = undefined as unknown as T;
         this.onHidden?.(this.isHidden.peek())
       }
     })
@@ -162,7 +172,7 @@ export class Field<T = any, D = any> {
     this.isDestroyed.value = false
     this.isValid.value = true
     this.errors.value = {}
-    this.$value.value = undefined as unknown as T
+    this.$value = undefined as unknown as T
   }
 
   resetModel(model?: T | Promise<T>) {
@@ -188,11 +198,11 @@ export class Field<T = any, D = any> {
       if (isPromise(filedValue)) {
         this.isPending.value = true
         filedValue.then((value) => {
-          this.value.value = value
+          this.value = value
           this.isPending.value = false
         })
       } else {
-        this.value.value = filedValue!
+        this.value = filedValue!
         this.isPending.value = false
       }
     }
@@ -219,18 +229,18 @@ export class Field<T = any, D = any> {
     } else {
       if (isPromise(filedValue)) {
         filedValue.then((value) => {
-          this.value.value = value
+          this.value = value
           this.isPending.value = false
         })
       } else {
-        this.value.value = filedValue!
+        this.value = filedValue!
         this.isPending.value = false
       }
     }
   }
 
   init(model?: T) {
-    this.value = signal(undefined as unknown as T)
+    this.value = undefined as unknown as T
     this.resetState()
     const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
     if (this.properties) {
