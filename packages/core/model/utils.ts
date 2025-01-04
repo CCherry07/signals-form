@@ -1,5 +1,5 @@
-import { deepSignal, signal } from "alien-deepsignals"
-import { isFunction, set, toValue } from "@rxform/shared"
+import { signal } from "alien-deepsignals"
+import { isFunction, toValue } from "@rxform/shared"
 import { Field } from "../controls/field"
 import { AbstractModelMethods, Model } from "./abstract_model"
 
@@ -44,6 +44,7 @@ export function asyncBindingModel(
       const { id, properties } = field
       field.onBeforeInit?.()
       field.path = path ? `${path}.${id}` : id;
+      field.signalPath = path ? `${path}.$${id}` : id;
       fields[field.path] = field
       field.abstractModel = abstractModelMethods
       if (properties) {

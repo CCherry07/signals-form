@@ -31,7 +31,7 @@ function normalizeProps(field: Field) {
     isDisabled: field.isDisabled.value,
     isValid: field.isValid.value,
     errors: field.errors.value,
-    value: toDeepValue(field.value),
+    value: field.value,
     ...field.props
   }
 }
@@ -54,7 +54,7 @@ export function FieldControl(props: Props) {
             state: field.value, updateOn: "signal",
             defaultValidatorEngine: props.defaultValidatorEngine,
             boolsConfig: field.bools,
-            model: model.value
+            model
           }, signalValidator.all, props.validatorResolvers).then(errors => {
             if (Object.keys(errors).length === 0) {
               field.abstractModel?.cleanErrors([String(field.path)])
@@ -105,7 +105,7 @@ export function FieldControl(props: Props) {
             updateOn: e,
             defaultValidatorEngine: props.defaultValidatorEngine,
             boolsConfig: field.bools,
-            model: model.value
+            model
           }, initiative.all, props.validatorResolvers).then(errors => {
             field.errors.value = errors
           })

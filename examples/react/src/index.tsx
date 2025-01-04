@@ -1,12 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import type { Signal } from "alien-signals"
 import {
   Validator,
   Events,
   D, Field, Component,
   Props,
-  normalizeSignal,
   Actions
 } from "@rxform/core"
 import Form from "./components/Form"
@@ -318,33 +316,31 @@ const form1 = formGroup.add({
     select: Select
   }
 })
-const form2 = formGroup.add({
-  defaultValidatorEngine: "zod",
-  boolsConfig: bools,
-  graph,
-  id: 'form2',
-  resolvers: {
-    validator: {
-      zod: zodResolver
-    }
-  },
-  components: {
-    form: Form,
-    input: Input,
-    checkbox: Checkbox,
-    card: CardComponent,
-    inputType: InputType,
-    inputNumber: InputNumber,
-    cascader: Cascader,
-    select: Select
-  }
-})
+// const form2 = formGroup.add({
+//   defaultValidatorEngine: "zod",
+//   boolsConfig: bools,
+//   graph,
+//   id: 'form2',
+//   resolvers: {
+//     validator: {
+//       zod: zodResolver
+//     }
+//   },
+//   components: {
+//     form: Form,
+//     input: Input,
+//     checkbox: Checkbox,
+//     card: CardComponent,
+//     inputType: InputType,
+//     inputNumber: InputNumber,
+//     cascader: Cascader,
+//     select: Select
+//   }
+// })
 
 const root = createRoot(document.getElementById('root')!);
 root.render(<App apps={[
   form1.app,
-  form2.app
 ]} forms={[
   form1.form,
-  form2.form
 ]} />);

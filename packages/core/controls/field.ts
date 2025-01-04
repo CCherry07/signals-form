@@ -1,7 +1,14 @@
 import { effect } from "alien-signals";
 import { BoolValues, Decision } from "../boolless";
-import { EventMetaData, getActionsMetaData, getComponentMetaData, getEventsMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
-import { get, isFunction, isPromise, set, toDeepValue, toValue } from "@rxform/shared";
+
+import {
+  EventMetaData, getActionsMetaData, getComponentMetaData,
+  getEventsMetaData, getPropsMetaData, getSignalsMetaData,
+  getValidatorMetaData, PropsMetaData, SignalsMetaData,
+  ValidatorMetaData
+} from "./decorator";
+
+import { isFunction, isPromise, set, toDeepValue, toValue } from "@rxform/shared";
 import { AbstractModelMethods } from "../model/abstract_model";
 import { signal, Signal } from "alien-deepsignals";
 
@@ -20,6 +27,7 @@ export type FieldErrors = Record<string, FieldError>
 export class Field<T = any, D = any> {
   id!: string;
   path!: string;
+  signalPath!: string;
   bools!: BoolValues;
   recoverValueOnHidden?: boolean
   recoverValueOnShown?: boolean
@@ -47,8 +55,8 @@ export class Field<T = any, D = any> {
   get value() {
     return this.abstractModel.getFieldValue(this.path)
   }
-  get peek() {
-    return this.abstractModel.getFieldValue(this.path)
+  peek() {
+    return this.abstractModel.getFieldValue(this.signalPath)?.peek()
   }
   set value(v: T) {
     this.abstractModel.setFieldValue(this.path, v)
@@ -66,16 +74,7 @@ export class Field<T = any, D = any> {
       if (this.value === unSignalValue) {
         return
       }
-      if (this.properties) {
-        let properties = this.properties
-        let fieldPath = this.path.length + 1
-        Object.entries(properties).forEach(([_, field]) => {
-          const value = get(unSignalValue, field.path.slice(fieldPath))
-          field.onUpdate({ type: FiledUpdateType.Value, value })
-        })
-      } else {
-        this.value = unSignalValue
-      }
+      this.value = unSignalValue as T
     }
     if (type === "props") {
       if (this.props === undefined) {
@@ -153,33 +152,15 @@ export class Field<T = any, D = any> {
   resetModel(model?: T | Promise<T>) {
     this.isPending.value = true
     const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
-    if (this.properties) {
-      const fields = Object.values(this.properties!)
-      if (isPromise(filedValue)) {
-        this.isPending.value = true
-        filedValue.then((value) => {
-          fields.forEach((field) => {
-            field.resetModel(value?.[field.id])
-          })
-          this.isPending.value = false
-        })
-      } else {
-        fields.forEach((field) => {
-          field.resetModel(filedValue?.[field.id])
-        })
+    if (isPromise(filedValue)) {
+      this.isPending.value = true
+      filedValue.then((value) => {
+        this.value = value
         this.isPending.value = false
-      }
+      })
     } else {
-      if (isPromise(filedValue)) {
-        this.isPending.value = true
-        filedValue.then((value) => {
-          this.value = value
-          this.isPending.value = false
-        })
-      } else {
-        this.value = filedValue!
-        this.isPending.value = false
-      }
+      this.value = filedValue!
+      this.isPending.value = false
     }
   }
 
@@ -187,46 +168,28 @@ export class Field<T = any, D = any> {
     this.resetState()
     this.onBeforeInit?.()
     const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
-    if (this.properties?.length) {
-      const fields = this.properties!
-      if (isPromise(filedValue)) {
-        filedValue.then((value) => {
-          fields.forEach((field) => {
-            field.reset(value?.[field.id])
-          })
-          this.isPending.value = false
-        })
-      } else {
-        fields.forEach((field) => {
-          field.reset(filedValue?.[field.id])
-        })
+    if (isPromise(filedValue)) {
+      filedValue.then((value) => {
+        this.value = value
         this.isPending.value = false
-      }
+      })
     } else {
-      if (isPromise(filedValue)) {
-        filedValue.then((value) => {
-          this.value = value
-          this.isPending.value = false
-        })
-      } else {
-        this.value = filedValue!
-        this.isPending.value = false
-      }
+      this.value = filedValue!
+      this.isPending.value = false
     }
     effect(() => {
       const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
-      
       if (isHidden.value && recoverValueOnHidden) {
         this.onHidden?.(this.isHidden.peek())
         return
       };
-      if (recoverValueOnShown && this.value) {
+      if (recoverValueOnShown && this.peek()) {
         if (!isHidden.value) {
           this.value = this.$value;
           this.onHidden?.(this.isHidden.peek())
           return
         } else {
-          this.$value = this.peek;
+          this.$value = this.peek();
         }
       }
       if (isHidden.value) {
