@@ -130,24 +130,26 @@ export class Field<T = any, D = any> {
       })
 
       // recover value when hidden and shown
-      effect(() => {
-        const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
-        if (isHidden.value && recoverValueOnHidden) {
-          this.onHidden?.(this.isHidden.peek())
-          return
-        };
-        if (recoverValueOnShown) {
-          if (!isHidden.value && this.$value !== this.peek()) {
-            this.value = this.$value;
+      Promise.resolve().then(() => {
+        effect(() => {
+          const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
+          if (isHidden.value && recoverValueOnHidden) {
             this.onHidden?.(this.isHidden.peek())
-          } else {
-            this.$value = this.peek();
+            return
+          };
+          if (recoverValueOnShown) {
+            if (!isHidden.value && this.$value !== this.peek()) {
+              this.value = this.$value;
+              this.onHidden?.(this.isHidden.peek())
+            } else {
+              this.$value = this.peek();
+            }
           }
-        }
-        if (isHidden.value) {
-          this.value = undefined as unknown as T;
-          this.onHidden?.(this.isHidden.peek())
-        }
+          if (isHidden.value) {
+            this.value = undefined as unknown as T;
+            this.onHidden?.(this.isHidden.peek())
+          }
+        })
       })
     })
     this.cleanups.push(e.stop)

@@ -1,5 +1,5 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { Field, toValue, validate, toDeepValue, FiledUpdateType, normalizeSignal } from "@rxform/core"
+import { Field, toValue, validate, FiledUpdateType, normalizeSignal } from "@rxform/core"
 import { computed, signal } from "alien-deepsignals"
 import { effect, effectScope } from "alien-signals"
 import { Resolver } from '@rxform/core/resolvers/type';
@@ -87,6 +87,7 @@ export function FieldControl(props: Props) {
     field.onTrack(() => {
       setFiledState(normalizeProps(field))
     })
+    field.isMounted.value = true
     return () => {
       scope.stop()
       field.onDestroy?.()
