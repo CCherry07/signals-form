@@ -56,7 +56,7 @@ export class Field<T = any, D = any> {
     return this.abstractModel.getFieldValue(this.path)
   }
   peek() {
-    return this.abstractModel.getFieldValue(this.signalPath)?.peek()
+    return this.abstractModel.getFieldValue(this.signalPath)?.peek?.()
   }
   set value(v: T) {
     this.abstractModel.setFieldValue(this.path, v)
@@ -112,6 +112,7 @@ export class Field<T = any, D = any> {
   public errors: Signal<FieldErrors> = signal({})
   public isPending: Signal<boolean> = signal(true)
   public $value: T = undefined as unknown as T
+  private cleanups: Array<Function> = []
   constructor() {
     this.initFieldMetaDate()
     // validate
@@ -165,6 +166,8 @@ export class Field<T = any, D = any> {
   }
 
   reset(model?: T) {
+    // clean previous state and effect
+    this.cleanups.forEach(fn => fn())
     this.resetState()
     this.onBeforeInit?.()
     const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
@@ -177,17 +180,16 @@ export class Field<T = any, D = any> {
       this.value = filedValue!
       this.isPending.value = false
     }
-    effect(() => {
+    const e = effect(() => {
       const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
       if (isHidden.value && recoverValueOnHidden) {
         this.onHidden?.(this.isHidden.peek())
         return
       };
-      if (recoverValueOnShown && this.peek()) {
-        if (!isHidden.value) {
+      if (recoverValueOnShown) {
+        if (!isHidden.value && this.$value !== this.peek()) {
           this.value = this.$value;
           this.onHidden?.(this.isHidden.peek())
-          return
         } else {
           this.$value = this.peek();
         }
@@ -197,6 +199,7 @@ export class Field<T = any, D = any> {
         this.onHidden?.(this.isHidden.peek())
       }
     })
+    this.cleanups.push(e.stop)
   }
 
   init(model?: T) {

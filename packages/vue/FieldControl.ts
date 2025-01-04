@@ -1,6 +1,6 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
-import { FiledUpdateType, normalizeSignal, toDeepValue, toValue, validate, type Field } from "@rxform/core"
+import { FiledUpdateType, normalizeSignal, toValue, validate, type Field } from "@rxform/core"
 import { effect } from "alien-signals";
 import { Resolver } from "@rxform/core/resolvers/type";
 import { signal, computed } from "alien-deepsignals";
@@ -15,7 +15,7 @@ function normalizeProps(field: Field) {
     isDisabled: field.isDisabled.value,
     isValid: field.isValid.value,
     errors: field.errors.value,
-    value: toDeepValue(field.value),
+    value: field.value,
     ...field.props
   }
 }

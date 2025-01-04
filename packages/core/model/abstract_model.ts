@@ -1,5 +1,5 @@
-import { effect } from "alien-signals"
-import { deepSignal, Signal, signal } from "alien-deepsignals";
+import { Effect, effect } from "alien-signals"
+import { deepSignal, peek, Signal, signal } from "alien-deepsignals";
 import { get, set, toDeepValue } from "@rxform/shared";
 
 import { BoolsConfig, setup, type BoolValues } from "../boolless"
@@ -45,7 +45,7 @@ export interface AbstractModelMathods<M extends Signal<Model>> {
   validateFields(fields: string[]): Promise<boolean>;
   validateFieldsAndScroll(fields: string[]): Promise<boolean>;
   validateFieldsAndScrollToFirstError(fields: string[]): Promise<boolean>;
-  onSubscribe(fn: (props: SubscribeProps<M>) => void): () => void;
+  onSubscribe(fn: (props: SubscribeProps<M>) => void): Effect;
   reset(): void;
   submit(): Promise<Model>;
 }
