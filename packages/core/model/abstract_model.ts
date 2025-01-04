@@ -1,6 +1,6 @@
 import { Effect, effect } from "alien-signals"
-import { deepSignal, peek, Signal, signal } from "alien-deepsignals";
-import { get, set, toDeepValue } from "@rxform/shared";
+import { DeepSignal, deepSignal, peek, Signal, signal } from "alien-deepsignals";
+import { get, set, clonedeep } from "@rxform/shared";
 
 import { BoolsConfig, setup, type BoolValues } from "../boolless"
 import { Field, FieldErrors, FiledUpdateType } from "../controls/field";
@@ -9,7 +9,7 @@ import { createModel } from "./utils";
 
 export type Model = Record<string, any>;
 
-export interface AbstractModel<M extends Signal<Model>> {
+export interface AbstractModel<M extends DeepSignal<Model>> {
   bools: BoolValues;
   submitted: Signal<boolean>;
   submiting: Signal<boolean>;
@@ -31,13 +31,14 @@ interface SubscribeProps<M> {
   isPending: Signal<boolean>
 }
 
-export interface AbstractModelMathods<M extends Signal<Model>> {
+export interface AbstractModelMathods<M extends DeepSignal<Model>> {
   updateModel(model: M): void;
   setErrors(errors: Record<string, FieldErrors>): void;
   setFieldErrors(field: string, errors: FieldErrors): void;
   cleanErrors(paths?: string[]): void
   setFieldValue(field: string, value: any): void;
   getFieldValue(field: string): any;
+  peekFieldValue(parentpath: string, id: string): any;
   setFieldProps(field: string, props: any): void;
   getFieldError(field: string): FieldErrors;
   validate(): Promise<boolean>;
@@ -49,8 +50,7 @@ export interface AbstractModelMathods<M extends Signal<Model>> {
   reset(): void;
   submit(): Promise<Model>;
 }
-export type AbstractModelMethods = Pick<AbstractModelMathods<Signal<Model>>, 'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors' | 'setFieldProps' | 'cleanErrors' | 'onSubscribe'>
-
+export type AbstractModelMethods = Pick<AbstractModelMathods<DeepSignal<Model>>, 'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors' | 'setFieldProps' | 'cleanErrors' | 'onSubscribe' | "peekFieldValue">
 export interface AbstractModelConstructorOptions<M extends Model> {
   defaultValidatorEngine: string;
   boolsConfig: BoolsConfig<M>
@@ -79,7 +79,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.modelId = 'default'
     this.defaultValidatorEngine = defaultValidatorEngine
     this.bools = Object.freeze(setup(boolsConfig, this.model))
-    
+
     Object.values(fields!)!.forEach((field) => {
       field.bools = this.bools
     })
@@ -95,7 +95,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   saveModel() {
-    this.models.set(this.modelId, toDeepValue(this.model));
+    this.models.set(this.modelId, clonedeep(this.model));
   }
 
   useOrCreateModel(modelId: string) {
@@ -162,14 +162,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
   };
 
   updateModel(model: Model) {
-    Object.values(this.fields).forEach((field) => {
-      if (!field.properties) { // leaf node
-        const value = get(model, field.path)
-        if (value !== field.value) {
-          field.onUpdate({ type: FiledUpdateType.Value, value })
-        }
-      }
-    })
+    Object.assign(this.model, model)
   }
 
   mergeModel(model: M) {
@@ -218,6 +211,10 @@ export class AbstractModel<M> implements AbstractModel<M> {
 
   getFieldValue(field: string) {
     return get(this.model, field)
+  }
+
+  peekFieldValue(parentpath: string, id: string) {
+    return peek(get(this.model, parentpath), id)
   }
 
   getFieldError(field: string) {

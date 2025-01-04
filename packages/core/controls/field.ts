@@ -1,4 +1,4 @@
-import { effect } from "alien-signals";
+import { effect, effectScope } from "alien-signals";
 import { BoolValues, Decision } from "../boolless";
 
 import {
@@ -8,7 +8,7 @@ import {
   ValidatorMetaData
 } from "./decorator";
 
-import { isFunction, isPromise, set, toDeepValue, toValue } from "@rxform/shared";
+import { isFunction, isPromise, set, toValue } from "@rxform/shared";
 import { AbstractModelMethods } from "../model/abstract_model";
 import { signal, Signal } from "alien-deepsignals";
 
@@ -28,6 +28,7 @@ export class Field<T = any, D = any> {
   id!: string;
   path!: string;
   signalPath!: string;
+  parentpath: string = ""
   bools!: BoolValues;
   recoverValueOnHidden?: boolean
   recoverValueOnShown?: boolean
@@ -56,7 +57,7 @@ export class Field<T = any, D = any> {
     return this.abstractModel.getFieldValue(this.path)
   }
   peek() {
-    return this.abstractModel.getFieldValue(this.signalPath)?.peek?.()
+    return this.abstractModel?.peekFieldValue?.(this.parentpath, this.id)
   }
   set value(v: T) {
     this.abstractModel.setFieldValue(this.path, v)
@@ -90,15 +91,15 @@ export class Field<T = any, D = any> {
   async _onSubmitValue() {
     const fieldPathLength = this.path.length + 1
     if (isFunction(this.onSubmitValue)) {
-      return await this.onSubmitValue(toDeepValue(this.peek))
+      return await this.onSubmitValue(this.peek())
     } else if (this.properties) {
       const model: any = {}
-      await Promise.all(Object.values(this.properties).map(async (field) => {
+      await Promise.all(this.properties.map(async (field) => {
         return set(model, field.path.slice(fieldPathLength), await field._onSubmitValue())
       }))
       return model
     } else {
-      return this.peek
+      return this.peek()
     }
   }
 
@@ -111,21 +112,45 @@ export class Field<T = any, D = any> {
   public isValid: Signal<boolean> = signal(true)
   public errors: Signal<FieldErrors> = signal({})
   public isPending: Signal<boolean> = signal(true)
+  public isMounted: Signal<boolean> = signal(false)
   public $value: T = undefined as unknown as T
   private cleanups: Array<Function> = []
   constructor() {
     this.initFieldMetaDate()
-    // validate
-    effect(() => {
-      this.isValid.value = Object.keys(this.errors.value).length === 0
-    })
+    const e = effectScope()
+    e.run(() => {
+      // validate
+      effect(() => {
+        this.isValid.value = Object.keys(this.errors.value).length === 0
+      })
 
-    // disabled
-    effect(() => {
-      this.onDisabled?.(this.isDisabled.value)
-    })
+      // disabled
+      effect(() => {
+        this.onDisabled?.(this.isDisabled.value)
+      })
 
-    // recover value when hidden and shown
+      // recover value when hidden and shown
+      effect(() => {
+        const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
+        if (isHidden.value && recoverValueOnHidden) {
+          this.onHidden?.(this.isHidden.peek())
+          return
+        };
+        if (recoverValueOnShown) {
+          if (!isHidden.value && this.$value !== this.peek()) {
+            this.value = this.$value;
+            this.onHidden?.(this.isHidden.peek())
+          } else {
+            this.$value = this.peek();
+          }
+        }
+        if (isHidden.value) {
+          this.value = undefined as unknown as T;
+          this.onHidden?.(this.isHidden.peek())
+        }
+      })
+    })
+    this.cleanups.push(e.stop)
   }
   initFieldMetaDate() {
     const componentMeta = getComponentMetaData(this.constructor)
@@ -167,7 +192,6 @@ export class Field<T = any, D = any> {
 
   reset(model?: T) {
     // clean previous state and effect
-    this.cleanups.forEach(fn => fn())
     this.resetState()
     this.onBeforeInit?.()
     const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
@@ -180,26 +204,6 @@ export class Field<T = any, D = any> {
       this.value = filedValue!
       this.isPending.value = false
     }
-    const e = effect(() => {
-      const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
-      if (isHidden.value && recoverValueOnHidden) {
-        this.onHidden?.(this.isHidden.peek())
-        return
-      };
-      if (recoverValueOnShown) {
-        if (!isHidden.value && this.$value !== this.peek()) {
-          this.value = this.$value;
-          this.onHidden?.(this.isHidden.peek())
-        } else {
-          this.$value = this.peek();
-        }
-      }
-      if (isHidden.value) {
-        this.value = undefined as unknown as T;
-        this.onHidden?.(this.isHidden.peek())
-      }
-    })
-    this.cleanups.push(e.stop)
   }
 
   init(model?: T) {

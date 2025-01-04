@@ -3,7 +3,6 @@ import { ReactNode } from "react";
 import { Submit } from "./components/Submit";
 import { effect } from "alien-signals";
 import { Spin } from "antd";
-import { toDeepValue } from "@rxform/core";
 interface Parops {
   apps: ReactNode[],
   forms: any[]
@@ -18,7 +17,7 @@ export function App(props: Parops) {
       setSubmitted(props.forms[0].submiting.value)
     })
     effect(() => {
-      setModel(toDeepValue(props.forms[0].model.value))
+      setModel(props.forms[0].model.value)
     })
   }, [])
   return <div style={{ display: "flex" }}>

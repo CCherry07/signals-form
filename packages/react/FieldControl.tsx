@@ -38,7 +38,7 @@ function normalizeProps(field: Field) {
 export function FieldControl(props: Props) {
   const { field, resolveComponent } = props;
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
-  const model = computed(() => toDeepValue(props.model.value))
+  const model = computed(() => props.model)
   const {
     initiative,
     signal: signalValidator

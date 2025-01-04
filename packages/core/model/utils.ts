@@ -43,6 +43,7 @@ export function asyncBindingModel(
     graph.forEach((field) => {
       const { id, properties } = field
       field.onBeforeInit?.()
+      field.parentpath = path
       field.path = path ? `${path}.${id}` : id;
       field.signalPath = path ? `${path}.$${id}` : id;
       fields[field.path] = field

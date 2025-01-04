@@ -21,6 +21,7 @@ export function createRXForm(config: FormConfig<Model>) {
     onSubscribe: form.onSubscribe.bind(form),
     setFieldErrors: form.setFieldErrors.bind(form),
     getFieldValue: form.getFieldValue.bind(form),
+    peekFieldValue: form.peekFieldValue.bind(form)
   }
   const graph = createGraph(config.graph!)
   const { fields } = asyncBindingModel(methods, form.model, graph!)
