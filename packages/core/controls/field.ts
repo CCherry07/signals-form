@@ -1,8 +1,9 @@
-import { batch, effect, signal, Signal, computed, ReadonlySignal } from "@preact/signals-core";
+import { effect } from "alien-signals";
 import { BoolValues, Decision } from "../boolless";
 import { EventMetaData, getActionsMetaData, getComponentMetaData, getEventsMetaData, getPropsMetaData, getSignalsMetaData, getValidatorMetaData, PropsMetaData, SignalsMetaData, ValidatorMetaData } from "./decorator";
-import { get, isFunction, isPromise, isSignal, set, toDeepValue, toValue } from "@rxform/shared";
+import { get, isFunction, isPromise, set, toDeepValue, toValue } from "@rxform/shared";
 import { AbstractModelMethods } from "../model/abstract_model";
+import { signal, Signal } from "alien-deepsignals";
 
 export enum FiledUpdateType {
   Value = "value",
@@ -18,7 +19,6 @@ export type FieldErrors = Record<string, FieldError>
 
 export class Field<T = any, D = any> {
   id!: string;
-  _value!: ReadonlySignal<T>;
   path!: string;
   bools!: BoolValues;
   recoverValueOnHidden?: boolean
@@ -45,14 +45,15 @@ export class Field<T = any, D = any> {
   onValidate?(): void
 
   get value() {
-    return this._value.value
+    return this.abstractModel.getFieldValue(this.path)
   }
-  get peek(){
-    return this._value.peek()
+  get peek() {
+    return this.abstractModel.getFieldValue(this.path)
   }
   set value(v: T) {
     this.abstractModel.setFieldValue(this.path, v)
   }
+
   onUpdate({
     type,
     value
@@ -61,24 +62,19 @@ export class Field<T = any, D = any> {
     value: any
   }): void {
     if (type === "value") {
-      if (!isSignal(this.value)) {
-        throw new Error(`field ${this.id} value is undefined`)
-      }
       const unSignalValue = toValue(value)
-      if (this.value.value === unSignalValue) {
+      if (this.value === unSignalValue) {
         return
       }
       if (this.properties) {
         let properties = this.properties
         let fieldPath = this.path.length + 1
-        batch(() => {
-          Object.entries(properties).forEach(([_, field]) => {
-            const value = get(unSignalValue, field.path.slice(fieldPath))
-            field.onUpdate({ type: FiledUpdateType.Value, value })
-          })
+        Object.entries(properties).forEach(([_, field]) => {
+          const value = get(unSignalValue, field.path.slice(fieldPath))
+          field.onUpdate({ type: FiledUpdateType.Value, value })
         })
       } else {
-        this.value.value = unSignalValue
+        this.value = unSignalValue
       }
     }
     if (type === "props") {
@@ -119,7 +115,6 @@ export class Field<T = any, D = any> {
   public $value: T = undefined as unknown as T
   constructor() {
     this.initFieldMetaDate()
-    this._value = computed(() => this.abstractModel.getFieldValue(this.path))
     // validate
     effect(() => {
       this.isValid.value = Object.keys(this.errors.value).length === 0
@@ -131,26 +126,6 @@ export class Field<T = any, D = any> {
     })
 
     // recover value when hidden and shown
-    effect(() => {
-      const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
-      if (isHidden.value && recoverValueOnHidden) {
-        this.onHidden?.(this.isHidden.peek())
-        return
-      };
-      if (recoverValueOnShown && this.value) {
-        if (!isHidden.value) {
-          this.value = this.$value;
-          this.onHidden?.(this.isHidden.peek())
-          return
-        } else {
-          this.$value = this.peek;
-        }
-      }
-      if (isHidden.value) {
-        this.value = undefined as unknown as T;
-        this.onHidden?.(this.isHidden.peek())
-      }
-    })
   }
   initFieldMetaDate() {
     const componentMeta = getComponentMetaData(this.constructor)
@@ -210,6 +185,7 @@ export class Field<T = any, D = any> {
 
   reset(model?: T) {
     this.resetState()
+    this.onBeforeInit?.()
     const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
     if (this.properties?.length) {
       const fields = this.properties!
@@ -237,6 +213,27 @@ export class Field<T = any, D = any> {
         this.isPending.value = false
       }
     }
+    effect(() => {
+      const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
+      
+      if (isHidden.value && recoverValueOnHidden) {
+        this.onHidden?.(this.isHidden.peek())
+        return
+      };
+      if (recoverValueOnShown && this.value) {
+        if (!isHidden.value) {
+          this.value = this.$value;
+          this.onHidden?.(this.isHidden.peek())
+          return
+        } else {
+          this.$value = this.peek;
+        }
+      }
+      if (isHidden.value) {
+        this.value = undefined as unknown as T;
+        this.onHidden?.(this.isHidden.peek())
+      }
+    })
   }
 
   init(model?: T) {

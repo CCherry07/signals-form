@@ -1,4 +1,4 @@
-import { signal } from "@preact/signals-core"
+import { signal } from "alien-signals"
 import { D, Decision, type Node, registerCustomOperator } from "@rxform/core"
 import { test, expect } from "vitest"
 

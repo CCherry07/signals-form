@@ -2,7 +2,7 @@ import { createApp, createVNode } from 'vue';
 import { Field, Component, normalizeSignal, Props, Validator, Actions, Events, D , Signals } from '@rxform/core';
 import { zodResolver } from "@rxform/resolvers"
 import { createForm } from "@rxform/vue"
-import { Signal } from '@preact/signals-core';
+import { Signal } from 'alien-signals';
 
 import App from './App.vue';
 import Form from "./components/From.vue"
@@ -61,7 +61,7 @@ import { z } from 'zod';
     // }
     // this.abstractModel.setFieldProps("phone", { title: "phone number" }) // 可以使用abstractModel来处理其他字段的属性
     // this.abstractModel.setFieldValue("phone", 123) // 可以使用abstractModel来处理其他字段的属性,当然还有要其他的api 例如 errors 等
-    this.value.value = data// 修改当前字段的值
+    this.value = data// 修改当前字段的值
   }
 })
 @Signals({ // 可订阅的字段的属性

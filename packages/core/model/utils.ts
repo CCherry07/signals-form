@@ -1,5 +1,5 @@
-import { signal } from "@preact/signals-core"
-import { isFunction, toValue } from "@rxform/shared"
+import { deepSignal, signal } from "alien-deepsignals"
+import { isFunction, set, toValue } from "@rxform/shared"
 import { Field } from "../controls/field"
 import { AbstractModelMethods, Model } from "./abstract_model"
 
@@ -35,26 +35,27 @@ export function createGraph(graph: (typeof Field | Field)[]): Field[] {
 
 export function asyncBindingModel(
   abstractModelMethods: AbstractModelMethods,
+  model: Model,
   graph: Field[],
-  fields: Record<string, Field>,
-  path: string,
 ) {
-  return graph.reduce((parent, field) => {
-    const { id, properties } = field
-    field.onBeforeInit?.()
-    const filedValue = signal()
-    parent.value[id] = filedValue
-    field.value = parent.value[id!]
-    field.path = path ? `${path}.${id}` : id;
-    fields[field.path] = field
-    field.abstractModel = abstractModelMethods
-    if (properties) {
-      field.value.value = asyncBindingModel(abstractModelMethods, properties, fields, field.path!)?.value
-    }
-    field.reset()
-    field.onInit?.()
-    return parent
-  }, signal({} as any))
+  const fields = {} as Record<string, Field>
+  function binding(abstractModelMethods: AbstractModelMethods, graph: Field[], fields: Record<string, Field>, path: string,) {
+    graph.forEach((field) => {
+      const { id, properties } = field
+      field.onBeforeInit?.()
+      field.path = path ? `${path}.${id}` : id;
+      fields[field.path] = field
+      field.abstractModel = abstractModelMethods
+      if (properties) {
+        binding(abstractModelMethods, properties, fields, field.path!)
+      }
+      field.reset()
+      field.onInit?.()
+      return parent
+    }, {} as Record<string, any>)
+  }
+  binding(abstractModelMethods, graph, fields, "")
+  return { model, fields }
 }
 
 export async function syncBindingModel(

@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import type { Signal } from "@preact/signals-core"
+import type { Signal } from "alien-signals"
 import {
   Validator,
   Events,
@@ -21,19 +21,20 @@ import { createGroupForm } from "@rxform/react"
 import { App } from "./App"
 import { z } from 'zod';
 import { zodResolver } from "@rxform/resolvers"
+import { DeepSignal } from 'alien-deepsignals';
 
-type Model = Signal<{
-  userinfo: Signal<{
-    email: Signal<string>,
-    password: Signal<number>,
-    nickname: Signal<string>,
-    residence: Signal<string[]>
-    phone: Signal<number>,
-    donation: Signal<number>,
-  }>
+type Model = DeepSignal<{
+  userinfo: {
+    email: string,
+    password: number,
+    nickname: string,
+    residence: string[]
+    phone: number,
+    donation: number,
+  }
 }>
 const bools = {
-  isNickname: (model: Model) => normalizeSignal('userinfo.nickname', model).value === "cherry"
+  isNickname: (model: Model) => model.userinfo.nickname === "cherry"
 }
 @Component({
   id: 'phone',
@@ -68,7 +69,7 @@ class Phone extends Field {
 })
 @Events({
   onChange(data) {
-    this.value.value = data
+    this.value = data
   }
 })
 @Actions({
@@ -301,7 +302,7 @@ const form1 = formGroup.add({
   boolsConfig: bools,
   graph,
   id: 'form1',
-  resolvers:{
+  resolvers: {
     validator: {
       zod: zodResolver
     }
@@ -322,7 +323,7 @@ const form2 = formGroup.add({
   boolsConfig: bools,
   graph,
   id: 'form2',
-  resolvers:{
+  resolvers: {
     validator: {
       zod: zodResolver
     }

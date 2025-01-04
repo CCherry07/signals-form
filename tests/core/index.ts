@@ -1,4 +1,4 @@
-import { signal } from "@preact/signals-core"
+import { signal } from "alien-signals"
 import { createRXForm, FormConfig, normalizeSignal } from "@rxform/core"
 import { describe, it,expect } from "vitest"
 
@@ -15,7 +15,6 @@ describe('createRXForm', () => {
   // const boolsConfig = setup(bools, model)
   const config: FormConfig<Model> = {
     id: "form",
-    validatorEngine: "zod",
     defaultValidatorEngine: "zod",
     boolsConfig:bools,
     model,

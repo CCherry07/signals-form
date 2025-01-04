@@ -1,7 +1,7 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Field, toValue, validate, toDeepValue, FiledUpdateType, normalizeSignal } from "@rxform/core"
-import { batch, computed, signal } from "@preact/signals-core"
-import { effect } from "@preact/signals-core"
+import { computed, signal } from "alien-deepsignals"
+import { effect, effectScope } from "alien-signals"
 import { Resolver } from '@rxform/core/resolvers/type';
 interface Props {
   field: Field;
@@ -46,50 +46,49 @@ export function FieldControl(props: Props) {
 
   useEffect(() => {
     field.onMounted?.()
-    const onValidateDispose = effect(() => {
-      if (signalValidator) {
-        validate({
-          state: field.value, updateOn: "signal",
-          defaultValidatorEngine: props.defaultValidatorEngine,
-          boolsConfig: field.bools,
-          model: model.value
-        }, signalValidator.all, props.validatorResolvers).then(errors => {
-          if (Object.keys(errors).length === 0) {
-            field.abstractModel?.cleanErrors([String(field.path)])
-          } else {
-            field.abstractModel?.setErrors({
-              [String(field.path)]: errors
-            })
-          }
-          field.errors.value = errors
-        })
-      }
-    })
-    field.onTrack(() => {
-      setFiledState(normalizeProps(field))
-    })
-    const onStatesDispose = effect(() => {
-      batch(() => {
+    const scope = effectScope();
+    scope.run(() => {
+      effect(() => {
+        if (signalValidator) {
+          validate({
+            state: field.value, updateOn: "signal",
+            defaultValidatorEngine: props.defaultValidatorEngine,
+            boolsConfig: field.bools,
+            model: model.value
+          }, signalValidator.all, props.validatorResolvers).then(errors => {
+            if (Object.keys(errors).length === 0) {
+              field.abstractModel?.cleanErrors([String(field.path)])
+            } else {
+              field.abstractModel?.setErrors({
+                [String(field.path)]: errors
+              })
+            }
+            field.errors.value = errors
+          })
+        }
+      })
+      effect(() => {
         field.isHidden.value = field.hidden?.evaluate(field.bools) ?? false
         field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
       })
+      effect(() => {
+        if (field.signals) {
+          Object.entries(field.signals).forEach(([signalKey, fn]) => {
+            const signalValue = computed(() => normalizeSignal(signalKey, signal({ $: model.value })).value)
+            fn.call(field, signalValue.value, field.bools, model.value)
+          })
+        }
+      })
+      effect(() => {
+        setFiledState(normalizeProps(field))
+      })
     })
-    const onSignalsDispose = effect(() => {
-      if (field.signals) {
-        Object.entries(field.signals).forEach(([signalKey, fn]) => {
-          const signalValue = computed(() => normalizeSignal(signalKey, signal({ $: model.value })).value)
-          fn.call(field, signalValue.value, field.bools, model.value)
-        })
-      }
-    })
-    const onStateDispose = effect(() => {
+
+    field.onTrack(() => {
       setFiledState(normalizeProps(field))
     })
     return () => {
-      onSignalsDispose()
-      onValidateDispose()
-      onStatesDispose()
-      onStateDispose()
+      scope.stop()
       field.onDestroy?.()
       field.onUnmounted?.()
       field.isDestroyed.value = true
@@ -127,28 +126,24 @@ export function FieldControl(props: Props) {
   }, [events.onChange])
 
   const onBlur = useCallback((value: any) => {
-    batch(() => {
-      if (events.onBlur) {
-        events.onBlur(value)
-      } else {
-        field.onUpdate({
-          type: FiledUpdateType.Value,
-          value
-        })
-      }
-      field.isFocused.value = false
-      field.isBlurred.value = true
-    })
+    if (events.onBlur) {
+      events.onBlur(value)
+    } else {
+      field.onUpdate({
+        type: FiledUpdateType.Value,
+        value
+      })
+    }
+    field.isFocused.value = false
+    field.isBlurred.value = true
   }, [events.onBlur])
 
   const onFocus = useCallback(() => {
     if (events.onFocus) {
       events.onFocus()
     }
-    batch(() => {
-      field.isBlurred.value = false
-      field.isFocused.value = true
-    })
+    field.isBlurred.value = false
+    field.isFocused.value = true
   }, [events.onFocus])
 
   function getChildren(): ReactNode[] {

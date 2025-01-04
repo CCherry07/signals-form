@@ -4,7 +4,7 @@ import { toValue } from "@rxform/shared"
 import { z } from "zod"
 import { describe, it, expect } from "vitest"
 import { D, setup } from "../../packages/core/boolless"
-import { ReadonlySignal, signal } from "@preact/signals-core"
+import { ReadonlySignal, signal } from "alien-signals"
 setupValidator("zod", zodResolver as any)
 const context = signal({
   name: signal('cherry'),

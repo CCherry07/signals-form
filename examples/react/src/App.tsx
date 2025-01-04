@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ReactNode } from "react";
 import { Submit } from "./components/Submit";
-import { effect } from "@preact/signals-core";
+import { effect } from "alien-signals";
 import { Spin } from "antd";
 import { toDeepValue } from "@rxform/core";
 interface Parops {

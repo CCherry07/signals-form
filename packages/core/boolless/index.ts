@@ -1,4 +1,4 @@
-import { computed } from '@preact/signals-core';
+import { computed } from 'alien-deepsignals';
 import { MaybeSignal, toValue } from '@rxform/shared/signal';
 
 export type BoolValues = MaybeSignal<Record<string, MaybeSignal<boolean>>>;
@@ -129,6 +129,6 @@ export interface BoolsConfig<C> {
 
 export const setup = <C>(bools: MaybeSignal<BoolsConfig<C>>, context: MaybeSignal<C>) => {
   return Object.fromEntries(Object.entries(toValue(bools)).map(([key, check]) => {
-    return [key, createBoolSignal(() => check(context))];
+    return [key, createBoolSignal(() => check(toValue(context)))];
   }));
 }

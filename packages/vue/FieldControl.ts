@@ -1,8 +1,9 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
 import { FiledUpdateType, normalizeSignal, toDeepValue, toValue, validate, type Field } from "@rxform/core"
-import { batch, computed, effect, signal } from "@preact/signals-core";
+import { effect } from "alien-signals";
 import { Resolver } from "@rxform/core/resolvers/type";
+import { signal, computed } from "alien-deepsignals";
 
 function normalizeProps(field: Field) {
   return {
@@ -58,10 +59,8 @@ export const FieldControl = defineComponent({
         filedState.value = normalizeProps(field)
       })
       const onStatesDispose = effect(() => {
-        batch(() => {
-          field.isHidden.value = field.hidden?.evaluate(field.bools) ?? false
-          field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
-        })
+        field.isHidden.value = field.hidden?.evaluate(field.bools) ?? false
+        field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
       })
       const onSignalsDispose = effect(() => {
         if (field.signals) {
@@ -74,7 +73,7 @@ export const FieldControl = defineComponent({
       const onStateDispose = effect(() => {
         filedState.value = normalizeProps(field)
       })
-      cleanups.push(onValidateDispose, onStatesDispose, onSignalsDispose, onStateDispose)
+      cleanups.push(onValidateDispose.stop, onStatesDispose.stop, onSignalsDispose.stop, onStateDispose.stop)
     })
 
     const events = Object.fromEntries(Object.entries(field.events || {}).map(([e, fn]) => {
@@ -106,28 +105,24 @@ export const FieldControl = defineComponent({
     }
 
     const onBlur = (value: any) => {
-      batch(() => {
-        if (events.onBlur) {
-          events.onBlur(value)
-        } else {
-          field.onUpdate({
-            type: FiledUpdateType.Value,
-            value
-          })
-        }
-        field.isFocused.value = false
-        field.isBlurred.value = true
-      })
+      if (events.onBlur) {
+        events.onBlur(value)
+      } else {
+        field.onUpdate({
+          type: FiledUpdateType.Value,
+          value
+        })
+      }
+      field.isFocused.value = false
+      field.isBlurred.value = true
     }
 
     const onFocus = () => {
       if (events.onFocus) {
         events.onFocus()
       }
-      batch(() => {
-        field.isBlurred.value = false
-        field.isFocused.value = true
-      })
+      field.isBlurred.value = false
+      field.isFocused.value = true
     }
 
     onScopeDispose(() => {

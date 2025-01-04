@@ -1,22 +1,41 @@
-import { ReadonlySignal, Signal } from "@preact/signals-core";
+import { Signal, Computed } from "alien-deepsignals";
 import { isFunction } from "./utils";
+
+export type MaybeSignalOrComputed<T = any> =
+  | T
+  | Computed<T>
+  | Signal<T>
 
 export type MaybeSignal<T = any> =
   | T
   | Signal<T>
 
-export type MaybeSignalOrGetter<T = any> = MaybeSignal<T> | ReadonlySignal<T> | (() => T)
+export type MaybeSignalOrGetter<T = any> = MaybeSignal<T> | (() => T)
+
+export type MaybeSignalOrComputedOrGetter<T = any> = MaybeSignalOrComputed<T> | (() => T)
 
 export function isSignal<T>(v: MaybeSignal<T>): v is Signal<T> {
   return v instanceof Signal;
 }
 
-export function unSignal<T>(signal: MaybeSignal<T> | ReadonlySignal<T>): T {
+export function isComputed<T>(v: MaybeSignalOrComputed<T>): v is Computed<T> {
+  return v instanceof Computed;
+}
+
+export function isSignalOrComputed<T>(v: MaybeSignalOrComputed<T>): v is Signal<T> | Computed<T> {
+  return isSignal(v) || isComputed(v);
+}
+
+export function unSignal<T>(signal: MaybeSignal<T>): T {
   return isSignal(signal) ? signal.value : signal
 }
 
-export function toValue<T>(source: MaybeSignalOrGetter<T>): T {
-  return isFunction(source) ? source() : unSignal(source);
+export function unSignalOrComputed<T>(signal: MaybeSignalOrComputed<T>): T {
+  return isSignalOrComputed(signal) ? signal.value : unSignal(signal)
+}
+
+export function toValue<T>(source: MaybeSignalOrComputedOrGetter<T>): T {
+  return isFunction(source) ? source() : unSignalOrComputed(source);
 }
 
 export function toDeepValue<T>(source: MaybeSignalOrGetter<T>): T {
@@ -36,7 +55,6 @@ export function toDeepValue<T>(source: MaybeSignalOrGetter<T>): T {
     return source;
   }
 }
-
 
 function parseSignalPath(signalPath: string): Array<string | number> {
   const pathArray: Array<string | number> = [];

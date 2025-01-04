@@ -22,13 +22,12 @@ export function createRXForm(config: FormConfig<Model>) {
     setFieldErrors: form.setFieldErrors.bind(form),
     getFieldValue: form.getFieldValue.bind(form),
   }
-  const fields = {}
   const graph = createGraph(config.graph!)
-  const model = asyncBindingModel(methods, graph!, fields, "")
+  const { fields } = asyncBindingModel(methods, form.model, graph!)
+
   form.init({
     ...config,
     graph,
-    model,
     fields
   })
   return form

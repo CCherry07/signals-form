@@ -1,4 +1,5 @@
-import { batch, effect, Signal, signal } from "@preact/signals-core";
+import { effect } from "alien-signals"
+import { deepSignal, Signal, signal } from "alien-deepsignals";
 import { get, set, toDeepValue } from "@rxform/shared";
 
 import { BoolsConfig, setup, type BoolValues } from "../boolless"
@@ -53,7 +54,6 @@ export type AbstractModelMethods = Pick<AbstractModelMathods<Signal<Model>>, 'ge
 export interface AbstractModelConstructorOptions<M extends Model> {
   defaultValidatorEngine: string;
   boolsConfig: BoolsConfig<M>
-  model?: M;
   graph?: Field[]
   fields?: Record<string, Field>
 }
@@ -70,15 +70,16 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.id = id
     this.modelId = 'default'
     this.models = new Map();
+    this.model = deepSignal({}) as M
   }
 
   init(options: AbstractModelConstructorOptions<M>) {
-    const { defaultValidatorEngine, boolsConfig, model = {}, graph, fields } = options;
+    const { defaultValidatorEngine, boolsConfig, graph, fields } = options;
     this.errors = {};
-    this.model = model as M;
     this.modelId = 'default'
     this.defaultValidatorEngine = defaultValidatorEngine
     this.bools = Object.freeze(setup(boolsConfig, this.model))
+    
     Object.values(fields!)!.forEach((field) => {
       field.bools = this.bools
     })
@@ -161,31 +162,27 @@ export class AbstractModel<M> implements AbstractModel<M> {
   };
 
   updateModel(model: Model) {
-    batch(() => {
-      Object.values(this.fields).forEach((field) => {
-        if (!field.properties) { // leaf node
-          const value = get(model, field.path)
-          if (value !== field.value.value) {
-            field.onUpdate({ type: FiledUpdateType.Value, value })
-          }
+    Object.values(this.fields).forEach((field) => {
+      if (!field.properties) { // leaf node
+        const value = get(model, field.path)
+        if (value !== field.value) {
+          field.onUpdate({ type: FiledUpdateType.Value, value })
         }
-      })
+      }
     })
   }
 
   mergeModel(model: M) {
-    batch(() => {
-      Object.values(this.fields).forEach((field) => {
-        if (!field.properties) { // leaf node
-          const value = get(model, field.path)
-          if (typeof value === "undefined") {
-            return;
-          }
-          if (value !== field.value.value) {
-            field.onUpdate({ type: FiledUpdateType.Value, value })
-          }
+    Object.values(this.fields).forEach((field) => {
+      if (!field.properties) { // leaf node
+        const value = get(model, field.path)
+        if (typeof value === "undefined") {
+          return;
         }
-      })
+        if (value !== field.value) {
+          field.onUpdate({ type: FiledUpdateType.Value, value })
+        }
+      }
     })
   }
 
@@ -211,7 +208,8 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   setFieldValue(field: string, value: any) {
-    this.fields[field].onUpdate({ type: FiledUpdateType.Value, value });
+    // this.fields[field].onUpdate({ type: FiledUpdateType.Value, value });
+    set(this.model, field, value)
   }
 
   setFieldProps(field: string, props: any) {
@@ -219,7 +217,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   getFieldValue(field: string) {
-    return this.fields[field].value.value;
+    return get(this.model, field)
   }
 
   getFieldError(field: string) {
@@ -240,15 +238,13 @@ export class AbstractModel<M> implements AbstractModel<M> {
     })
   }
 
-  onValidate(){
-    
+  onValidate() {
+
   }
 
   async submit<T>() {
-    batch(() => {
-      this.submitted.value = false;
-      this.submiting.value = true;
-    })
+    this.submitted.value = false;
+    this.submiting.value = true;
     if (Object.keys(this.errors).length > 0) {
       this.submiting.value = false;
       return {
@@ -260,10 +256,8 @@ export class AbstractModel<M> implements AbstractModel<M> {
     await Promise.all(Object.values(this.graph).map(async (field) => {
       return set(model, field.path, await field._onSubmitValue())
     }))
-    batch(() => {
-      this.submitted.value = true;
-      this.submiting.value = false;
-    })
+    this.submitted.value = true;
+    this.submiting.value = false;
     return {
       model,
       errors: this.errors

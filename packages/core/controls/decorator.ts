@@ -2,7 +2,7 @@ import { SignalValue } from "@rxform/shared";
 import { BoolValues, Decision } from "../boolless";
 import { ValidateItem } from "../validator";
 import { Field } from "./field";
-import { Signal } from "@preact/signals-core";
+import { Signal } from "alien-signals";
 import { Model } from "../model/abstract_model";
 
 export const METADATA_COMPONENT = 'component:metadata'
