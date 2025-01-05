@@ -9,5 +9,9 @@ export const tsup: Options = {
   splitting: true,
   clean: true,
   shims: false,
-  external: ['!^(\\./|\\.\\./|[A-Za-z]:\\\\|/|^@/).*', '^lodash', 'alien-signals'],
+  external: ['!^(\\./|\\.\\./|[A-Za-z]:\\\\|/|^@/).*',
+    'lodash.clonedeep',
+    'lodash.set',
+    'lodash.get',
+    'alien-deepsignals'],
 }
