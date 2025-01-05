@@ -5,6 +5,7 @@ export * from "./model/form_group"
 export * from "./controls/decorator"
 export * from "./boolless"
 export * from "@rxform/shared"
+export * from "./resolvers/type"
 export {
   setup as setupValidator,
   validate

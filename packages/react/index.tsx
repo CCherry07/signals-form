@@ -1,7 +1,6 @@
 import React, { ComponentClass, FunctionComponent } from 'react';
 import { FieldControl } from "./FieldControl";
-import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
-import { Resolver } from '@rxform/core/resolvers/type';
+import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm, Resolver } from "@rxform/core"
 
 interface FormConfig {
   components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
@@ -44,7 +43,7 @@ export const createForm = (config: FormConfig) => {
 
   const app = <div>
     {
-      form.graph.map((field) => {
+      form.graph.map((field: Field) => {
         return <FieldControl
           key={field.path}
           field={field}
@@ -83,7 +82,7 @@ export const createGroupForm = () => {
     }
     const app = <div>
       {
-        form.graph.map((field) => {
+        form.graph.map((field: Field) => {
           return <FieldControl
             key={field.path}
             field={field}

@@ -2,8 +2,8 @@ import { Effect, effect } from "alien-signals"
 import { DeepSignal, deepSignal, peek, Signal, signal } from "alien-deepsignals";
 import { get, set, clonedeep } from "@rxform/shared";
 
-import { BoolsConfig, setup, type BoolValues } from "../boolless"
-import { Field, FieldErrors, FiledUpdateType } from "../controls/field";
+import { type BoolsConfig, setup, type BoolValues } from "../boolless"
+import { Field, type FieldErrors, FiledUpdateType } from "../controls/field";
 import type { Resolver } from "../resolvers/type";
 import { createModel } from "./utils";
 
@@ -23,7 +23,7 @@ export interface AbstractModel<M extends DeepSignal<Model>> {
   validatorResolvers: Record<string, Resolver>
 }
 
-interface SubscribeProps<M> {
+export interface SubscribeProps<M> {
   bools: BoolValues;
   submitted: Signal<boolean>;
   errors: Record<string, FieldErrors>;
@@ -51,6 +51,7 @@ export interface AbstractModelMathods<M extends DeepSignal<Model>> {
   submit(): Promise<Model>;
 }
 export type AbstractModelMethods = Pick<AbstractModelMathods<DeepSignal<Model>>, 'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors' | 'setFieldProps' | 'cleanErrors' | 'onSubscribe' | "peekFieldValue">
+
 export interface AbstractModelConstructorOptions<M extends Model> {
   defaultValidatorEngine: string;
   boolsConfig: BoolsConfig<M>
@@ -214,7 +215,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   peekFieldValue(parentpath: string, id: string) {
-    return peek(get(this.model, parentpath), id)
+    return peek(get(this.model, parentpath), id as any)
   }
 
   getFieldError(field: string) {
@@ -251,6 +252,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
     }
     const model = {} as T
     await Promise.all(Object.values(this.graph).map(async (field) => {
+      // @ts-ignore
       return set(model, field.path, await field._onSubmitValue())
     }))
     this.submitted.value = true;

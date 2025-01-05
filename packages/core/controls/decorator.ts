@@ -1,9 +1,9 @@
-import { SignalValue } from "@rxform/shared";
-import { BoolValues, Decision } from "../boolless";
-import { ValidateItem } from "../validator";
+import type { SignalValue } from "@rxform/shared";
+import type { BoolValues, Decision } from "../boolless";
+import type { ValidateItem } from "../validator";
 import { Field } from "./field";
 import { Signal } from "alien-signals";
-import { Model } from "../model/abstract_model";
+import type { Model } from "../model/abstract_model";
 import { effect } from "alien-signals"
 export const METADATA_COMPONENT = 'component:metadata'
 export const METADATA_VALIDATOR = 'validator:metadata'
@@ -13,6 +13,8 @@ export const METADATA_ACTIONS = 'actions:metadata'
 export const METADATA_PROPS = 'props:metadata'
 export const METADATA_DEPS = 'module:deps'
 export const METADATA_EFFECT = 'condition:metadata'
+import mitt from "mitt"
+const emitter = mitt();
 
 export interface ComponentMetaData {
   id: string;
@@ -98,34 +100,81 @@ export function getPropsMetaData(target: Function) {
 }
 
 
-export function InjectDeps(deps: Field[]) {
+export function InjectFields(fields: Field[]) {
   return function (target: Function) {
-    Reflect.defineMetadata(METADATA_DEPS, deps, target);
+    Reflect.defineMetadata(METADATA_DEPS, fields, target);
   };
 }
 
+export function getInjectFields(target: Function) {
+  return Reflect.getMetadata(METADATA_DEPS, target) as Field[];
+}
+
 export function Condition(decision: Decision): Function {
-  return function (target: any, _name: string | symbol, descriptor: PropertyDescriptor) {
-    const method = descriptor.value;
-    target.$effects ??= []
-    target.$effects.push(function (this: Field) {
+  return function (method: any, ctx: ClassMethodDecoratorContext) {
+    const fn = function (this: Field) {
       return effect(() => {
         if (this.evaluateDecision(decision)) {
           method.call(this);
         }
       });
+    }
+    fn._name = ctx.name;
+    ctx.addInitializer(function () {
+      (this.$effects ??= []).push(fn);
     });
-    descriptor.value = function () { };
   };
 }
 
+export function DispatchData(name: string): Function {
+  return function (target: any, ctx: ClassFieldDecoratorContext) {
+    let value = target
+    const getter = function () {
+      return value;
+    };
+    const setter = function (data: any) {
+      value = data;
+      emitter.emit(name, value);
+    }
+    ctx.addInitializer(function () {
+      Object.defineProperty(this, ctx.name, {
+        get: getter,
+        set: setter
+      })
+    })
+  };
+}
+
+export function Dispatch(name: string): Function {
+  return function (method: any, ctx: ClassMethodDecoratorContext) {
+    const fn = function (this: Field) {
+      return effect(() => {
+        emitter.emit(name, method.call(this));
+      });
+    }
+    fn._name = ctx.name;
+    ctx.addInitializer(function () {
+      (this.$effects ??= []).push(fn);
+    });
+  };
+}
+
+export function Subscribe(name: string) {
+  return function (method: any, ctx: ClassMethodDecoratorContext) {
+    ctx.addInitializer(function () {
+      emitter.on(name, method.bind(this));
+    })
+  };
+}
 export function Effect(this: Field) {
   return function (_target: any, _key: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
-    descriptor.value = function (...args: any[]) {
-      effect(() => {
-        method.apply(this, args);
+    const fn = function (this: Field) {
+      return effect(() => {
+        method.call(this);
       });
-    };
+    }
+    fn._name = _key;
+    (_target.$effects ??= []).push(fn);
   };
 }

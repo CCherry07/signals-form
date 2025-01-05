@@ -8,11 +8,7 @@ export default defineConfig({
     sourcemap: true,
     script:{
       decorators: {
-        legacyDecorator: true,
-        decoratorMetadata: true,
-        decoratorVersion: '2021-12',
-        includes: [],
-        excludes: []
+        decoratorVersion: "2022-03",
       },
     }
   }

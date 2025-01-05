@@ -1,9 +1,9 @@
 import { isProd, isArray, isObject, isString, get, isFunction } from "@rxform/shared"
-import { BoolValues, Decision } from "../boolless"
 
-import { FactoryOptions, Resolver } from "../resolvers/type"
-import { FieldErrors } from "../controls/field"
-import { AbstractModel } from "../model/abstract_model"
+import { type BoolValues, Decision } from "../boolless"
+import type { FactoryOptions, Resolver } from "../resolvers/type"
+import type { FieldErrors } from "../controls/field"
+import type { AbstractModel } from "../model/abstract_model"
 
 export interface ValidateItem {
   schema: any

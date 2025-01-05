@@ -1,5 +1,5 @@
 import { effect, effectScope } from "alien-signals";
-import { BoolValues, Decision } from "../boolless";
+import type { BoolValues, Decision } from "../boolless";
 
 import {
   EventMetaData, getActionsMetaData, getComponentMetaData,
@@ -9,7 +9,7 @@ import {
 } from "./decorator";
 
 import { isFunction, isPromise, set, toValue } from "@rxform/shared";
-import { AbstractModelMethods } from "../model/abstract_model";
+import type { AbstractModelMethods } from "../model/abstract_model";
 import { signal, Signal } from "alien-deepsignals";
 
 export enum FiledUpdateType {
@@ -152,7 +152,7 @@ export class Field<T = any, D = any> {
         })
       })
     })
-    this.cleanups.push(e.stop)
+    this.cleanups.push(e.stop)    
   }
   initFieldMetaDate() {
     const componentMeta = getComponentMetaData(this.constructor)

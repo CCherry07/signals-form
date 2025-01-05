@@ -24,7 +24,4 @@
       "@rxform/*": ["./packages/*",]
     }
   },
-  "include": [
-    ".",
-  ]
 }

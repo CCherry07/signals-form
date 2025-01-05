@@ -1,17 +1,31 @@
 {
   "name": "@rxform/core",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "./dist/index.js",
+  "type": "module",
+  "types": "./dist/index.d.ts",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "farm build",
-    "clean": "farm clean"
+    "build": "tsup",
+    "build:watch": "tsup --watch"
   },
   "dependencies": {
     "@rxform/shared": "workspace:*",
     "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5"
   }
 }

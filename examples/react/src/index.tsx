@@ -6,7 +6,9 @@ import {
   D, Field, Component,
   Props,
   Actions,
-  Condition
+  Condition,
+  DispatchData,
+  Subscribe,
 } from "@rxform/core"
 import Form from "./components/Form"
 import Input from "./components/Input"
@@ -130,6 +132,11 @@ class Password extends Field {
 class Nickname extends Field {
   constructor() {
     super()
+  }
+
+  @Subscribe('userinfo')
+  onUserInfo(data: any) {
+    console.log("onUserInfo", data);
   }
 }
 
@@ -291,14 +298,21 @@ class Agreement extends Field {
   }
 })
 class UserInfo extends Field {
+  @DispatchData("userinfo")
+  userinfo = {}
+
   constructor(id?: string) {
     super()
     id && (this.id = id)
   }
 
   @Condition(D.use('isNickname'))
-  setOptions(this: Field<any, any>) {
-    console.log(this);
+  setOptions() {
+    console.log("setOptions 执行了");
+    this.userinfo = 'cherry'
+    // this.userinfo = {
+    //   name: "cherry"
+    // }
     // Add your logic here
   }
 }

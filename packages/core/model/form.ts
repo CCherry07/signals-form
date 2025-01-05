@@ -1,4 +1,4 @@
-import { AbstractModel, Model, AbstractModelMethods } from "./abstract_model"
+import { type Model, type AbstractModelMethods, AbstractModel } from "./abstract_model"
 import { Field } from "../controls/field"
 import { BoolsConfig } from "../boolless";
 import { asyncBindingModel, createGraph } from "./utils";

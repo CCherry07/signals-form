@@ -1,17 +1,25 @@
 {
   "name": "@rxform/react",
   "version": "1.0.0",
-  "main": "index.tsx",
+  "main": "./dist/index.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs"
+    }
+  },
   "scripts": {
-    "build": "farm build",
-    "clean": "farm clean"
+    "build": "tsup"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@farmfe/plugin-react": "^1.2.6",
-    "@rxform/core": "workspace:*"
+    "@rxform/core": "workspace:*",
+    "@rxform/shared": "workspace:*",
+    "alien-deepsignals": "^0.0.2",
+    "alien-signals": "^0.4.12"
   }
 }

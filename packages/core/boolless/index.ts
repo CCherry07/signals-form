@@ -1,5 +1,5 @@
 import { computed } from 'alien-deepsignals';
-import { MaybeSignal, MaybeSignalOrComputedOrGetter, toValue } from '@rxform/shared/signal';
+import { MaybeSignal, MaybeSignalOrComputedOrGetter, toValue } from '@rxform/shared';
 
 export type BoolValues = MaybeSignal<Record<string, MaybeSignalOrComputedOrGetter<boolean>>>;
 

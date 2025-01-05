@@ -1,6 +1,6 @@
 import { Field } from "../controls/field";
 import { Resolver } from "../resolvers/type";
-import { AbstractModel, AbstractModelMethods } from "./abstract_model"
+import { AbstractModel, type AbstractModelMethods } from "./abstract_model"
 import { asyncBindingModel, createGraph } from "./utils";
 
 interface FormConfig {

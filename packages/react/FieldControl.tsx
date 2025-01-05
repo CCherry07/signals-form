@@ -1,8 +1,8 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Field, toValue, validate, FiledUpdateType, normalizeSignal } from "@rxform/core"
 import { computed, signal } from "alien-deepsignals"
-import { effect, effectScope, startBatch } from "alien-signals"
-import { Resolver } from '@rxform/core/resolvers/type';
+import { effect, effectScope } from "alien-signals"
+import { Resolver } from '@rxform/core';
 interface Props {
   field: Field;
   model: any
@@ -86,7 +86,9 @@ export function FieldControl(props: Props) {
         setFiledState(normalizeProps(field))
       });
       // @ts-ignore
-      (field.$effects ?? []).forEach((fn: Function) => fn.call(field))
+      (field.$effects ?? []).forEach((fn: Function) => {
+        fn.call(field)
+      })
     })
     field.onTrack(() => {
       setFiledState(normalizeProps(field))
