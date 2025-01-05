@@ -4,13 +4,15 @@ import { ValidateItem } from "../validator";
 import { Field } from "./field";
 import { Signal } from "alien-signals";
 import { Model } from "../model/abstract_model";
-
+import { effect } from "alien-signals"
 export const METADATA_COMPONENT = 'component:metadata'
 export const METADATA_VALIDATOR = 'validator:metadata'
 export const METADATA_SIGNALS = 'signals:metadata'
 export const METADATA_EVENTS = 'events:metadata'
 export const METADATA_ACTIONS = 'actions:metadata'
 export const METADATA_PROPS = 'props:metadata'
+export const METADATA_DEPS = 'module:deps'
+export const METADATA_EFFECT = 'condition:metadata'
 
 export interface ComponentMetaData {
   id: string;
@@ -70,7 +72,7 @@ export function getEventsMetaData(target: Function) {
 
 export interface TransferMetaData<T, D> {
   setDefaultValue?: (this: Field, model: T) => D
-  onSubmitValue?: (this:Field, data: D) => T
+  onSubmitValue?: (this: Field, data: D) => T
 };
 export function Actions<T, D>(metadata: TransferMetaData<T, D>) {
   return function (target: Function) {
@@ -93,4 +95,37 @@ export function Props(metadata: PropsMetaData): ClassDecorator {
 
 export function getPropsMetaData(target: Function) {
   return Reflect.getMetadata(METADATA_PROPS, target) as PropsMetaData;
+}
+
+
+export function InjectDeps(deps: Field[]) {
+  return function (target: Function) {
+    Reflect.defineMetadata(METADATA_DEPS, deps, target);
+  };
+}
+
+export function Condition(decision: Decision): Function {
+  return function (target: any, _name: string | symbol, descriptor: PropertyDescriptor) {
+    const method = descriptor.value;
+    target.$effects ??= []
+    target.$effects.push(function (this: Field) {
+      return effect(() => {
+        if (this.evaluateDecision(decision)) {
+          method.call(this);
+        }
+      });
+    });
+    descriptor.value = function () { };
+  };
+}
+
+export function Effect(this: Field) {
+  return function (_target: any, _key: string, descriptor: PropertyDescriptor) {
+    const method = descriptor.value;
+    descriptor.value = function (...args: any[]) {
+      effect(() => {
+        method.apply(this, args);
+      });
+    };
+  };
 }

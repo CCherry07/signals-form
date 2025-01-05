@@ -5,7 +5,8 @@ import {
   Events,
   D, Field, Component,
   Props,
-  Actions
+  Actions,
+  Condition
 } from "@rxform/core"
 import Form from "./components/Form"
 import Input from "./components/Input"
@@ -284,10 +285,21 @@ class Agreement extends Field {
     })
   }
 })
+@Events({
+  onChange() {
+    console.log("onInit");
+  }
+})
 class UserInfo extends Field {
   constructor(id?: string) {
     super()
     id && (this.id = id)
+  }
+
+  @Condition(D.use('isNickname'))
+  setOptions(this: Field<any, any>) {
+    console.log(this);
+    // Add your logic here
   }
 }
 const graph = [

@@ -1,7 +1,7 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Field, toValue, validate, FiledUpdateType, normalizeSignal } from "@rxform/core"
 import { computed, signal } from "alien-deepsignals"
-import { effect, effectScope } from "alien-signals"
+import { effect, effectScope, startBatch } from "alien-signals"
 import { Resolver } from '@rxform/core/resolvers/type';
 interface Props {
   field: Field;
@@ -13,8 +13,11 @@ interface Props {
 
 // function bindingMethods(field: Field) {
 //   const methodsMap = {} as Record<string, Function>
+//   // @ts-ignore
 //   Object.getOwnPropertyNames(field.__proto__).forEach(method => {
+//     // @ts-ignore
 //     if (typeof field[method] === 'function' && method !== 'constructor' && method !== "setDefaultValue" && method !== "onSubmitValue" && method !== "component") {
+//       // @ts-ignore
 //       methodsMap[method as any] = field[method]?.bind(field)
 //     }
 //   })
@@ -81,9 +84,10 @@ export function FieldControl(props: Props) {
       })
       effect(() => {
         setFiledState(normalizeProps(field))
-      })
+      });
+      // @ts-ignore
+      (field.$effects ?? []).forEach((fn: Function) => fn.call(field))
     })
-
     field.onTrack(() => {
       setFiledState(normalizeProps(field))
     })

@@ -161,6 +161,7 @@ export class Field<T = any, D = any> {
     const validatorMeta = { validator: getValidatorMetaData(this.constructor) }
     const signalsMeta = { signals: getSignalsMetaData(this.constructor) }
     const propsMeta = getPropsMetaData(this.constructor) ? { props: getPropsMetaData(this.constructor) } : {}
+    
     Object.assign(this, componentMeta, actions, validatorMeta, signalsMeta, eventsMeta, propsMeta)
   }
 
