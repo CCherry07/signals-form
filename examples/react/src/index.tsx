@@ -309,7 +309,7 @@ class UserInfo extends Field {
   @Condition(D.use('isNickname'))
   setOptions() {
     console.log("setOptions 执行了");
-    this.userinfo = 'cherry'
+    this.userinfo = Math.floor(Math.random() * 100)
     // this.userinfo = {
     //   name: "cherry"
     // }

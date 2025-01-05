@@ -1,4 +1,3 @@
-import "reflect-metadata/lite"
 export * from "./controls/field"
 export * from "./model/form"
 export * from "./model/form_group"

@@ -22,8 +22,7 @@
     "build:watch": "tsup --watch"
   },
   "dependencies": {
-    "@rxform/shared": "workspace:*",
-    "reflect-metadata": "^0.2.2"
+    "@rxform/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.5"

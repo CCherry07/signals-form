@@ -1,11 +1,9 @@
 import { effect, effectScope } from "alien-signals";
 import type { BoolValues, Decision } from "../boolless";
-
 import {
-  EventMetaData, getActionsMetaData, getComponentMetaData,
-  getEventsMetaData, getPropsMetaData, getSignalsMetaData,
-  getValidatorMetaData, PropsMetaData, SignalsMetaData,
-  ValidatorMetaData
+  EventMetaData, PropsMetaData, SignalsMetaData,
+  ValidatorMetaData,
+  METADATA_ACTIONS, METADATA_EVENTS, METADATA_PROPS, METADATA_VALIDATOR, METADATA_COMPONENT, METADATA_SIGNALS
 } from "./decorator";
 
 import { isFunction, isPromise, set, toValue } from "@rxform/shared";
@@ -152,16 +150,21 @@ export class Field<T = any, D = any> {
         })
       })
     })
-    this.cleanups.push(e.stop)    
+    this.cleanups.push(e.stop)
   }
   initFieldMetaDate() {
-    const componentMeta = getComponentMetaData(this.constructor)
-    const actions = getActionsMetaData(this.constructor)
-    const eventsMeta = { events: getEventsMetaData(this.constructor) }
-    const validatorMeta = { validator: getValidatorMetaData(this.constructor) }
-    const signalsMeta = { signals: getSignalsMetaData(this.constructor) }
-    const propsMeta = getPropsMetaData(this.constructor) ? { props: getPropsMetaData(this.constructor) } : {}
-    
+    // @ts-ignore
+    const componentMeta = this.constructor[Symbol.metadata][METADATA_COMPONENT] ?? {}
+    // @ts-ignore
+    const actions = this.constructor[Symbol.metadata][METADATA_ACTIONS] ?? {}
+    // @ts-ignore
+    const eventsMeta = { events: this.constructor[Symbol.metadata][METADATA_EVENTS] ?? {} }
+    // @ts-ignore
+    const validatorMeta = { validator: this.constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {} }
+    // @ts-ignore
+    const signalsMeta = { signals: this.constructor[Symbol.metadata][METADATA_SIGNALS] ?? {} }
+    // @ts-ignore
+    const propsMeta = Object.assign(componentMeta.props ?? {}, this.constructor[Symbol.metadata][METADATA_PROPS] ?? {})
     Object.assign(this, componentMeta, actions, validatorMeta, signalsMeta, eventsMeta, propsMeta)
   }
 
