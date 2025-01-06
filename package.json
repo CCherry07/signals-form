@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "play:react": "npx nx pnpm --filter playground-react dev",
-    "play:vue": "pnpm --filter playground-vue dev",
+    "play:react": "npx nx dev playground-react",
+    "play:vue": "npx nx dev playground-vue",
     "build": "npx nx affected:build",
     "build:all": "npx nx run-many --target=build",
     "preview": "farm preview",
