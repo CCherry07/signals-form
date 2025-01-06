@@ -1,4 +1,4 @@
-import React, { ComponentClass, FunctionComponent } from 'react';
+import { ComponentClass, createElement, FunctionComponent } from 'react';
 import { FieldControl } from "./FieldControl";
 import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
 import type { Resolver, FormConfig as CoreFormConfig } from '@rxform/core'
@@ -38,20 +38,16 @@ export const createForm = (config: FormConfig) => {
     return component
   }
 
-  const app = <div>
-    {
-      form.graph.map((field: Field) => {
-        return <FieldControl
-          key={field.path}
-          field={field}
-          model={form.model}
-          defaultValidatorEngine={config.defaultValidatorEngine}
-          validatorResolvers={form.validatorResolvers}
-          resolveComponent={resolveComponent}
-        />
-      })
-    }
-  </div>
+  const app = createElement('div', {}, form.graph.map((field: Field) => {
+    return createElement(FieldControl, {
+      key: field.path,
+      field,
+      model: form.model,
+      defaultValidatorEngine,
+      validatorResolvers: form.validatorResolvers,
+      resolveComponent
+    })
+  }))
 
   return {
     app,
@@ -77,20 +73,16 @@ export const createGroupForm = () => {
         setupValidator.call(form, validator, resolver)
       })
     }
-    const app = <div>
-      {
-        form.graph.map((field: Field) => {
-          return <FieldControl
-            key={field.path}
-            field={field}
-            model={form.model}
-            defaultValidatorEngine={config.defaultValidatorEngine}
-            validatorResolvers={form.validatorResolvers}
-            resolveComponent={resolveComponent}
-          />
-        })
-      }
-    </div>
+    const app = createElement('div', {}, form.graph.map((field: Field) => {
+      return createElement(FieldControl, {
+        key: field.path,
+        field,
+        model: form.model,
+        defaultValidatorEngine: config.defaultValidatorEngine,
+        validatorResolvers: form.validatorResolvers,
+        resolveComponent
+      })
+    }))
     return {
       app,
       form
