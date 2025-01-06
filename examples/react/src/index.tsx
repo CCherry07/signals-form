@@ -8,7 +8,7 @@ import {
   Actions,
   Condition,
   DispatchData,
-  Subscribe,
+  SubscribeData,
 } from "@rxform/core"
 import Form from "./components/Form"
 import Input from "./components/Input"
@@ -134,7 +134,7 @@ class Nickname extends Field {
     super()
   }
 
-  @Subscribe('userinfo')
+  @SubscribeData('userinfo')
   onUserInfo(data: any) {
     console.log("onUserInfo", data);
   }

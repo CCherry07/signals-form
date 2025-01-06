@@ -118,28 +118,14 @@ export function DispatchData(name: string): Function {
   };
 }
 
-export function Dispatch(name: string): Function {
-  return function (method: any, ctx: ClassMethodDecoratorContext) {
-    const fn = function (this: Field) {
-      return effect(() => {
-        emitter.emit(name, method.call(this));
-      });
-    }
-    fn._name = ctx.name;
-    ctx.addInitializer(function () {
-      // @ts-ignore
-      (this.$effects ??= []).push(fn);
-    });
-  };
-}
-
-export function Subscribe(name: string) {
+export function SubscribeData(name: string) {
   return function (method: any, ctx: ClassMethodDecoratorContext) {
     ctx.addInitializer(function () {
       emitter.on(name, method.bind(this));
     })
   };
 }
+
 export function Effect(this: Field) {
   return function (_target: any, _key: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
