@@ -164,7 +164,7 @@ export class Field<T = any, D = any> {
     // @ts-ignore
     const signalsMeta = { signals: this.constructor[Symbol.metadata][METADATA_SIGNALS] ?? {} }
     // @ts-ignore
-    const propsMeta = Object.assign(componentMeta.props ?? {}, this.constructor[Symbol.metadata][METADATA_PROPS] ?? {})
+    const propsMeta = Object.assign(componentMeta.props ??= {}, this.constructor[Symbol.metadata][METADATA_PROPS] ?? {})
     Object.assign(this, componentMeta, actions, validatorMeta, signalsMeta, eventsMeta, propsMeta)
   }
 
