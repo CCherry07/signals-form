@@ -1,17 +1,9 @@
-import { type Model, type AbstractModelMethods, AbstractModel } from "./abstract_model"
-import { Field } from "../controls/field"
-import { BoolsConfig } from "../boolless";
-import { asyncBindingModel, createGraph } from "./utils";
-export interface FormConfig<M extends Model> {
-  id: string
-  defaultValidatorEngine: string;
-  boolsConfig: BoolsConfig<M>
-  model?: M;
-  graph?: typeof Field[]
-  fields?: Record<string, Field>
-}
+import { AbstractModel } from "./abstract_model"
+import type { AbstractModelMethods, FormConfig } from "./types";
 
-export function createRXForm(config: FormConfig<Model>) {
+import { asyncBindingModel, createGraph } from "./utils";
+
+export function createRXForm(config: FormConfig) {
   const form = new AbstractModel(config.id)
   const methods: AbstractModelMethods = {
     setFieldValue: form.setFieldValue.bind(form),

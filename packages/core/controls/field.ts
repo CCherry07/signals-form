@@ -7,8 +7,8 @@ import {
 } from "./decorator";
 
 import { isFunction, isPromise, set, toValue } from "@rxform/shared";
-import type { AbstractModelMethods } from "../model/abstract_model";
 import { signal, Signal } from "alien-deepsignals";
+import type { AbstractModelMethods } from "../model/types";
 
 export enum FiledUpdateType {
   Value = "value",

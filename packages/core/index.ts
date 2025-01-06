@@ -11,4 +11,6 @@ export {
 } from "./validator"
 export type { ValidateItem } from "./validator"
 
+export type * from "./model/types"
+
 export { createTemplateLiterals as js } from "@rxform/shared"

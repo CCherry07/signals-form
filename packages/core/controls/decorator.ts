@@ -2,9 +2,8 @@ import type { SignalValue } from "@rxform/shared";
 import type { BoolValues, Decision } from "../boolless";
 import type { ValidateItem } from "../validator";
 import { Field } from "./field";
-import { Signal } from "alien-signals";
-import type { Model } from "../model/abstract_model";
-import { effect } from "alien-signals"
+import { Signal, effect } from "alien-signals";
+import type { Model } from "../model/types";
 // @ts-ignore
 Symbol.metadata ??= Symbol("Symbol.metadata");
 export const METADATA_COMPONENT = Symbol('component:metadata')
@@ -40,13 +39,13 @@ export interface ValidatorMetaData {
   initiative?: Record<string, ValidateItem[]>;
 }
 export function Validator(metadata: ValidatorMetaData) {
-  return function (_target: Function,ctx: ClassDecoratorContext) {
+  return function (_target: Function, ctx: ClassDecoratorContext) {
     ctx.metadata![METADATA_VALIDATOR] = metadata
   };
 }
 export type SignalsMetaData = Record<string, (this: Field, value: SignalValue<Field['value']>, bools: BoolValues, model: Signal<Model>) => void>;
 export function Signals(metadata: SignalsMetaData) {
-  return function (_target: Function,ctx: ClassDecoratorContext) {
+  return function (_target: Function, ctx: ClassDecoratorContext) {
     ctx.metadata![METADATA_SIGNALS] = metadata
   };
 }
@@ -78,7 +77,7 @@ export function Props(metadata: PropsMetaData) {
 }
 
 export function InjectFields(fields: Field[]) {
-  return function (_target: Function,ctx: ClassDecoratorContext) {
+  return function (_target: Function, ctx: ClassDecoratorContext) {
     ctx.metadata![METADATA_DEPS] = fields
   };
 }

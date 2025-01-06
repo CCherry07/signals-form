@@ -1,17 +1,8 @@
-import { Field } from "../controls/field";
-import { Resolver } from "../resolvers/type";
-import { AbstractModel, type AbstractModelMethods } from "./abstract_model"
+import type { FormConfig, AbstractModelMethods } from "./types";
+
+import { AbstractModel } from "./abstract_model"
 import { asyncBindingModel, createGraph } from "./utils";
 
-interface FormConfig {
-  graph: typeof Field[];
-  defaultValidatorEngine: string;
-  boolsConfig: Record<string, (...args: any[]) => boolean>;
-  id: string;
-  resolvers?: {
-    validator?: Record<string, Resolver>
-  }
-}
 export class FormGroup {
   forms: Map<string, AbstractModel<any>>;
   constructor() {

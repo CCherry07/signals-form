@@ -1,17 +1,14 @@
 import React, { ComponentClass, FunctionComponent } from 'react';
 import { FieldControl } from "./FieldControl";
-import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm, Resolver } from "@rxform/core"
-
-interface FormConfig {
+import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
+import type { Resolver, FormConfig as CoreFormConfig } from '@rxform/core'
+export interface FormConfig extends CoreFormConfig {
   components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
-  graph: (typeof Field)[];
-  defaultValidatorEngine: string;
-  boolsConfig: Record<string, (...args: any[]) => boolean>;
-  id: string;
   resolvers?: {
     validator?: Record<string, Resolver>
   }
 }
+
 export const createForm = (config: FormConfig) => {
   const {
     defaultValidatorEngine,
