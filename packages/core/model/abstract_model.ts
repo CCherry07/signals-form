@@ -4,7 +4,7 @@ import { get, set, clonedeep } from "@rxform/shared";
 import { createModel } from "./utils";
 
 import { setup, type BoolValues } from "../boolless"
-import { Field, type FieldErrors, FiledUpdateType } from "../controls/field";
+import { Field, type FieldErrors } from "../controls/field";
 import type { Resolver } from "../resolvers/type";
 import type { Model, AbstractModelInitOptions, SubscribeProps } from "./types";
 
@@ -133,7 +133,7 @@ export class AbstractModel<M extends Model> {
           return;
         }
         if (value !== field.value) {
-          field.onUpdate({ type: FiledUpdateType.Value, value })
+          field.setValue(value)
         }
       }
     })
@@ -161,12 +161,11 @@ export class AbstractModel<M extends Model> {
   }
 
   setFieldValue(field: string, value: any) {
-    // this.fields[field].onUpdate({ type: FiledUpdateType.Value, value });
     set(this.model, field, value)
   }
 
   setFieldProps(field: string, props: any) {
-    this.fields[field].onUpdate({ type: FiledUpdateType.Props, value: props });
+    this.fields[field].setProps(props)
   }
 
   getFieldValue(field: string) {

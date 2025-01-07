@@ -68,11 +68,6 @@ class Phone extends Field {
     ]
   },
 })
-@Events({
-  onChange(data) {
-    this.value = data
-  }
-})
 @Actions({
   setDefaultValue() {
     return new Promise((resolve) => {
@@ -96,6 +91,9 @@ class Email extends Field {
   onInit(): void {
   }
   onDestroy(): void {
+  }
+  onChange(data: any) {
+    this.value = data
   }
 }
 @Component({
@@ -263,7 +261,7 @@ class Agreement extends Field {
   properties: [
     Email,
     Password,
-    Nickname,
+    new Nickname(),
     Residence,
     Phone,
     Donation,
@@ -292,11 +290,6 @@ class Agreement extends Field {
     })
   }
 })
-@Events({
-  onChange() {
-    console.log("onInit");
-  }
-})
 class UserInfo extends Field {
   @DispatchData("userinfo")
   userinfo = {}
@@ -308,12 +301,10 @@ class UserInfo extends Field {
 
   @Condition(D.use('isNickname'))
   setOptions() {
-    console.log("setOptions 执行了");
+    console.log("setOptions 执行了");    
     this.userinfo = Math.floor(Math.random() * 100)
-    // this.userinfo = {
-    //   name: "cherry"
-    // }
-    // Add your logic here
+    console.log(this);
+    
   }
 }
 const graph = [

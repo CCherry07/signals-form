@@ -1,19 +1,18 @@
 import { effect, effectScope } from "alien-signals";
 import type { BoolValues, Decision } from "../boolless";
 import {
-  EventMetaData, PropsMetaData, SignalsMetaData,
+  PropsMetaData,
   ValidatorMetaData,
-  METADATA_ACTIONS, METADATA_EVENTS, METADATA_PROPS, METADATA_VALIDATOR, METADATA_COMPONENT, METADATA_SIGNALS
-} from "./decorator";
+  METADATA_ACTIONS,
+  METADATA_CONDITIONS,
+  METADATA_PROPS,
+  METADATA_VALIDATOR,
+  METADATA_COMPONENT,
+} from "../decorators";
 
-import { isFunction, isPromise, set, toValue } from "@rxform/shared";
+import { isFunction, isPromise, set } from "@rxform/shared";
 import { signal, Signal } from "alien-deepsignals";
 import type { AbstractModelMethods } from "../model/types";
-
-export enum FiledUpdateType {
-  Value = "value",
-  Props = "props",
-}
 
 export interface FieldError {
   message: string
@@ -36,8 +35,6 @@ export class Field<T = any, D = any> {
   properties?: Field[]
   props?: PropsMetaData;
   validator?: ValidatorMetaData;
-  signals?: SignalsMetaData;
-  events?: EventMetaData;
   setDefaultValue?: (data?: D) => T;
   onSubmitValue?: (model: T) => D;
   private tracks: Array<Function> = []
@@ -61,31 +58,29 @@ export class Field<T = any, D = any> {
     this.abstractModel.setFieldValue(this.path, v)
   }
 
-  onUpdate({
-    type,
-    value
-  }: {
-    type: FiledUpdateType,
-    value: any
-  }): void {
-    if (type === "value") {
-      const unSignalValue = toValue(value)
-      if (this.value === unSignalValue) {
-        return
-      }
-      this.value = unSignalValue as T
-    }
-    if (type === "props") {
-      if (this.props === undefined) {
-        throw new Error(`field ${this.id} props is undefined`)
-      }
-      Object.assign(this.props, value)
-    }
-    this.tracks.forEach(fn => fn({ type, value }))
+  update() {
+    this.tracks.forEach(fn => fn())
   }
+
+  setValue(v: T) {
+    this.value = v
+  }
+
+  setProps(props: PropsMetaData) {
+    Object.assign(this, props)
+    this.update()
+  }
+
+  setProp(prop: string, value: any) {
+    // @ts-ignore
+    this[prop] = value
+    this.update()
+  }
+
   onTrack(fn: Function): void {
     this.tracks.push(fn)
   }
+
   async _onSubmitValue() {
     const fieldPathLength = this.path.length + 1
     if (isFunction(this.onSubmitValue)) {
@@ -100,6 +95,8 @@ export class Field<T = any, D = any> {
       return this.peek()
     }
   }
+
+  $effects: any[] = []
 
   public isBlurred: Signal<boolean> = signal(false)
   public isFocused: Signal<boolean> = signal(false)
@@ -153,19 +150,14 @@ export class Field<T = any, D = any> {
     this.cleanups.push(e.stop)
   }
   initFieldMetaDate() {
-    // @ts-ignore
-    const componentMeta = this.constructor[Symbol.metadata][METADATA_COMPONENT] ?? {}
-    // @ts-ignore
-    const actions = this.constructor[Symbol.metadata][METADATA_ACTIONS] ?? {}
-    // @ts-ignore
-    const eventsMeta = { events: this.constructor[Symbol.metadata][METADATA_EVENTS] ?? {} }
-    // @ts-ignore
-    const validatorMeta = { validator: this.constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {} }
-    // @ts-ignore
-    const signalsMeta = { signals: this.constructor[Symbol.metadata][METADATA_SIGNALS] ?? {} }
-    // @ts-ignore
-    const propsMeta = Object.assign(componentMeta.props ??= {}, this.constructor[Symbol.metadata][METADATA_PROPS] ?? {})
-    Object.assign(this, componentMeta, actions, validatorMeta, signalsMeta, eventsMeta, propsMeta)
+    const constructor = this.constructor as any
+    const componentMeta = constructor[Symbol.metadata][METADATA_COMPONENT] ?? {}
+    const actions = constructor[Symbol.metadata][METADATA_ACTIONS] ?? {}
+    const validatorMeta = { validator: constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {} }
+    const conditions = constructor[Symbol.metadata][METADATA_CONDITIONS] ?? {}
+    const props = constructor[Symbol.metadata][METADATA_PROPS] ?? {}
+    this.$effects = Object.values(conditions)
+    Object.assign(this, componentMeta, actions, validatorMeta, props)
   }
 
   resetState() {

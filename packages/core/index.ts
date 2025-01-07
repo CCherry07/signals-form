@@ -1,10 +1,10 @@
+export * from "./resolvers/type"
 export * from "./controls/field"
 export * from "./model/form"
 export * from "./model/form_group"
-export * from "./controls/decorator"
+export * from "./decorators"
 export * from "./boolless"
 export * from "@rxform/shared"
-export * from "./resolvers/type"
 export {
   setup as setupValidator,
   validate
