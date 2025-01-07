@@ -1,6 +1,6 @@
 import { emitter } from "../emitter";
 
-export function DispatchData<T>(name: string): Function {
+export function DispatchData<T>(name: string,immediate: boolean = true): Function {
   return function (_target: any, ctx: ClassFieldDecoratorContext) {
     let value: any = undefined
     const getter = function () {
@@ -17,7 +17,7 @@ export function DispatchData<T>(name: string): Function {
       })
     })
     return (initValue: T) => {
-      setter(initValue)
+      immediate && setter(initValue)
     }
   };
 }
