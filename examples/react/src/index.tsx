@@ -2,7 +2,6 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Validator,
-  Events,
   D, Field, Component,
   Props,
   Actions,
@@ -261,7 +260,7 @@ class Agreement extends Field {
   properties: [
     Email,
     Password,
-    new Nickname(),
+    Nickname,
     Residence,
     Phone,
     Donation,
@@ -291,7 +290,7 @@ class Agreement extends Field {
   }
 })
 class UserInfo extends Field {
-  @DispatchData("userinfo")
+  @DispatchData("userinfo", false)
   userinfo = {}
 
   constructor(id?: string) {
@@ -301,10 +300,10 @@ class UserInfo extends Field {
 
   @Condition(D.use('isNickname'))
   setOptions() {
-    console.log("setOptions 执行了");    
+    console.log("setOptions 执行了");
     this.userinfo = Math.floor(Math.random() * 100)
     console.log(this);
-    
+
   }
 }
 const graph = [

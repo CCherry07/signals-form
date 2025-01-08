@@ -13,7 +13,20 @@ export interface ComponentMetaData {
   properties?: (typeof Field | Field)[]
 }
 export function Component(metadata: ComponentMetaData) {
-  return function (_constructor: Function, ctx: ClassDecoratorContext) {
+  return function (target: Function, ctx: ClassDecoratorContext) {
     ctx.metadata![METADATA_COMPONENT] = metadata
+    const proto = target.prototype
+    console.log(proto);
+
+    const superProto = Object.getPrototypeOf(target.prototype)
+    const Super = (superProto instanceof Field
+      ? superProto.constructor
+      : Field) as typeof Field
+
+    const Extended = Super.extend()
+    
+    // ctx.addInitializer(function(){
+
+    // })
   };
 }

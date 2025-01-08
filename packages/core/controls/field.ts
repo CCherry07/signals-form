@@ -156,7 +156,10 @@ export class Field<T = any, D = any> {
     const validatorMeta = { validator: constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {} }
     const conditions = constructor[Symbol.metadata][METADATA_CONDITIONS] ?? {}
     const props = constructor[Symbol.metadata][METADATA_PROPS] ?? {}
-    this.$effects = Object.values(conditions)
+    this.$effects = Object.values(conditions);
+    const properties = (componentMeta.properties ??= []).map((Property: typeof Field) => new Property());
+    componentMeta.properties = properties
+    
     Object.assign(this, componentMeta, actions, validatorMeta, props)
   }
 
