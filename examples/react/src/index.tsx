@@ -44,9 +44,6 @@ const bools = {
   }
 })
 class Phone extends Field {
-  constructor() {
-    super()
-  }
 }
 
 @Component({
@@ -114,9 +111,6 @@ class Email extends Field {
   },
 })
 class Password extends Field {
-  constructor() {
-    super()
-  }
 }
 
 @Component({
@@ -127,9 +121,6 @@ class Password extends Field {
   }
 })
 class Nickname extends Field {
-  constructor() {
-    super()
-  }
 
   @SubscribeData('userinfo')
   onUserInfo(data: any) {
@@ -163,9 +154,6 @@ class Nickname extends Field {
   }
 })
 class Residence extends Field {
-  constructor() {
-    super()
-  }
 }
 
 @Component({
@@ -185,9 +173,7 @@ class Residence extends Field {
   }
 })
 class Donation extends Field {
-  constructor() {
-    super()
-  }
+
 }
 
 @Component({
@@ -199,9 +185,6 @@ class Donation extends Field {
   }
 })
 class Intro extends Field {
-  constructor() {
-    super()
-  }
 }
 @Component({
   id: "gender",
@@ -225,9 +208,6 @@ class Intro extends Field {
   }
 })
 class Gender extends Field {
-  constructor() {
-    super()
-  }
 }
 @Component({
   id: "captcha",
@@ -237,9 +217,7 @@ class Gender extends Field {
   }
 })
 class Captcha extends Field {
-  constructor() {
-    super()
-  }
+
 }
 @Component({
   id: "agreement",
@@ -249,9 +227,7 @@ class Captcha extends Field {
   }
 })
 class Agreement extends Field {
-  constructor() {
-    super()
-  }
+
 }
 
 @Component({
@@ -292,11 +268,6 @@ class Agreement extends Field {
 class UserInfo extends Field {
   @DispatchData("userinfo", false)
   userinfo = {}
-
-  constructor(id?: string) {
-    super()
-    id && (this.id = id)
-  }
 
   @Condition(D.use('isNickname'))
   setOptions() {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { effect, effectScope } from "alien-signals";
 import type { BoolValues, Decision } from "../boolless";
 import {
@@ -110,47 +111,54 @@ export class Field<T = any, D = any> {
   public isMounted: Signal<boolean> = signal(false)
   public $value: T = undefined as unknown as T
   private cleanups: Array<Function> = []
-  constructor() {
-    this.initFieldMetaDate()
-    const e = effectScope()
-    e.run(() => {
-      // validate
-      effect(() => {
-        this.isValid.value = Object.keys(this.errors.value).length === 0
-      })
 
-      // disabled
-      effect(() => {
-        this.onDisabled?.(this.isDisabled.value)
-      })
+  static extends() {
+    const f = new this()
+    f.initFieldMetaDate()
+    console.log(f);
+    return f
+    
+    // this.initFieldMetaDate()
+    // const e = effectScope()
+    // e.run(() => {
+    //   // validate
+    //   effect(() => {
+    //     this.isValid.value = Object.keys(this.errors.value).length === 0
+    //   })
 
-      // recover value when hidden and shown
-      Promise.resolve().then(() => {
-        effect(() => {
-          const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
-          if (isHidden.value && recoverValueOnHidden) {
-            this.onHidden?.(this.isHidden.peek())
-            return
-          };
-          if (recoverValueOnShown) {
-            if (!isHidden.value && this.$value !== this.peek()) {
-              this.value = this.$value;
-              this.onHidden?.(this.isHidden.peek())
-            } else {
-              this.$value = this.peek();
-            }
-          }
-          if (isHidden.value) {
-            this.value = undefined as unknown as T;
-            this.onHidden?.(this.isHidden.peek())
-          }
-        })
-      })
-    })
-    this.cleanups.push(e.stop)
+    //   // disabled
+    //   effect(() => {
+    //     this.onDisabled?.(this.isDisabled.value)
+    //   })
+
+    //   // recover value when hidden and shown
+    //   Promise.resolve().then(() => {
+    //     effect(() => {
+    //       const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
+    //       if (isHidden.value && recoverValueOnHidden) {
+    //         this.onHidden?.(this.isHidden.peek())
+    //         return
+    //       };
+    //       if (recoverValueOnShown) {
+    //         if (!isHidden.value && this.$value !== this.peek()) {
+    //           this.value = this.$value;
+    //           this.onHidden?.(this.isHidden.peek())
+    //         } else {
+    //           this.$value = this.peek();
+    //         }
+    //       }
+    //       if (isHidden.value) {
+    //         this.value = undefined as unknown as T;
+    //         this.onHidden?.(this.isHidden.peek())
+    //       }
+    //     })
+    //   })
+    // })
+    // this.cleanups.push(e.stop)
   }
+
   initFieldMetaDate() {
-    const constructor = this.constructor as any
+    const constructor = this as any
     const componentMeta = constructor[Symbol.metadata][METADATA_COMPONENT] ?? {}
     const actions = constructor[Symbol.metadata][METADATA_ACTIONS] ?? {}
     const validatorMeta = { validator: constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {} }
@@ -159,7 +167,7 @@ export class Field<T = any, D = any> {
     this.$effects = Object.values(conditions);
     const properties = (componentMeta.properties ??= []).map((Property: typeof Field) => new Property());
     componentMeta.properties = properties
-    
+
     Object.assign(this, componentMeta, actions, validatorMeta, props)
   }
 
