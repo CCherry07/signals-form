@@ -1,8 +1,23 @@
 // @ts-nocheck
 import { Decision } from "../boolless";
-import { Field } from "../controls/field";
-import { METADATA_COMPONENT, METADATA_ACTIONS, METADATA_VALIDATOR, METADATA_CONDITIONS, METADATA_PROPS } from "./metaKeys";
+import { VirtualField } from "../controls/virtualField";
+import { METADATA_ACTIONS, METADATA_VALIDATOR, METADATA_CONDITIONS } from "./metaKeys";
+function initFieldMetaDate(target: any) {
+  const actions = target[Symbol.metadata][METADATA_ACTIONS] ?? {}
+  const validator = target[Symbol.metadata][METADATA_VALIDATOR] ?? {}
+  const conditions = target[Symbol.metadata][METADATA_CONDITIONS] ?? {}
+  // const props = target[Symbol.metadata][METADATA_PROPS] ?? {}
+  const $effects = Object.values(conditions);
+  // const properties = (componentMeta.properties ??= []).map((Property: typeof Field) => new Property());
 
+  // Object.assign(this, actions, validatorMeta, props)
+  return {
+    actions,
+    validator,
+    conditions,
+    $effects
+  }
+}
 export interface ComponentMetaData {
   id: string;
   component?: any;
@@ -11,44 +26,23 @@ export interface ComponentMetaData {
   props?: Record<string, any>;
   recoverValueOnHidden?: boolean
   recoverValueOnShown?: boolean
-  properties?: (typeof Field | Field)[]
+  properties?: (typeof VirtualField)[]
 }
- function initFieldMetaDate(constructor:any) {
-    // const componentMeta = constructor[Symbol.metadata][METADATA_COMPONENT] ?? {}
-    const actions = constructor[Symbol.metadata][METADATA_ACTIONS] ?? {}
-    const validatorMeta = { validator: constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {} }
-    const conditions = constructor[Symbol.metadata][METADATA_CONDITIONS] ?? {}
-    const props = constructor[Symbol.metadata][METADATA_PROPS] ?? {}
-    // this.$effects = Object.values(conditions);
-    // const properties = (componentMeta.properties ??= []).map((Property: typeof Field) => new Property());
-    // componentMeta.properties = properties
 
-    // Object.assign(this, componentMeta, actions, validatorMeta, props)
-    return {
-      actions,
-      validatorMeta,
-      conditions,
-      props
-    }
-  }
-export function Component(metadata: ComponentMetaData) {
-  return function (target: Function, _ctx: ClassDecoratorContext) {
-    // ctx.metadata![METADATA_COMPONENT] = metadata
-    const proto = target.prototype
-    console.log(target,proto);
-
+export function Component(metadata: ComponentMetaData): ClassDecoratorFunction {
+  return function (target: Function, ctx: ClassDecoratorContext) {
     const superProto = Object.getPrototypeOf(target.prototype)
-    // @ts-ignore
-    const Super = (superProto instanceof Field
+    const Super = (superProto instanceof VirtualField
       ? superProto.constructor
-      : Field) as typeof Field    
-
-      const data = initFieldMetaDate(proto.constructor)
-      console.log(data);
-      
-      // @ts-ignore
-      const f = Super.extend(metadata)
-      console.log(f);
-      
+      : VirtualField) as typeof VirtualField
+    const field = Super.extend(metadata)
+    const base = new target()
+    ctx.addInitializer(function () {
+      const data = initFieldMetaDate(this)
+      Object.assign(field, base, data)
+    })
+    return function () {
+      return field
+    }
   };
 }

@@ -20,6 +20,17 @@ export interface FieldError {
   type: string
 }
 
+export interface ExtendOptions {
+  id: string;
+  component?: any;
+  hidden?: Decision;
+  disabled?: Decision;
+  props?: Record<string, any>;
+  recoverValueOnHidden?: boolean
+  recoverValueOnShown?: boolean
+  properties?: (typeof Field | Field)[]
+}
+
 export type FieldErrors = Record<string, FieldError>
 
 export class Field<T = any, D = any> {
@@ -112,65 +123,51 @@ export class Field<T = any, D = any> {
   public $value: T = undefined as unknown as T
   private cleanups: Array<Function> = []
 
-  static extends() {
-    const f = new this()
-    f.initFieldMetaDate()
-    console.log(f);
-    return f
-    
-    // this.initFieldMetaDate()
-    // const e = effectScope()
-    // e.run(() => {
-    //   // validate
-    //   effect(() => {
-    //     this.isValid.value = Object.keys(this.errors.value).length === 0
-    //   })
+  constructor() {
+    const e = effectScope()
+    e.run(() => {
+      // validate
+      effect(() => {
+        this.isValid.value = Object.keys(this.errors.value).length === 0
+      })
 
-    //   // disabled
-    //   effect(() => {
-    //     this.onDisabled?.(this.isDisabled.value)
-    //   })
+      // disabled
+      effect(() => {
+        this.onDisabled?.(this.isDisabled.value)
+      })
 
-    //   // recover value when hidden and shown
-    //   Promise.resolve().then(() => {
-    //     effect(() => {
-    //       const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
-    //       if (isHidden.value && recoverValueOnHidden) {
-    //         this.onHidden?.(this.isHidden.peek())
-    //         return
-    //       };
-    //       if (recoverValueOnShown) {
-    //         if (!isHidden.value && this.$value !== this.peek()) {
-    //           this.value = this.$value;
-    //           this.onHidden?.(this.isHidden.peek())
-    //         } else {
-    //           this.$value = this.peek();
-    //         }
-    //       }
-    //       if (isHidden.value) {
-    //         this.value = undefined as unknown as T;
-    //         this.onHidden?.(this.isHidden.peek())
-    //       }
-    //     })
-    //   })
-    // })
-    // this.cleanups.push(e.stop)
+      // recover value when hidden and shown
+      Promise.resolve().then(() => {
+        effect(() => {
+          const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
+          if (isHidden.value && recoverValueOnHidden) {
+            this.onHidden?.(this.isHidden.peek())
+            return
+          };
+          if (recoverValueOnShown) {
+            if (!isHidden.value && this.$value !== this.peek()) {
+              this.value = this.$value;
+              this.onHidden?.(this.isHidden.peek())
+            } else {
+              this.$value = this.peek();
+            }
+          }
+          if (isHidden.value) {
+            this.value = undefined as unknown as T;
+            this.onHidden?.(this.isHidden.peek())
+          }
+        })
+      })
+    })
+    this.cleanups.push(e.stop)
   }
 
-  initFieldMetaDate() {
-    const constructor = this as any
-    const componentMeta = constructor[Symbol.metadata][METADATA_COMPONENT] ?? {}
-    const actions = constructor[Symbol.metadata][METADATA_ACTIONS] ?? {}
-    const validatorMeta = { validator: constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {} }
-    const conditions = constructor[Symbol.metadata][METADATA_CONDITIONS] ?? {}
-    const props = constructor[Symbol.metadata][METADATA_PROPS] ?? {}
-    this.$effects = Object.values(conditions);
-    const properties = (componentMeta.properties ??= []).map((Property: typeof Field) => new Property());
-    componentMeta.properties = properties
-
-    Object.assign(this, componentMeta, actions, validatorMeta, props)
+  static extend(options: ExtendOptions) {
+    const ins = new this()
+    const properties = (options.properties ??= []).map((Property: typeof Field) => new Property());
+    Object.assign(ins, { ...options, properties })
+    return ins
   }
-
   resetState() {
     this.isInit.value = true
     this.isPending.value = true

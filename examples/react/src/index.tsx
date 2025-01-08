@@ -44,6 +44,17 @@ const bools = {
   }
 })
 class Phone extends Field {
+  constructor(){
+    super()
+  }
+
+  @Condition(D.use('isNickname'))
+  setOptions() {
+    console.log("setOptions 执行了");
+    this.userinfo = Math.floor(Math.random() * 100)
+    console.log(this);
+
+  }
 }
 
 @Component({
@@ -51,34 +62,6 @@ class Phone extends Field {
   component: 'input',
   hidden: D.use('isNickname'),
   recoverValueOnShown: true,
-})
-@Props({
-  title: "E-mail"
-})
-@Validator({
-  initiative: {
-    all: [
-      {
-        schema: z.string().email({ message: "E-mail is not a valid email address" }),
-      }
-    ]
-  },
-})
-@Actions({
-  setDefaultValue() {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve("chen@163.com")
-      }, 500)
-    })
-  },
-  onSubmitValue(data) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(data + "@163.com")
-      }, 500)
-    })
-  }
 })
 class Email extends Field {
   constructor() {
@@ -101,15 +84,6 @@ class Email extends Field {
     title: "password"
   }
 })
-@Validator({
-  initiative: {
-    all: [
-      {
-        schema: z.number({ message: "a is not number" }),
-      }
-    ]
-  },
-})
 class Password extends Field {
 }
 
@@ -121,7 +95,6 @@ class Password extends Field {
   }
 })
 class Nickname extends Field {
-
   @SubscribeData('userinfo')
   onUserInfo(data: any) {
     console.log("onUserInfo", data);
@@ -161,15 +134,6 @@ class Residence extends Field {
   component: "inputNumber",
   props: {
     title: "Donation"
-  }
-})
-@Actions({
-  onSubmitValue(model: number) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(model / 2)
-      }, 500)
-    })
   }
 })
 class Donation extends Field {
