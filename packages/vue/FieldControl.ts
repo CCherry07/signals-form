@@ -96,10 +96,7 @@ export const FieldControl = defineComponent({
       if (events.onChange) {
         events.onChange(value)
       } else {
-        field.onUpdate({
-          type: FiledUpdateType.Value,
-          value
-        })
+        field.value = value
       }
     }
 
@@ -107,10 +104,7 @@ export const FieldControl = defineComponent({
       if (events.onBlur) {
         events.onBlur(value)
       } else {
-        field.onUpdate({
-          type: FiledUpdateType.Value,
-          value
-        })
+        field.value = value
       }
       field.isFocused.value = false
       field.isBlurred.value = true

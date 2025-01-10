@@ -1,7 +1,7 @@
 import { signal } from "alien-deepsignals"
 import { isFunction, toValue } from "@rxform/shared"
 import { Field } from "../controls/field"
-import type { AbstractModelMethods, Model } from "./abstract_model"
+import type { AbstractModelMethods, Model } from "./types"
 
 export async function createModel(graph: Field[], model?: Model) {
   return Object.entries(graph).reduce(async (_parent, [, field]) => {
@@ -22,15 +22,19 @@ export async function createModel(graph: Field[], model?: Model) {
   }, Promise.resolve({}))
 }
 
-export function createGraph(graph: (typeof Field | Field)[]): Field[] {
+export function createGraph(graph: (typeof Field | Field)[], appContext: any): Field[] {
   return graph.map(Field => {
-    const field = isFunction(Field) ? new Field() : Field
-    const { properties } = field
-    if (properties) {
-      field.properties = createGraph(properties)
+    const f = isFunction(Field) ? new Field() : Field
+    if (f.properties) {
+      f.properties = createGraph(f.properties, appContext).map((field) => {
+        field.parent = f
+        field.appContext = appContext
+        return field
+      })
     }
-    return field
+    return f
   })
+  // return graph.map(Field => isFunction(Field)? new Field() : Field)
 }
 
 export function asyncBindingModel(
@@ -53,7 +57,6 @@ export function asyncBindingModel(
       }
       field.reset()
       field.onInit?.()
-      return parent
     }, {} as Record<string, any>)
   }
   binding(abstractModelMethods, graph, fields, "")

@@ -1,25 +1,18 @@
-import { Field } from "../controls/field";
-import { Resolver } from "../resolvers/type";
-import { AbstractModel, type AbstractModelMethods } from "./abstract_model"
+import type { FormConfig, AbstractModelMethods } from "./types";
+
+import { AbstractModel } from "./abstract_model"
 import { asyncBindingModel, createGraph } from "./utils";
 
-interface FormConfig {
-  graph: typeof Field[];
-  defaultValidatorEngine: string;
-  boolsConfig: Record<string, (...args: any[]) => boolean>;
-  id: string;
-  resolvers?: {
-    validator?: Record<string, Resolver>
-  }
-}
 export class FormGroup {
   forms: Map<string, AbstractModel<any>>;
-  constructor() {
+  provides: Record<string, any> = {};
+  constructor(options: { provides?: Record<string, any> } = {}) {
     this.forms = new Map();
+    this.provides = options.provides ?? {};
   }
 
   create(config: FormConfig) {
-    const form = new AbstractModel(config.id)
+    const form = new AbstractModel(config.id).provides(this.provides)
     const methods: AbstractModelMethods = {
       setFieldValue: form.setFieldValue.bind(form),
       setErrors: form.setErrors.bind(form),
@@ -30,7 +23,7 @@ export class FormGroup {
       getFieldValue: form.getFieldValue.bind(form),
       peekFieldValue: form.peekFieldValue.bind(form)
     }
-    const graph = createGraph(config.graph)
+    const graph = createGraph(config.graph, form.appContext)
     const { fields } = asyncBindingModel(methods, form.model, graph)
     form.init({
       ...config,
@@ -56,10 +49,12 @@ export class FormGroup {
 }
 
 let formGroup: FormGroup | undefined;
-export function createGroupForm() {
+export function createGroupForm(options: { provides?: Record<string, any> } = {}) {
   if (formGroup) {
     return formGroup
   }
-  formGroup = new FormGroup()
+  formGroup = new FormGroup({
+    provides: options.provides
+  })
   return formGroup
 }

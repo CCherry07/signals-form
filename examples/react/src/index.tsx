@@ -2,13 +2,13 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Validator,
-  Events,
   D, Field, Component,
-  Props,
   Actions,
   Condition,
   DispatchData,
-  Subscribe,
+  SubscribeData,
+  Provide,
+  Inject,
 } from "@rxform/core"
 import Form from "./components/Form"
 import Input from "./components/Input"
@@ -23,6 +23,7 @@ import { App } from "./App"
 import { z } from 'zod';
 import { zodResolver } from "@rxform/resolvers"
 import { DeepSignal } from 'alien-deepsignals';
+import { signal } from 'alien-signals';
 
 type Model = DeepSignal<{
   userinfo: {
@@ -40,14 +41,9 @@ const bools = {
 @Component({
   id: 'phone',
   component: 'inputNumber',
-  props: {
-    title: "Phone Number"
-  }
 })
 class Phone extends Field {
-  constructor() {
-    super()
-  }
+  title = "Phone Number"
 }
 
 @Component({
@@ -55,9 +51,6 @@ class Phone extends Field {
   component: 'input',
   hidden: D.use('isNickname'),
   recoverValueOnShown: true,
-})
-@Props({
-  title: "E-mail"
 })
 @Validator({
   initiative: {
@@ -67,11 +60,6 @@ class Phone extends Field {
       }
     ]
   },
-})
-@Events({
-  onChange(data) {
-    this.value = data
-  }
 })
 @Actions({
   setDefaultValue() {
@@ -90,22 +78,19 @@ class Phone extends Field {
   }
 })
 class Email extends Field {
-  constructor() {
-    super()
-  }
+  title = "email"
   onInit(): void {
   }
   onDestroy(): void {
+  }
+  onChange(data: any) {
+    this.value = data
   }
 }
 @Component({
   id: 'password',
   component: "inputType",
   disabled: D.use('isNickname'),
-  props: {
-    type: "Password",
-    title: "password"
-  }
 })
 @Validator({
   initiative: {
@@ -117,24 +102,25 @@ class Email extends Field {
   },
 })
 class Password extends Field {
-  constructor() {
-    super()
+  type = "Password"
+  title = "password"
+
+  @Inject({
+    provideValues: "provideValues",
+    app: "appContextProvides"
+  })
+  provideValue = {
+    default: "123456"
   }
 }
 
 @Component({
   id: "nickname",
   component: "input",
-  props: {
-    title: "Nickname"
-  }
 })
 class Nickname extends Field {
-  constructor() {
-    super()
-  }
-
-  @Subscribe('userinfo')
+  title = "Nickname"
+  @SubscribeData('userinfo')
   onUserInfo(data: any) {
     console.log("onUserInfo", data);
   }
@@ -143,40 +129,32 @@ class Nickname extends Field {
 @Component({
   id: "residence",
   component: "cascader",
-  props: {
-    title: "Habitual Residence",
-    options: [
-      {
-        value: 'zhejiang',
-        label: 'Zhejiang',
-        children: [
-          {
-            value: 'hangzhou',
-            label: 'Hangzhou',
-            children: [
-              {
-                value: 'xihu',
-                label: 'West Lake',
-              },
-            ],
-          },
-        ],
-      },
-    ]
-  }
 })
 class Residence extends Field {
-  constructor() {
-    super()
-  }
+  title = "Habitual Residence"
+  options = [
+    {
+      value: 'zhejiang',
+      label: 'Zhejiang',
+      children: [
+        {
+          value: 'hangzhou',
+          label: 'Hangzhou',
+          children: [
+            {
+              value: 'xihu',
+              label: 'West Lake',
+            },
+          ],
+        },
+      ],
+    },
+  ]
 }
 
 @Component({
   id: "donation",
   component: "inputNumber",
-  props: {
-    title: "Donation"
-  }
 })
 @Actions({
   onSubmitValue(model: number) {
@@ -188,73 +166,52 @@ class Residence extends Field {
   }
 })
 class Donation extends Field {
-  constructor() {
-    super()
-  }
+  title = "Donation"
 }
 
 @Component({
   id: "intro",
   component: "inputType",
-  props: {
-    title: "Intro",
-    type: "TextArea"
-  }
 })
 class Intro extends Field {
-  constructor() {
-    super()
-  }
+  title = "Intro"
+  type = "TextArea"
 }
 @Component({
   id: "gender",
   component: "select",
-  props: {
-    title: "Gender",
-    options: [
-      {
-        value: "male",
-        label: "Male"
-      },
-      {
-        value: "female",
-        label: "Female"
-      },
-      {
-        value: "other",
-        label: "Other"
-      }
-    ]
-  }
 })
 class Gender extends Field {
-  constructor() {
-    super()
-  }
+  title = "Gender"
+  options = [
+    {
+      value: "male",
+      label: "Male"
+    },
+    {
+      value: "female",
+      label: "Female"
+    },
+    {
+      value: "other",
+      label: "Other"
+    }
+  ]
 }
 @Component({
   id: "captcha",
   component: "input",
-  props: {
-    title: "Captcha",
-  }
+
 })
 class Captcha extends Field {
-  constructor() {
-    super()
-  }
+  title = "Captcha"
 }
 @Component({
   id: "agreement",
   component: "checkbox",
-  props: {
-    title: "Captcha",
-  }
 })
 class Agreement extends Field {
-  constructor() {
-    super()
-  }
+  title = "agreement"
 }
 
 @Component({
@@ -272,18 +229,12 @@ class Agreement extends Field {
     Captcha,
     Agreement
   ],
-  props: {
-    style: {
-      width: "400px"
-    }
-  }
 })
 @Actions({
   setDefaultValue() {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
-          password: 123456,
           phone: 12345678901,
           donation: 100,
           intro: "I am a good man",
@@ -292,35 +243,37 @@ class Agreement extends Field {
     })
   }
 })
-@Events({
-  onChange() {
-    console.log("onInit");
-  }
-})
 class UserInfo extends Field {
-  @DispatchData("userinfo")
+  @DispatchData("userinfo", false)
   userinfo = {}
 
-  constructor(id?: string) {
-    super()
-    id && (this.id = id)
+  @Provide('provideValues')
+  provideValues = signal({})
+
+  style = {
+    width: "400px"
   }
 
   @Condition(D.use('isNickname'))
   setOptions() {
     console.log("setOptions 执行了");
     this.userinfo = Math.floor(Math.random() * 100)
-    // this.userinfo = {
-    //   name: "cherry"
-    // }
-    // Add your logic here
+    this.provideValues.set({
+      "test": "test"
+    })
   }
 }
 const graph = [
   UserInfo
 ]
 
-const formGroup = createGroupForm()
+const formGroup = createGroupForm({
+  provides: {
+    appContextProvides: {
+      data: "data"
+    }
+  }
+})
 const form1 = formGroup.add({
   defaultValidatorEngine: "zod",
   boolsConfig: bools,

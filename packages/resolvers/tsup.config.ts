@@ -6,8 +6,6 @@ export const tsup: Options = {
   ],
   format: 'esm',
   dts: true,
-  splitting: true,
   clean: true,
-  shims: false,
   external: ['!^(\\./|\\.\\./|[A-Za-z]:\\\\|/|^@/).*'],
 }

@@ -1,15 +1,10 @@
 {
   "name": "@rxform/shared",
   "version": "1.0.0",
-  "main": "./dist/index.js",
-  "type": "module",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
+  "main": "index.ts",
+  "files": [
+    "dist"
+  ],
   "keywords": [],
   "author": "",
   "license": "ISC",

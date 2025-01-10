@@ -6,10 +6,7 @@ export const tsup: Options = {
   ],
   format: 'esm',
   dts: true,
-  splitting: false,
   clean: true,
-  shims: false,
-  "target":"es2015",
   external: [
     '!^(\\./|\\.\\./|[A-Za-z]:\\\\|/|^@/).*',
     "alien-signals",

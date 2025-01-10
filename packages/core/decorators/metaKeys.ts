@@ -1,0 +1,15 @@
+// @ts-ignore
+Symbol.metadata ??= Symbol("Symbol.metadata");
+export const METADATA_COMPONENT = Symbol('component:metadata')
+export const METADATA_VALIDATOR = Symbol('validator:metadata')
+export const METADATA_EVENTS = Symbol('events:metadata')
+export const METADATA_ACTIONS = Symbol('actions:metadata')
+export const METADATA_PROPS = Symbol('props:metadata')
+export const METADATA_DEPS = Symbol('deps:metadata')
+export const METADATA_EFFECT = Symbol('effect:metadata')
+export const METADATA_CONDITIONS = Symbol('conditions:metadata')
+export const METADATA_VANILLA = Symbol('vanilla:metadata')
+export const METADATA_WATCH = Symbol('watch:metadata')
+export const METADATA_SIGNAL = Symbol('signal:metadata')
+export const METADATA_PROVIDE = Symbol('provide:metadata')
+export const METADATA_INJECT = Symbol('inject:metadata')

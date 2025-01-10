@@ -1,17 +1,25 @@
-import React, { ComponentClass, FunctionComponent } from 'react';
+import { ComponentClass, createElement, FunctionComponent } from 'react';
 import { FieldControl } from "./FieldControl";
-import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm, Resolver } from "@rxform/core"
-
-interface FormConfig {
+import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
+import type { Resolver, FormConfig as CoreFormConfig } from '@rxform/core'
+export interface FormConfig extends CoreFormConfig {
   components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
-  graph: (typeof Field)[];
-  defaultValidatorEngine: string;
-  boolsConfig: Record<string, (...args: any[]) => boolean>;
-  id: string;
   resolvers?: {
     validator?: Record<string, Resolver>
   }
 }
+
+export interface Extensions {
+  name: string
+  extension: Function,
+  priority?: number
+}
+
+export interface Options {
+  extensions?: Extensions[],
+  provides?: Record<string, any>
+}
+
 export const createForm = (config: FormConfig) => {
   const {
     defaultValidatorEngine,
@@ -41,20 +49,16 @@ export const createForm = (config: FormConfig) => {
     return component
   }
 
-  const app = <div>
-    {
-      form.graph.map((field: Field) => {
-        return <FieldControl
-          key={field.path}
-          field={field}
-          model={form.model}
-          defaultValidatorEngine={config.defaultValidatorEngine}
-          validatorResolvers={form.validatorResolvers}
-          resolveComponent={resolveComponent}
-        />
-      })
-    }
-  </div>
+  const app = createElement('div', {}, form.graph.map((field: Field) => {
+    return createElement(FieldControl, {
+      key: field.path,
+      field,
+      model: form.model,
+      defaultValidatorEngine,
+      validatorResolvers: form.validatorResolvers,
+      resolveComponent
+    })
+  }))
 
   return {
     app,
@@ -62,9 +66,10 @@ export const createForm = (config: FormConfig) => {
   }
 }
 
-
-export const createGroupForm = () => {
-  const formGroup = createRXGroupForm()
+export const createGroupForm = (options: Options) => {
+  const formGroup = createRXGroupForm({
+    provides: options.provides
+  })
   const apps = new Map<string, JSX.Element>()
   const createApp = (config: FormConfig) => {
     const form = formGroup.create(config)
@@ -80,20 +85,16 @@ export const createGroupForm = () => {
         setupValidator.call(form, validator, resolver)
       })
     }
-    const app = <div>
-      {
-        form.graph.map((field: Field) => {
-          return <FieldControl
-            key={field.path}
-            field={field}
-            model={form.model}
-            defaultValidatorEngine={config.defaultValidatorEngine}
-            validatorResolvers={form.validatorResolvers}
-            resolveComponent={resolveComponent}
-          />
-        })
-      }
-    </div>
+    const app = createElement('div', {}, form.graph.map((field: Field) => {
+      return createElement(FieldControl, {
+        key: field.path,
+        field,
+        model: form.model,
+        defaultValidatorEngine: config.defaultValidatorEngine,
+        validatorResolvers: form.validatorResolvers,
+        resolveComponent
+      })
+    }))
     return {
       app,
       form

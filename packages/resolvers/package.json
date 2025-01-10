@@ -1,19 +1,12 @@
 {
   "name": "@rxform/resolvers",
   "version": "1.0.0",
-  "main": "./dist/index.js",
+  "main": "index.ts",
   "type": "module",
-  "types": "./dist/index.d.ts",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
   "files": [
     "dist"
   ],

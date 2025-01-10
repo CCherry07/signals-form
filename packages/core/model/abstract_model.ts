@@ -1,69 +1,29 @@
-import { Effect, effect } from "alien-signals"
-import { DeepSignal, deepSignal, peek, Signal, signal } from "alien-deepsignals";
+import { effect } from "alien-signals"
+import { deepSignal, peek, Signal, signal } from "alien-deepsignals";
 import { get, set, clonedeep } from "@rxform/shared";
-
-import { type BoolsConfig, setup, type BoolValues } from "../boolless"
-import { Field, type FieldErrors, FiledUpdateType } from "../controls/field";
-import type { Resolver } from "../resolvers/type";
 import { createModel } from "./utils";
 
-export type Model = Record<string, any>;
+import { setup, type BoolValues } from "../boolless"
+import { Field, type FieldErrors } from "../controls/field";
+import type { Resolver } from "../resolvers/type";
+import type { Model, AbstractModelInitOptions, SubscribeProps, AbstractModelConstructor } from "./types";
 
-export interface AbstractModel<M extends DeepSignal<Model>> {
-  bools: BoolValues;
-  submitted: Signal<boolean>;
-  submiting: Signal<boolean>;
-  errors: Record<string, FieldErrors>;
-  model: M;
-  validatorEngine: string;
-  defaultValidatorEngine: string;
-  graph: Field[]
-  fields: Record<string, Field>
-  isPending: Signal<boolean>
-  validatorResolvers: Record<string, Resolver>
-}
-
-export interface SubscribeProps<M> {
-  bools: BoolValues;
-  submitted: Signal<boolean>;
-  errors: Record<string, FieldErrors>;
-  model: M;
-  isPending: Signal<boolean>
-}
-
-export interface AbstractModelMathods<M extends DeepSignal<Model>> {
-  updateModel(model: M): void;
-  setErrors(errors: Record<string, FieldErrors>): void;
-  setFieldErrors(field: string, errors: FieldErrors): void;
-  cleanErrors(paths?: string[]): void
-  setFieldValue(field: string, value: any): void;
-  getFieldValue(field: string): any;
-  peekFieldValue(parentpath: string, id: string): any;
-  setFieldProps(field: string, props: any): void;
-  getFieldError(field: string): FieldErrors;
-  validate(): Promise<boolean>;
-  validateField(field: string): Promise<boolean>;
-  validateFields(fields: string[]): Promise<boolean>;
-  validateFieldsAndScroll(fields: string[]): Promise<boolean>;
-  validateFieldsAndScrollToFirstError(fields: string[]): Promise<boolean>;
-  onSubscribe(fn: (props: SubscribeProps<M>) => void): Effect;
-  reset(): void;
-  submit(): Promise<Model>;
-}
-export type AbstractModelMethods = Pick<AbstractModelMathods<DeepSignal<Model>>, 'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors' | 'setFieldProps' | 'cleanErrors' | 'onSubscribe' | "peekFieldValue">
-
-export interface AbstractModelConstructorOptions<M extends Model> {
-  defaultValidatorEngine: string;
-  boolsConfig: BoolsConfig<M>
-  graph?: Field[]
-  fields?: Record<string, Field>
-}
-
-export class AbstractModel<M> implements AbstractModel<M> {
+export class AbstractModel<M extends Model> {
   id: string;
   models: Map<string, Model>;
   modelId: string;
-  constructor(id: string) {
+  defaultValidatorEngine!: string;
+  graph!: Field[];
+  fields!: Record<string, Field>;
+  bools!: BoolValues;
+  submitted: Signal<boolean>;
+  submiting: Signal<boolean>;
+  isPending: Signal<boolean>;
+  errors!: Record<string, FieldErrors>;
+  validatorResolvers: Record<string, Resolver>;
+  appContext!: Record<string, any>;
+  model!: M;
+  constructor(id: string, options?: AbstractModelConstructor) {
     this.validatorResolvers = {}
     this.isPending = signal(false)
     this.submitted = signal(false);
@@ -72,9 +32,13 @@ export class AbstractModel<M> implements AbstractModel<M> {
     this.modelId = 'default'
     this.models = new Map();
     this.model = deepSignal({}) as M
+    this.appContext = {
+      model: this.model,
+      provides: options?.provides
+    }
   }
 
-  init(options: AbstractModelConstructorOptions<M>) {
+  init(options: AbstractModelInitOptions<M>) {
     const { defaultValidatorEngine, boolsConfig, graph, fields } = options;
     this.errors = {};
     this.modelId = 'default'
@@ -83,6 +47,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
 
     Object.values(fields!)!.forEach((field) => {
       field.bools = this.bools
+      field.appContext = this.appContext
     })
     this.graph = graph!
     this.fields = fields!
@@ -174,7 +139,7 @@ export class AbstractModel<M> implements AbstractModel<M> {
           return;
         }
         if (value !== field.value) {
-          field.onUpdate({ type: FiledUpdateType.Value, value })
+          field.setValue(value)
         }
       }
     })
@@ -202,12 +167,11 @@ export class AbstractModel<M> implements AbstractModel<M> {
   }
 
   setFieldValue(field: string, value: any) {
-    // this.fields[field].onUpdate({ type: FiledUpdateType.Value, value });
     set(this.model, field, value)
   }
 
   setFieldProps(field: string, props: any) {
-    this.fields[field].onUpdate({ type: FiledUpdateType.Props, value: props });
+    this.fields[field].setProps(props)
   }
 
   getFieldValue(field: string) {
@@ -261,5 +225,17 @@ export class AbstractModel<M> implements AbstractModel<M> {
       model,
       errors: this.errors
     };
+  }
+
+  // static forRoot(options: Record<string, any>) {
+  //   console.log(this.prototype);
+  // }
+
+  provides(data: Record<string, any>) {
+    this.appContext = {
+      ...this.appContext,
+      provides: data
+    }
+    return this;
   }
 }

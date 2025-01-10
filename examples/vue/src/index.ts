@@ -18,9 +18,6 @@ import { z } from 'zod';
   recoverValueOnHidden: true, // 在隐藏的时候 value是否需要删除
   recoverValueOnShown: true // 在显示的时候 value是否需要恢复
 })
-@Props({ // props Config
-  title: "Nickname" 
-})
 @Validator({
   initiative: { // 组件事件触发的校验器
     all: [
@@ -104,11 +101,6 @@ class Nickname extends Field {
   properties: [
     Nickname
   ]
-})
-@Props({
-  style: {
-    width: "400px",
-  }
 })
 class UserInfo extends Field {
   constructor() {

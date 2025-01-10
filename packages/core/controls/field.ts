@@ -1,19 +1,18 @@
 import { effect, effectScope } from "alien-signals";
 import type { BoolValues, Decision } from "../boolless";
 import {
-  EventMetaData, PropsMetaData, SignalsMetaData,
   ValidatorMetaData,
-  METADATA_ACTIONS, METADATA_EVENTS, METADATA_PROPS, METADATA_VALIDATOR, METADATA_COMPONENT, METADATA_SIGNALS
-} from "./decorator";
+  METADATA_ACTIONS,
+  METADATA_CONDITIONS,
+  METADATA_VALIDATOR,
+  METADATA_COMPONENT,
+  METADATA_PROVIDE,
+  METADATA_INJECT,
+} from "../decorators";
 
 import { isFunction, isPromise, set, toValue } from "@rxform/shared";
-import type { AbstractModelMethods } from "../model/abstract_model";
 import { signal, Signal } from "alien-deepsignals";
-
-export enum FiledUpdateType {
-  Value = "value",
-  Props = "props",
-}
+import type { AbstractModelMethods } from "../model/types";
 
 export interface FieldError {
   message: string
@@ -21,6 +20,32 @@ export interface FieldError {
 }
 
 export type FieldErrors = Record<string, FieldError>
+
+const markOwnkeys: string[] = [
+  "id",
+  "path",
+  "signalPath",
+  "parentpath",
+  "bools",
+  "recoverValueOnHidden",
+  "recoverValueOnShown",
+  "component",
+  "hidden",
+  "disabled",
+  "properties",
+  "validator",
+  "setDefaultValue",
+  "onSubmitValue",
+  "tracks",
+  "abstractModel",
+  "appContext",
+  "parent",
+  "provides",
+  "actions",
+  "$effects",
+  "$value",
+  "markOwnkeys"
+]
 
 export class Field<T = any, D = any> {
   id!: string;
@@ -34,14 +59,21 @@ export class Field<T = any, D = any> {
   hidden?: Decision;
   disabled?: Decision;
   properties?: Field[]
-  props?: PropsMetaData;
   validator?: ValidatorMetaData;
-  signals?: SignalsMetaData;
-  events?: EventMetaData;
   setDefaultValue?: (data?: D) => T;
   onSubmitValue?: (model: T) => D;
   private tracks: Array<Function> = []
   abstractModel!: AbstractModelMethods;
+  appContext: {
+    provides?: Record<string, any>
+  } = {}
+  parent: Field | null = null
+  provides: Record<string | symbol, any> = {}
+  actions: {
+    setDefaultValue?: (data?: D) => T;
+    onSubmitValue?: (model: T) => D;
+  } = {};
+
   onBeforeInit?(): void
   onInit?(): void
   onDestroy?(): void
@@ -61,31 +93,28 @@ export class Field<T = any, D = any> {
     this.abstractModel.setFieldValue(this.path, v)
   }
 
-  onUpdate({
-    type,
-    value
-  }: {
-    type: FiledUpdateType,
-    value: any
-  }): void {
-    if (type === "value") {
-      const unSignalValue = toValue(value)
-      if (this.value === unSignalValue) {
-        return
-      }
-      this.value = unSignalValue as T
-    }
-    if (type === "props") {
-      if (this.props === undefined) {
-        throw new Error(`field ${this.id} props is undefined`)
-      }
-      Object.assign(this.props, value)
-    }
-    this.tracks.forEach(fn => fn({ type, value }))
+  update() {
+    this.tracks.forEach(fn => fn())
   }
+
+  setValue(v: T) {
+    this.value = v
+  }
+
+  setProps(props: Record<string, any>) {
+    Object.assign(this, props)
+    this.update()
+  }
+
+  setProp(this: Field & Record<string, any>, prop: string, value: any) {
+    this[prop] = value
+    this.update()
+  }
+
   onTrack(fn: Function): void {
     this.tracks.push(fn)
   }
+
   async _onSubmitValue() {
     const fieldPathLength = this.path.length + 1
     if (isFunction(this.onSubmitValue)) {
@@ -101,6 +130,8 @@ export class Field<T = any, D = any> {
     }
   }
 
+  $effects: any[] = []
+
   public isBlurred: Signal<boolean> = signal(false)
   public isFocused: Signal<boolean> = signal(false)
   public isInit: Signal<boolean> = signal(false)
@@ -114,7 +145,6 @@ export class Field<T = any, D = any> {
   public $value: T = undefined as unknown as T
   private cleanups: Array<Function> = []
   constructor() {
-    this.initFieldMetaDate()
     const e = effectScope()
     e.run(() => {
       // validate
@@ -128,44 +158,57 @@ export class Field<T = any, D = any> {
       })
 
       // recover value when hidden and shown
-      Promise.resolve().then(() => {
-        effect(() => {
-          const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
-          if (isHidden.value && recoverValueOnHidden) {
+      effect(() => {
+        const { isHidden, recoverValueOnHidden, recoverValueOnShown } = this;
+        if (isHidden.value && recoverValueOnHidden) {
+          this.onHidden?.(this.isHidden.peek())
+          return
+        };
+        if (recoverValueOnShown) {
+          if (!isHidden.value && this.$value !== this.peek()) {
+            this.value = this.$value;
             this.onHidden?.(this.isHidden.peek())
-            return
-          };
-          if (recoverValueOnShown) {
-            if (!isHidden.value && this.$value !== this.peek()) {
-              this.value = this.$value;
-              this.onHidden?.(this.isHidden.peek())
-            } else {
-              this.$value = this.peek();
-            }
+          } else {
+            this.$value = this.peek();
           }
-          if (isHidden.value) {
-            this.value = undefined as unknown as T;
-            this.onHidden?.(this.isHidden.peek())
-          }
-        })
+        }
+        if (isHidden.value) {
+          this.value = undefined as unknown as T;
+          this.onHidden?.(this.isHidden.peek())
+        }
       })
     })
     this.cleanups.push(e.stop)
+    this.normalizeFieldMetaDate()
   }
-  initFieldMetaDate() {
-    // @ts-ignore
-    const componentMeta = this.constructor[Symbol.metadata][METADATA_COMPONENT] ?? {}
-    // @ts-ignore
-    const actions = this.constructor[Symbol.metadata][METADATA_ACTIONS] ?? {}
-    // @ts-ignore
-    const eventsMeta = { events: this.constructor[Symbol.metadata][METADATA_EVENTS] ?? {} }
-    // @ts-ignore
-    const validatorMeta = { validator: this.constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {} }
-    // @ts-ignore
-    const signalsMeta = { signals: this.constructor[Symbol.metadata][METADATA_SIGNALS] ?? {} }
-    // @ts-ignore
-    const propsMeta = Object.assign(componentMeta.props ?? {}, this.constructor[Symbol.metadata][METADATA_PROPS] ?? {})
-    Object.assign(this, componentMeta, actions, validatorMeta, signalsMeta, eventsMeta, propsMeta)
+
+  normalizeFieldMetaDate() {
+    const constructor = this.constructor as any
+    const componentMeta = constructor[Symbol.metadata][METADATA_COMPONENT] ?? {}
+    const actions = constructor[Symbol.metadata][METADATA_ACTIONS] ?? {}
+    this.actions = actions
+    const validatorMeta = { validator: constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {} }
+    const conditions = constructor[Symbol.metadata][METADATA_CONDITIONS] ?? {}
+    this.$effects = Object.values(conditions);
+
+    const provides: Function[] = constructor[Symbol.metadata][METADATA_PROVIDE] ?? []
+    provides.forEach((provide) => {
+      provide.call(this)
+    })
+    // console.log(JSON.stringify(this.provides));
+    // const properties = (componentMeta.properties ??= []).map((Property: typeof Field) =>  {
+    //   const field = new Property()
+    //   field.parent = this
+    //   field.parentpath = this.path
+    //   // injects.forEach((inject) => {
+    //   //   inject.call(this)
+    //   // })
+    //   console.log("init");
+
+    //   return field
+    // });
+    // componentMeta.properties = properties
+    Object.assign(this, componentMeta, validatorMeta)
   }
 
   resetState() {
@@ -200,7 +243,16 @@ export class Field<T = any, D = any> {
     // clean previous state and effect
     this.resetState()
     this.onBeforeInit?.()
-    const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
+    // @ts-ignore
+    const injects: Function[] = this.constructor[Symbol.metadata][METADATA_INJECT] ?? []
+    injects.forEach((inject) => {
+      inject.call(this)
+    })
+    const filedValue: any = isFunction(this.actions.setDefaultValue) ? this.actions.setDefaultValue() : model;
+    if (this.properties?.length && filedValue === undefined) {
+      this.isPending.value = false
+      return
+    }
     if (isPromise(filedValue)) {
       filedValue.then((value) => {
         this.value = value
@@ -258,5 +310,26 @@ export class Field<T = any, D = any> {
     paths.forEach(p => {
       delete this.errors.value[p]
     })
+  }
+
+  getStateToProps() {
+    const entries = Object.getOwnPropertyNames(this).filter((key) => {
+      if (markOwnkeys.includes(key)) {
+        return false
+      }
+      return true
+    }).map(key => {
+      return [key, toValue((this as Record<string, any>)[key])]
+    }).concat(
+      [
+        [
+          'value',
+          this.value
+        ]
+      ]
+    )
+    return Object.fromEntries(
+      entries
+    )
   }
 }

@@ -25,18 +25,7 @@ interface Props {
 // }
 
 function normalizeProps(field: Field) {
-  return {
-    isBlurred: field.isBlurred.value,
-    isFocused: field.isFocused.value,
-    isInit: field.isInit.value,
-    isDestroyed: field.isDestroyed.value,
-    isHidden: field.isHidden.value,
-    isDisabled: field.isDisabled.value,
-    isValid: field.isValid.value,
-    errors: field.errors.value,
-    value: field.value,
-    ...field.props
-  }
+  return field.getStateToProps()
 }
 export function FieldControl(props: Props) {
   const { field, resolveComponent } = props;
@@ -75,12 +64,12 @@ export function FieldControl(props: Props) {
         field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
       })
       effect(() => {
-        if (field.signals) {
-          Object.entries(field.signals).forEach(([signalKey, fn]) => {
-            const signalValue = computed(() => normalizeSignal(signalKey, signal({ $: model.value })).value)
-            fn.call(field, signalValue.value, field.bools, model.value)
-          })
-        }
+        // if (field.signals) {
+        //   Object.entries(field.signals).forEach(([signalKey, fn]) => {
+        //     const signalValue = computed(() => normalizeSignal(signalKey, signal({ $: model.value })).value)
+        //     fn.call(field, signalValue.value, field.bools, model.value)
+        //   })
+        // }
       })
       effect(() => {
         setFiledState(normalizeProps(field))
@@ -125,10 +114,7 @@ export function FieldControl(props: Props) {
     if (events.onChange) {
       events.onChange(value)
     } else {
-      field.onUpdate({
-        type: FiledUpdateType.Value,
-        value
-      })
+      field.value = value
     }
   }, [events.onChange])
 
@@ -136,10 +122,7 @@ export function FieldControl(props: Props) {
     if (events.onBlur) {
       events.onBlur(value)
     } else {
-      field.onUpdate({
-        type: FiledUpdateType.Value,
-        value
-      })
+      field.value = value
     }
     field.isFocused.value = false
     field.isBlurred.value = true
