@@ -73,9 +73,9 @@ export async function syncBindingModel(
     const { id, setDefaultValue, properties } = field
     const filedValue = signal()
     if (isFunction(setDefaultValue)) {
-      field.isPending.value = true
+      field.isUpdating = true
       filedValue.value = await setDefaultValue()
-      field.isPending.value = false
+      field.isUpdating = false
     } else {
       filedValue.value = toValue(field?.value)
     }

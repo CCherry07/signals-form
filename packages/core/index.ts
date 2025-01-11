@@ -4,6 +4,7 @@ export * from "./model/form"
 export * from "./model/form_group"
 export * from "./decorators"
 export * from "./boolless"
+export * from "./match"
 export * from "@rxform/shared"
 export {
   setup as setupValidator,
@@ -12,5 +13,3 @@ export {
 export type { ValidateItem } from "./validator"
 
 export type * from "./model/types"
-
-export { createTemplateLiterals as js } from "@rxform/shared"

@@ -53,16 +53,16 @@ interface Context<T> {
   updateOn: string
   defaultValidatorEngine: string
   model: Record<string, any>
-  boolsConfig: BoolValues
+  boolValues: BoolValues
 }
 
 type ValidatorResolvers = Record<string, Resolver>
 
-export const validate = async <T>({ state, updateOn: _updateOn, model, boolsConfig, defaultValidatorEngine }: Context<T>, validates: ValidateItem[], validatorResolvers: ValidatorResolvers): Promise<FieldErrors> => {
+export const validate = async <T>({ state, updateOn: _updateOn, model, boolValues, defaultValidatorEngine }: Context<T>, validates: ValidateItem[], validatorResolvers: ValidatorResolvers): Promise<FieldErrors> => {
   const fieldErrors = {} as FieldErrors
   for (const item of validates) {
     const { schema, engine = defaultValidatorEngine, fact, updateOn, schemaOptions, factoryOptions, needValidate } = item
-    if (needValidate instanceof Decision && needValidate.not().evaluate(boolsConfig)) continue
+    if (needValidate instanceof Decision && needValidate.not().evaluate(boolValues)) continue
     if (typeof updateOn === "string" && updateOn !== _updateOn || isArray(updateOn) && updateOn.includes(_updateOn)) continue
     if (!isFunction(validatorResolvers[engine])) {
       throw new Error(`validator ${engine} is not registered`)

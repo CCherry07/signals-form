@@ -1,15 +1,16 @@
-export const createTemplateLiterals = <S, C>(string: TemplateStringsArray) => {
-  return (state: S, context: C) => parseExpression(string, state, context);
+export const createTemplateLiterals = <V>(string: TemplateStringsArray) => {
+  return (value: V,) => parseExpression(string, value);
 }
-export function parseExpression(content: TemplateStringsArray, state: any, context: any): any {
+export function parseExpression(content: TemplateStringsArray, value: any): any {
   try {
-    const contextArr = ['"use strict";', 'return '];
-    let code = contextArr.join('\n') + content;
-    const createFunction = (code: string) => new Function('$state', '$', code);
+    const fnBody = `
+    "use strict";
+    return ${content}
+    `
+    const createFunction = (body: string) => new Function('value', body);
     const executeFunction = (fn: Function, args: any[]) => fn.apply(null, args);
-    return executeFunction(createFunction(code), [state, context]);
+    return executeFunction(createFunction(fnBody), [value]);
   } catch (err) {
     console.error(`Function parse error: ${String(err)}`);
   }
 }
-

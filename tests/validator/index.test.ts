@@ -1,29 +1,31 @@
-import { validate, type ValidateItem, setupValidator } from "@rxform/core"
+import { validate, type ValidateItem } from "@rxform/core"
 import { zodResolver } from "@rxform/resolvers"
-import { toValue } from "@rxform/shared"
 import { z } from "zod"
 import { describe, it, expect } from "vitest"
 import { D, setup } from "../../packages/core/boolless"
-import { ReadonlySignal, signal } from "alien-signals"
-setupValidator("zod", zodResolver as any)
-const context = signal({
-  name: signal('cherry'),
-  age: signal(18),
-  addr: signal({
-    city: signal('重庆')
+import { deepSignal } from "alien-deepsignals"
+
+const validatorResolvers = {
+  zod: zodResolver
+}
+const context = deepSignal({
+  name: ('cherry'),
+  age: (18),
+  addr: ({
+    city: ('重庆')
   }),
-  d: signal('dd'),
-  userinfo: signal({ name: signal('Tom'), age: signal(18) })
+  d: ('dd'),
+  userinfo: ({ name: ('Tom'), age: (18) })
 })
 
 type Context = typeof context
 
 const bools = {
-  isD: (context: Context) => toValue(context).d.value === 'd',
-  isTom: (context: Context) => toValue(context).userinfo.value.name.value === 'Tom',
+  isD: (context: Context) => context.d === 'd',
+  isTom: (context: Context) => context.userinfo.name === 'Tom',
 } as const
 
-const boolValues = setup(bools, context) as Record<keyof typeof bools, ReadonlySignal<boolean>>;
+const boolValues = setup(bools, context)
 
 describe("validate", () => {
   const rules: ValidateItem[] = [
@@ -47,8 +49,11 @@ describe("validate", () => {
           city: '重庆'
         }
       },
-      updateOn: "change"
-    }, rules, boolValues, context)
+      updateOn: "change",
+      defaultValidatorEngine: "zod",
+      model: context,
+      boolValues
+    }, rules, validatorResolvers)
     expect(result).toMatchInlineSnapshot(`{}`)
   })
 
@@ -61,8 +66,11 @@ describe("validate", () => {
           city: '重庆'
         }
       },
-      updateOn: "change"
-    }, rules, boolValues, context)
+      updateOn: "change",
+      defaultValidatorEngine: "zod",
+      model: context,
+      boolValues
+    }, rules, validatorResolvers)
 
     expect(result).toMatchInlineSnapshot(`
       {
@@ -81,8 +89,8 @@ describe("validate", () => {
           $state: "$state",
           userinfo: {
             addr: "朝阳区",
-            name: "$.value.userinfo.value.name.value",
-            age: "$.value.userinfo.value.age.value"
+            name: "$.userinfo.name",
+            age: "$.userinfo.age"
           }
         },
         schema: z.object({
@@ -110,8 +118,11 @@ describe("validate", () => {
           city: '重庆'
         }
       },
-      updateOn: "change"
-    }, rules, boolValues, context)
+      updateOn: "change",
+      defaultValidatorEngine: "zod",
+      model: context,
+      boolValues
+    }, rules, validatorResolvers)
     expect(result).toMatchInlineSnapshot(`{}`)
   })
 
@@ -136,8 +147,11 @@ describe("validate", () => {
           city: '重庆'
         }
       },
-      updateOn: "change"
-    }, rules, boolValues, context)
+      updateOn: "change",
+      defaultValidatorEngine: "zod",
+      model: context,
+      boolValues
+    }, rules, validatorResolvers)
     expect(result).toMatchInlineSnapshot(`{}`)
   })
 })

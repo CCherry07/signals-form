@@ -1,13 +1,14 @@
 import { effect, effectScope } from "alien-signals";
 import type { BoolValues, Decision } from "../boolless";
 import {
-  ValidatorMetaData,
   METADATA_ACTIONS,
-  METADATA_CONDITIONS,
-  METADATA_VALIDATOR,
   METADATA_COMPONENT,
-  METADATA_PROVIDE,
+  METADATA_CONDITIONS,
   METADATA_INJECT,
+  METADATA_INJECTFIELD,
+  METADATA_PROVIDE,
+  METADATA_VALIDATOR,
+  ValidatorMetaData,
 } from "../decorators";
 
 import { isFunction, isPromise, set, toValue } from "@rxform/shared";
@@ -63,6 +64,8 @@ export class Field<T = any, D = any> {
   setDefaultValue?: (data?: D) => T;
   onSubmitValue?: (model: T) => D;
   private tracks: Array<Function> = []
+  private deps: Record<string, Field> = {}
+  private effectFields: Array<Field> = []
   abstractModel!: AbstractModelMethods;
   appContext: {
     provides?: Record<string, any>
@@ -83,6 +86,30 @@ export class Field<T = any, D = any> {
   onUnmounted?(): void
   onValidate?(): void
 
+  private _isUpdating: Signal<boolean> = signal(true)
+  get isUpdating() {
+    return this._isUpdating.get()
+  }
+
+  set isUpdating(v: boolean) {
+    this._isUpdating.set(v)
+    Object.values(this.deps).forEach((field) => {
+      field.isUpdating = v
+    })
+  }
+
+  get isRoot() {
+    return this.parent === null
+  }
+
+  get isLeaf() {
+    return this.properties === undefined
+  }
+
+  appendEffectField(field: Field) {
+    this.effectFields.push(field)
+  }
+
   get value() {
     return this.abstractModel.getFieldValue(this.path)
   }
@@ -90,6 +117,7 @@ export class Field<T = any, D = any> {
     return this.abstractModel?.peekFieldValue?.(this.parentpath, this.id)
   }
   set value(v: T) {
+    this.isUpdating = true
     this.abstractModel.setFieldValue(this.path, v)
   }
 
@@ -140,7 +168,6 @@ export class Field<T = any, D = any> {
   public isDisabled: Signal<boolean> = signal(false)
   public isValid: Signal<boolean> = signal(true)
   public errors: Signal<FieldErrors> = signal({})
-  public isPending: Signal<boolean> = signal(true)
   public isMounted: Signal<boolean> = signal(false)
   public $value: T = undefined as unknown as T
   private cleanups: Array<Function> = []
@@ -195,6 +222,7 @@ export class Field<T = any, D = any> {
     provides.forEach((provide) => {
       provide.call(this)
     })
+    const injectFields: Record<string, string> = constructor[Symbol.metadata][METADATA_INJECTFIELD] ?? {}
     // console.log(JSON.stringify(this.provides));
     // const properties = (componentMeta.properties ??= []).map((Property: typeof Field) =>  {
     //   const field = new Property()
@@ -208,12 +236,15 @@ export class Field<T = any, D = any> {
     //   return field
     // });
     // componentMeta.properties = properties
+    this.deps = Object.fromEntries(Object.entries(injectFields).map(([key, path]) => {
+      return [key, this.abstractModel.getField(path)]
+    }))
     Object.assign(this, componentMeta, validatorMeta)
   }
 
   resetState() {
     this.isInit.value = true
-    this.isPending.value = true
+    this.isUpdating = true
     this.isDisabled.value = false
     this.isHidden.value = false
     this.isBlurred.value = false
@@ -225,17 +256,17 @@ export class Field<T = any, D = any> {
   }
 
   resetModel(model?: T | Promise<T>) {
-    this.isPending.value = true
+    this.isUpdating = true
     const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
     if (isPromise(filedValue)) {
-      this.isPending.value = true
+      this.isUpdating = true
       filedValue.then((value) => {
         this.value = value
-        this.isPending.value = false
+        this.isUpdating = false
       })
     } else {
       this.value = filedValue!
-      this.isPending.value = false
+      this.isUpdating = false
     }
   }
 
@@ -250,17 +281,17 @@ export class Field<T = any, D = any> {
     })
     const filedValue: any = isFunction(this.actions.setDefaultValue) ? this.actions.setDefaultValue() : model;
     if (this.properties?.length && filedValue === undefined) {
-      this.isPending.value = false
+      this.isUpdating = false
       return
     }
     if (isPromise(filedValue)) {
       filedValue.then((value) => {
         this.value = value
-        this.isPending.value = false
+        this.isUpdating = false
       })
     } else {
       this.value = filedValue!
-      this.isPending.value = false
+      this.isUpdating = false
     }
   }
 
@@ -275,13 +306,13 @@ export class Field<T = any, D = any> {
           fields.forEach((field) => {
             field.init(value?.[field.id])
           })
-          this.isPending.value = false
+          this.isUpdating = false
         })
       } else {
         fields.forEach((field) => {
           field.init(filedValue?.[field.id])
         })
-        this.isPending.value = false
+        this.isUpdating = false
       }
     }
   }

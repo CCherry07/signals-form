@@ -18,14 +18,14 @@ export class AbstractModel<M extends Model> {
   bools!: BoolValues;
   submitted: Signal<boolean>;
   submiting: Signal<boolean>;
-  isPending: Signal<boolean>;
+  isUpdating: Signal<boolean>;
   errors!: Record<string, FieldErrors>;
   validatorResolvers: Record<string, Resolver>;
   appContext!: Record<string, any>;
   model!: M;
   constructor(id: string, options?: AbstractModelConstructor) {
     this.validatorResolvers = {}
-    this.isPending = signal(false)
+    this.isUpdating = signal(false)
     this.submitted = signal(false);
     this.submiting = signal(false);
     this.id = id
@@ -52,7 +52,7 @@ export class AbstractModel<M extends Model> {
     this.graph = graph!
     this.fields = fields!
     effect(() => {
-      this.isPending.value = Object.values(this.fields ?? {}).some((field) => field.isPending.value) ?? false
+      this.isUpdating.value = Object.values(this.fields ?? {}).some((field) => field.isUpdating) ?? false
     })
   }
 
@@ -121,7 +121,7 @@ export class AbstractModel<M extends Model> {
         submitted: this.submitted,
         errors: this.errors,
         model: this.model,
-        isPending: this.isPending
+        isUpdating: this.isUpdating
       })
       return cleanup;
     })
@@ -184,6 +184,10 @@ export class AbstractModel<M extends Model> {
 
   getFieldError(field: string) {
     return this.errors[field];
+  }
+
+  getField(field: string) {
+    return this.fields[field];
   }
 
   reset() {

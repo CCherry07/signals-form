@@ -9,6 +9,8 @@ import {
   SubscribeData,
   Provide,
   Inject,
+  match,
+  _
 } from "@rxform/core"
 import Form from "./components/Form"
 import Input from "./components/Input"
@@ -253,6 +255,19 @@ class UserInfo extends Field {
   style = {
     width: "400px"
   }
+
+  px = match(this.style, [
+    [{ width: "400px" }, () => {
+      return {
+        width: "400px"
+      }
+    }],
+    [{ width: "500px" }, () => {
+      return {
+        width: "500px"
+      }
+    }],
+  ])
 
   @Condition(D.use('isNickname'))
   setOptions() {

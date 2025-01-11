@@ -1,9 +1,9 @@
-import type { AbstractModel } from "./abstract_model";
-import { Signal } from "alien-signals";
-import { BoolsConfig, BoolValues } from "../boolless";
-import { Field, FieldErrors } from "../controls/field";
-import { Resolver } from "../resolvers/type";
-import { DeepSignal } from "alien-deepsignals";
+import type {AbstractModel} from "./abstract_model";
+import {Signal} from "alien-signals";
+import {BoolsConfig, BoolValues} from "../boolless";
+import {Field, FieldErrors} from "../controls/field";
+import {Resolver} from "../resolvers/type";
+import {DeepSignal} from "alien-deepsignals";
 
 export interface FormConfig {
   graph: typeof Field[];
@@ -23,10 +23,14 @@ export interface SubscribeProps<M> {
   submitted: Signal<boolean>;
   errors: Record<string, FieldErrors>;
   model: M;
-  isPending: Signal<boolean>
+  isUpdating: Signal<boolean>
 }
 
-export type AbstractModelMethods = Pick<AbstractModel<DeepSignal<Model>>, 'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors' | 'setFieldProps' | 'cleanErrors' | 'onSubscribe' | "peekFieldValue">
+export type AbstractModelMethods = Pick<AbstractModel<DeepSignal<Model>>,
+    'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors'
+    | 'setFieldProps' | 'cleanErrors' | 'onSubscribe' | "peekFieldValue"
+    | "getField"
+    >
 
 export interface AbstractModelInitOptions<M extends Model> {
   defaultValidatorEngine: string;

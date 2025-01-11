@@ -9,6 +9,5 @@ export * from "./inject";
 export * from "./provide";
 export * from "./signal";
 export * from "./watch";
-
+export * from "./injectField.ts";
 export * from "./metaKeys";
-

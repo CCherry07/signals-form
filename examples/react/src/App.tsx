@@ -13,7 +13,7 @@ export function App(props: Parops) {
   const [model, setModel] = useState({} as any)
   useEffect(() => {
     effect(() => {
-      setState(props.forms[0].isPending.value)
+      setState(props.forms[0].isUpdating.value)
       setSubmitted(props.forms[0].submiting.value)
     })
     effect(() => {

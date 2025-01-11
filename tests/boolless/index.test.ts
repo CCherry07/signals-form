@@ -1,4 +1,4 @@
-import { signal } from "alien-signals"
+import { signal } from "alien-deepsignals"
 import { D, Decision, type Node, registerCustomOperator } from "@rxform/core"
 import { test, expect } from "vitest"
 
