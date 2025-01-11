@@ -4,6 +4,7 @@ import {
   METADATA_ACTIONS,
   METADATA_COMPONENT,
   METADATA_CONDITIONS,
+  METADATA_EFFECT,
   METADATA_INJECT,
   METADATA_INJECTFIELD,
   METADATA_PROVIDE,
@@ -64,6 +65,7 @@ export class Field<T = any, D = any> {
   setDefaultValue?: (data?: D) => T;
   onSubmitValue?: (model: T) => D;
   private tracks: Array<Function> = []
+  // @ts-ignore
   private deps: Record<string, Field> = {}
   private effectFields: Set<Field> = new Set()
   abstractModel!: AbstractModelMethods;
@@ -93,7 +95,7 @@ export class Field<T = any, D = any> {
 
   set isUpdating(v: boolean) {
     this._isUpdating.set(v)
-    Object.values(this.deps).forEach((field) => {
+    this.effectFields.forEach((field) => {
       field.isUpdating = v
     })
   }
@@ -113,9 +115,11 @@ export class Field<T = any, D = any> {
   get value() {
     return this.abstractModel.getFieldValue(this.path)
   }
+
   peek() {
     return this.abstractModel?.peekFieldValue?.(this.parentpath, this.id)
   }
+
   set value(v: T) {
     this.abstractModel.setFieldValue(this.path, v)
     this.isUpdating = false
@@ -215,8 +219,7 @@ export class Field<T = any, D = any> {
   normalizeFieldMetaDate() {
     const constructor = this.constructor as any
     const componentMeta = constructor[Symbol.metadata][METADATA_COMPONENT] ?? {}
-    const actions = constructor[Symbol.metadata][METADATA_ACTIONS] ?? {}
-    this.actions = actions
+    this.actions = constructor[Symbol.metadata][METADATA_ACTIONS] ?? {}
     const conditions = constructor[Symbol.metadata][METADATA_CONDITIONS] ?? {}
     this.$effects = Object.values(conditions);
 
@@ -252,6 +255,15 @@ export class Field<T = any, D = any> {
               targetField.appendEffectField(this)
               return [key, this.abstractModel.getField(value)]
             }))
+
+    this.normalizeEffects()
+  }
+
+  normalizeEffects() {
+    const effects: Function[] = (this.constructor as any)[Symbol.metadata][METADATA_EFFECT] ?? []
+    effects.forEach((effect) => {
+      effect.call(this)
+    })
   }
 
   resetState() {

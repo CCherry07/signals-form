@@ -1,17 +1,19 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import {createRoot} from 'react-dom/client';
 import {
-  Validator,
-  D, Field, Component,
   Actions,
+  Component,
   Condition,
+  D,
   DispatchData,
-  SubscribeData,
-  Provide,
+  Field,
+  Fields,
   Inject,
+  InjectField,
   match,
-  _,
-  InjectField
+  Provide,
+  SubscribeData,
+  Validator
 } from "@rxform/core"
 import Form from "./components/Form"
 import Input from "./components/Input"
@@ -20,13 +22,13 @@ import Checkbox from "./components/Checkbox"
 import InputNumber from "./components/InputNumber"
 import Cascader from './components/Cascader';
 import Select from './components/Select';
-import { Card as CardComponent } from './components/Card';
-import { createGroupForm } from "@rxform/react"
-import { App } from "./App"
-import { z } from 'zod';
-import { zodResolver } from "@rxform/resolvers"
-import { DeepSignal } from 'alien-deepsignals';
-import { signal } from 'alien-signals';
+import {Card as CardComponent} from './components/Card';
+import {createGroupForm} from "@rxform/react"
+import {App} from "./App"
+import {z} from 'zod';
+import {zodResolver} from "@rxform/resolvers"
+import {DeepSignal} from 'alien-deepsignals';
+import {signal} from 'alien-signals';
 
 type Model = DeepSignal<{
   userinfo: {
@@ -211,6 +213,13 @@ class Gender extends Field {
 })
 class Captcha extends Field {
   title = "Captcha"
+
+  @Fields({
+    gender: "gender",
+  })
+  onChange(fields: Record<string, any>) {
+    console.log("onChange", fields);
+  }
 }
 @Component({
   id: "agreement",

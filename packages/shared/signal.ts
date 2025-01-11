@@ -1,5 +1,5 @@
-import { Signal, Computed } from "alien-deepsignals";
-import { isFunction } from "./utils";
+import {Computed, Signal} from "alien-deepsignals";
+import {isFunction} from "./utils";
 
 export type MaybeSignalOrComputed<T = any> =
   | T
@@ -58,7 +58,7 @@ export function toDeepValue<T>(source: MaybeSignalOrGetter<T>): T {
 
 function parseSignalPath(signalPath: string): Array<string | number> {
   const pathArray: Array<string | number> = [];
-  const regex = /[^.[\]]+|\[(\d+)\]/g;
+  const regex = /[^.[\]]+|\[(\d+)]/g;
   let match;
   while ((match = regex.exec(signalPath)) !== null) {
     if (match[1] !== undefined) {
@@ -70,7 +70,7 @@ function parseSignalPath(signalPath: string): Array<string | number> {
   return pathArray;
 }
 /**
- * 
+ *
  * @param path the signal path that needs to be accessed
  * @param signal signal
  * @returns signal at the end of the path

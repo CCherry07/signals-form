@@ -11,3 +11,4 @@ export * from "./signal";
 export * from "./watch";
 export * from "./injectField.ts";
 export * from "./metaKeys";
+export * from "./fields";
