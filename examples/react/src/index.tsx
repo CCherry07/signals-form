@@ -9,7 +9,7 @@ import {
   Field,
   Fields,
   Inject,
-  InjectField,
+  InjectFields,
   match,
   Provide,
   SubscribeData,
@@ -207,7 +207,7 @@ class Gender extends Field {
   id: "captcha",
   component: "input",
 })
-@InjectField({
+@InjectFields({
   gender: "userinfo.gender",
   donation: "userinfo.donation"
 })

@@ -92,6 +92,7 @@ export function FieldControl(props: Props) {
   }, [])
 
   const onBlur = useCallback((value: any) => {
+    field.isUpdating = true
     if (field.onBlur) {
       field.onBlur(value)
     } else {
