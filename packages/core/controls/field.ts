@@ -14,6 +14,7 @@ import {
 
 import {isFunction, isPromise, set, toValue} from "@rxform/shared";
 import {signal, Signal} from "alien-deepsignals";
+import {emitter} from "../emitter";
 import type {AbstractModelMethods} from "../model/types";
 
 export interface FieldError {
@@ -78,6 +79,10 @@ export class Field<T = any, D = any> {
     setDefaultValue?: (data?: D) => T;
     onSubmitValue?: (model: T) => D;
   } = {};
+
+  get emitter() {
+    return emitter
+  }
 
   onBeforeInit?(): void
   onInit?(): void
@@ -376,4 +381,5 @@ export class Field<T = any, D = any> {
     )
     return Object.fromEntries(entries)
   }
+
 }
