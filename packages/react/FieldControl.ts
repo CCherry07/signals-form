@@ -1,10 +1,10 @@
-import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { Field, toValue, validate, FiledUpdateType, normalizeSignal } from "@rxform/core"
-import { computed, signal } from "alien-deepsignals"
+import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useState } from 'react';
+import { Field, validate } from "@rxform/core"
+import { computed } from "alien-deepsignals"
 import { effect, effectScope } from "alien-signals"
 import { Resolver } from '@rxform/core';
 interface Props {
-  field: Field;
+  field: Field & Record<string, any>;
   model: any
   defaultValidatorEngine: string;
   resolveComponent: (component: string | FunctionComponent<any> | ComponentClass<any, any>) => string | FunctionComponent<any> | ComponentClass<any, any>
@@ -32,7 +32,6 @@ export function FieldControl(props: Props) {
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
   const model = computed(() => props.model)
   const {
-    initiative,
     signal: signalValidator
   } = field.validator ?? {}
 
@@ -45,7 +44,7 @@ export function FieldControl(props: Props) {
           validate({
             state: field.value, updateOn: "signal",
             defaultValidatorEngine: props.defaultValidatorEngine,
-            boolsConfig: field.bools,
+            boolValues: field.bools,
             model
           }, signalValidator.all, props.validatorResolvers).then(errors => {
             if (Object.keys(errors).length === 0) {
@@ -62,14 +61,6 @@ export function FieldControl(props: Props) {
       effect(() => {
         field.isHidden.value = field.hidden?.evaluate(field.bools) ?? false
         field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
-      })
-      effect(() => {
-        // if (field.signals) {
-        //   Object.entries(field.signals).forEach(([signalKey, fn]) => {
-        //     const signalValue = computed(() => normalizeSignal(signalKey, signal({ $: model.value })).value)
-        //     fn.call(field, signalValue.value, field.bools, model.value)
-        //   })
-        // }
       })
       effect(() => {
         setFiledState(normalizeProps(field))
@@ -91,50 +82,32 @@ export function FieldControl(props: Props) {
     }
   }, [])
 
-  const events = useMemo(() => {
-    return Object.fromEntries(Object.entries(field.events || {}).map(([e, fn]) => {
-      return [e, function (data?: any) {
-        fn.call(field, data)
-        if (initiative) {
-          validate({
-            state: toValue(field.value),
-            updateOn: e,
-            defaultValidatorEngine: props.defaultValidatorEngine,
-            boolsConfig: field.bools,
-            model
-          }, initiative.all, props.validatorResolvers).then(errors => {
-            field.errors.value = errors
-          })
-        }
-      }]
-    }))
-  }, [])
-
-  const onChange = useCallback((value: any) => {
-    if (events.onChange) {
-      events.onChange(value)
+  const onChange = useCallback(async (value: any) => {
+    field.isUpdating = true
+    if (field.onChange) {
+      field.onChange(value)
     } else {
       field.value = value
     }
-  }, [events.onChange])
+  }, [])
 
   const onBlur = useCallback((value: any) => {
-    if (events.onBlur) {
-      events.onBlur(value)
+    if (field.onBlur) {
+      field.onBlur(value)
     } else {
       field.value = value
     }
     field.isFocused.value = false
     field.isBlurred.value = true
-  }, [events.onBlur])
+  }, [])
 
   const onFocus = useCallback(() => {
-    if (events.onFocus) {
-      events.onFocus()
+    if (field.onFocus) {
+      field.onFocus()
     }
     field.isBlurred.value = false
     field.isFocused.value = true
-  }, [events.onFocus])
+  }, [])
 
   function getChildren(): ReactNode[] {
     if (field.properties) {
@@ -171,7 +144,6 @@ export function FieldControl(props: Props) {
   },
     createElement(resolveComponent(field.component), {
       ...filedState,
-      ...events,
       onChange,
       onBlur,
       onFocus

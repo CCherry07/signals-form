@@ -1,12 +1,12 @@
-import { effect } from "alien-signals"
-import { deepSignal, peek, Signal, signal } from "alien-deepsignals";
-import { get, set, clonedeep } from "@rxform/shared";
-import { createModel } from "./utils";
+import {effect} from "alien-signals"
+import {deepSignal, peek, Signal, signal} from "alien-deepsignals";
+import {clonedeep, get, set} from "@rxform/shared";
+import {createModel} from "./utils";
 
-import { setup, type BoolValues } from "../boolless"
-import { Field, type FieldErrors } from "../controls/field";
-import type { Resolver } from "../resolvers/type";
-import type { Model, AbstractModelInitOptions, SubscribeProps, AbstractModelConstructor } from "./types";
+import {type BoolValues, setup} from "../boolless"
+import {Field, type FieldErrors} from "../controls/field";
+import type {Resolver} from "../resolvers/type";
+import type {AbstractModelConstructor, AbstractModelInitOptions, Model, SubscribeProps} from "./types";
 
 export class AbstractModel<M extends Model> {
   id: string;
@@ -51,9 +51,17 @@ export class AbstractModel<M extends Model> {
     })
     this.graph = graph!
     this.fields = fields!
+    this.normalizeEffectFields()
+    // handle field effectFields
     effect(() => {
       this.isUpdating.value = Object.values(this.fields ?? {}).some((field) => field.isUpdating) ?? false
     })
+  }
+
+  normalizeEffectFields() {
+    for (let field of Object.values(this.fields)) {
+       field.normalizeDeps()
+    }
   }
 
   async createModel() {

@@ -10,7 +10,8 @@ import {
   Provide,
   Inject,
   match,
-  _
+  _,
+  InjectField
 } from "@rxform/core"
 import Form from "./components/Form"
 import Input from "./components/Input"
@@ -203,7 +204,10 @@ class Gender extends Field {
 @Component({
   id: "captcha",
   component: "input",
-
+})
+@InjectField({
+  gender: "userinfo.gender",
+  donation: "userinfo.donation"
 })
 class Captcha extends Field {
   title = "Captcha"

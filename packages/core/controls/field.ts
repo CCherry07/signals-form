@@ -1,5 +1,5 @@
-import { effect, effectScope } from "alien-signals";
-import type { BoolValues, Decision } from "../boolless";
+import {effect, effectScope} from "alien-signals";
+import type {BoolValues, Decision} from "../boolless";
 import {
   METADATA_ACTIONS,
   METADATA_COMPONENT,
@@ -11,9 +11,9 @@ import {
   ValidatorMetaData,
 } from "../decorators";
 
-import { isFunction, isPromise, set, toValue } from "@rxform/shared";
-import { signal, Signal } from "alien-deepsignals";
-import type { AbstractModelMethods } from "../model/types";
+import {isFunction, isPromise, set, toValue} from "@rxform/shared";
+import {signal, Signal} from "alien-deepsignals";
+import type {AbstractModelMethods} from "../model/types";
 
 export interface FieldError {
   message: string
@@ -65,7 +65,7 @@ export class Field<T = any, D = any> {
   onSubmitValue?: (model: T) => D;
   private tracks: Array<Function> = []
   private deps: Record<string, Field> = {}
-  private effectFields: Array<Field> = []
+  private effectFields: Set<Field> = new Set()
   abstractModel!: AbstractModelMethods;
   appContext: {
     provides?: Record<string, any>
@@ -107,7 +107,7 @@ export class Field<T = any, D = any> {
   }
 
   appendEffectField(field: Field) {
-    this.effectFields.push(field)
+    this.effectFields.add(field)
   }
 
   get value() {
@@ -117,8 +117,8 @@ export class Field<T = any, D = any> {
     return this.abstractModel?.peekFieldValue?.(this.parentpath, this.id)
   }
   set value(v: T) {
-    this.isUpdating = true
     this.abstractModel.setFieldValue(this.path, v)
+    this.isUpdating = false
   }
 
   update() {
@@ -171,6 +171,9 @@ export class Field<T = any, D = any> {
   public isMounted: Signal<boolean> = signal(false)
   public $value: T = undefined as unknown as T
   private cleanups: Array<Function> = []
+
+  private injectFields: Record<string, string> = {}
+
   constructor() {
     const e = effectScope()
     e.run(() => {
@@ -214,7 +217,6 @@ export class Field<T = any, D = any> {
     const componentMeta = constructor[Symbol.metadata][METADATA_COMPONENT] ?? {}
     const actions = constructor[Symbol.metadata][METADATA_ACTIONS] ?? {}
     this.actions = actions
-    const validatorMeta = { validator: constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {} }
     const conditions = constructor[Symbol.metadata][METADATA_CONDITIONS] ?? {}
     this.$effects = Object.values(conditions);
 
@@ -222,7 +224,9 @@ export class Field<T = any, D = any> {
     provides.forEach((provide) => {
       provide.call(this)
     })
-    const injectFields: Record<string, string> = constructor[Symbol.metadata][METADATA_INJECTFIELD] ?? {}
+
+    this.injectFields = constructor[Symbol.metadata][METADATA_INJECTFIELD] ?? {}
+    this.validator = constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {}
     // console.log(JSON.stringify(this.provides));
     // const properties = (componentMeta.properties ??= []).map((Property: typeof Field) =>  {
     //   const field = new Property()
@@ -236,10 +240,18 @@ export class Field<T = any, D = any> {
     //   return field
     // });
     // componentMeta.properties = properties
-    this.deps = Object.fromEntries(Object.entries(injectFields).map(([key, path]) => {
-      return [key, this.abstractModel.getField(path)]
-    }))
-    Object.assign(this, componentMeta, validatorMeta)
+    Object.assign(this, componentMeta)
+  }
+
+  // all fields are initialized, we can inject fields now
+  normalizeDeps() {
+    this.deps = Object.fromEntries(
+        Object.entries(this.injectFields)
+            .map(([key, value]) => {
+              const targetField = this.abstractModel.getField(value)
+              targetField.appendEffectField(this)
+              return [key, this.abstractModel.getField(value)]
+            }))
   }
 
   resetState() {
@@ -274,8 +286,7 @@ export class Field<T = any, D = any> {
     // clean previous state and effect
     this.resetState()
     this.onBeforeInit?.()
-    // @ts-ignore
-    const injects: Function[] = this.constructor[Symbol.metadata][METADATA_INJECT] ?? []
+    const injects: Function[] = (this.constructor as any)[Symbol.metadata][METADATA_INJECT] ?? []
     injects.forEach((inject) => {
       inject.call(this)
     })
@@ -344,23 +355,11 @@ export class Field<T = any, D = any> {
   }
 
   getStateToProps() {
-    const entries = Object.getOwnPropertyNames(this).filter((key) => {
-      if (markOwnkeys.includes(key)) {
-        return false
-      }
-      return true
-    }).map(key => {
-      return [key, toValue((this as Record<string, any>)[key])]
-    }).concat(
-      [
-        [
-          'value',
-          this.value
-        ]
-      ]
+    const entries = Object.getOwnPropertyNames(this)
+        .filter((key) => !markOwnkeys.includes(key))
+        .map(key => [key, toValue((this as Record<string, any>)[key])])
+        .concat([['value', this.value]]
     )
-    return Object.fromEntries(
-      entries
-    )
+    return Object.fromEntries(entries)
   }
 }
