@@ -15,6 +15,7 @@ import {
 import {isFunction, isPromise, set, toValue} from "@rxform/shared";
 import {signal, Signal} from "alien-deepsignals";
 import {emitter} from "../emitter";
+
 import type {AbstractModelMethods} from "../model/types";
 
 export interface FieldError {
@@ -24,7 +25,7 @@ export interface FieldError {
 
 export type FieldErrors = Record<string, FieldError>
 
-const markOwnkeys: string[] = [
+const markOwnKeys: string[] = [
   "id",
   "path",
   "signalPath",
@@ -47,7 +48,6 @@ const markOwnkeys: string[] = [
   "actions",
   "$effects",
   "$value",
-  "markOwnkeys"
 ]
 
 export class Field<T = any, D = any> {
@@ -95,11 +95,11 @@ export class Field<T = any, D = any> {
 
   private _isUpdating: Signal<boolean> = signal(true)
   get isUpdating() {
-    return this._isUpdating.get()
+    return this._isUpdating.value
   }
 
   set isUpdating(v: boolean) {
-    this._isUpdating.set(v)
+    this._isUpdating.value = v
     if (v) {
       this.effectFields.forEach((field) => {
         field.isUpdating = true
@@ -129,7 +129,7 @@ export class Field<T = any, D = any> {
 
   set value(v: T) {
     this.abstractModel.setFieldValue(this.path, v)
-    this.isUpdating = false
+    this.effectFields.forEach((field) => field.isUpdating = true)
   }
 
   update() {
@@ -375,7 +375,7 @@ export class Field<T = any, D = any> {
 
   getStateToProps() {
     const entries = Object.getOwnPropertyNames(this)
-        .filter((key) => !markOwnkeys.includes(key))
+        .filter((key) => !markOwnKeys.includes(key))
         .map(key => [key, toValue((this as Record<string, any>)[key])])
         .concat([['value', this.value]]
     )

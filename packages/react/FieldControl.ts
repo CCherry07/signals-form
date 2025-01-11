@@ -1,5 +1,5 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useState } from 'react';
-import { Field, validate } from "@rxform/core"
+import {Field, isPromise, validate} from "@rxform/core"
 import { computed } from "alien-deepsignals"
 import { effect, effectScope } from "alien-signals"
 import { Resolver } from '@rxform/core';
@@ -85,7 +85,14 @@ export function FieldControl(props: Props) {
   const onChange = useCallback((value: any) => {
     field.isUpdating = true
     if (field.onChange) {
-      field.onChange(value)
+      const maybePromise = field.onChange(value)
+      if (isPromise(maybePromise)) {
+        maybePromise.then(() => {
+          field.isUpdating = false
+        })
+      } else {
+        field.isUpdating = false
+      }
     } else {
       field.value = value
     }

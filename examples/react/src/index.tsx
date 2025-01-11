@@ -158,6 +158,16 @@ class Residence extends Field {
 }
 
 @Component({
+  id: "intro",
+  component: "inputType",
+})
+class Intro extends Field {
+  title = "Intro"
+  type = "TextArea"
+}
+
+
+@Component({
   id: "donation",
   component: "inputNumber",
 })
@@ -175,16 +185,11 @@ class Donation extends Field {
 }
 
 @Component({
-  id: "intro",
-  component: "inputType",
-})
-class Intro extends Field {
-  title = "Intro"
-  type = "TextArea"
-}
-@Component({
   id: "gender",
   component: "select",
+})
+@InjectFields({
+  donation: "userinfo.donation"
 })
 class Gender extends Field {
   title = "Gender"
@@ -202,14 +207,32 @@ class Gender extends Field {
       label: "Other"
     }
   ]
+
+  onChange(data: any) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(data)
+        this.value = data
+      }, 500)
+    })
+  }
+
+  @Fields({
+    donation: "donation"
+  })
+  onDonationValue(fields: Record<string, any>) {
+    console.log("onDonationValue", fields);
+    this.value = "handle change"
+  }
 }
+
+
 @Component({
   id: "captcha",
   component: "input",
 })
 @InjectFields({
   gender: "userinfo.gender",
-  donation: "userinfo.donation"
 })
 class Captcha extends Field {
   title = "Captcha"
@@ -217,8 +240,9 @@ class Captcha extends Field {
   @Fields({
     gender: "gender",
   })
-  onChange(fields: Record<string, any>) {
-    console.log("onChange", fields);
+  onGenderValue(fields: Record<string, any>) {
+    console.log("onGenderValue", fields);
+    this.isUpdating = false
   }
 }
 @Component({

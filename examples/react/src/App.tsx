@@ -9,7 +9,7 @@ interface Parops {
 }
 export function App(props: Parops) {
   const [state, setState] = useState(false)
-  const [submiting, setSubmitted] = useState(false)
+  const [submitting, setSubmitted] = useState(false)
   const [model, setModel] = useState({} as any)
   useEffect(() => {
     effect(() => {
@@ -27,7 +27,7 @@ export function App(props: Parops) {
           <div style={{ marginBottom: 20 }}>
             model: {JSON.stringify(model, null, 2)}
           </div>
-          <Spin spinning={state || submiting}>
+          <Spin spinning={state || submitting}>
             {Node}
             <Submit form={props.forms[0]}/>
           </Spin>

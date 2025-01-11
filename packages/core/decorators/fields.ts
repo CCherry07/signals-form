@@ -25,6 +25,8 @@ export function Fields(
                 })
                 effect(() => {
                     const s = effectScope()
+                    // 这里可能比，field 的 isUpdating 早更新，所以修改 isUpdating 时，应该在下一次 tick 更新
+                    Promise.resolve().then(() => {
                     s.run(() => {
                         const maybePromise = method.call(this, values.value)
                         if (isPromise(maybePromise)) {
@@ -36,6 +38,7 @@ export function Fields(
                         }
                     })
                     s.stop()
+                    })
                 })
             }
         )
