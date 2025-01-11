@@ -95,9 +95,11 @@ export class Field<T = any, D = any> {
 
   set isUpdating(v: boolean) {
     this._isUpdating.set(v)
-    this.effectFields.forEach((field) => {
-      field.isUpdating = v
-    })
+    if (v) {
+      this.effectFields.forEach((field) => {
+        field.isUpdating = true
+      })
+    }
   }
 
   get isRoot() {

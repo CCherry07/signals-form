@@ -1,4 +1,4 @@
-import {isArray, isObject, isString} from "@rxform/shared";
+import {isArray, isObject, isPromise, isString} from "@rxform/shared";
 import {effect, effectScope} from "alien-signals";
 import {computed} from "alien-deepsignals";
 import {useOrCreateMetaData} from "./setMetaData";
@@ -26,7 +26,14 @@ export function Fields(
                 effect(() => {
                     const s = effectScope()
                     s.run(() => {
-                        method.call(this, values.value)
+                        const maybePromise = method.call(this, values.value)
+                        if (isPromise(maybePromise)) {
+                            maybePromise.then(() => {
+                                this.isUpdating = false
+                            })
+                        } else {
+                            this.isUpdating = false
+                        }
                     })
                     s.stop()
                 })

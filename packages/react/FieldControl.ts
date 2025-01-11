@@ -82,7 +82,7 @@ export function FieldControl(props: Props) {
     }
   }, [])
 
-  const onChange = useCallback(async (value: any) => {
+  const onChange = useCallback((value: any) => {
     field.isUpdating = true
     if (field.onChange) {
       field.onChange(value)
