@@ -1,12 +1,12 @@
-import {effect} from "alien-signals"
-import {deepSignal, peek, Signal, signal} from "alien-deepsignals";
-import {clonedeep, get, set} from "@rxform/shared";
-import {createModel} from "./utils";
+import { effect } from "alien-signals"
+import { deepSignal, peek, Signal, signal } from "alien-deepsignals";
+import { clonedeep, get, set } from "@rxform/shared";
+import { createModel } from "./utils";
 
-import {type BoolValues, setup} from "../boolless"
-import {Field, type FieldErrors} from "../controls/field";
-import type {Resolver} from "../resolvers/type";
-import type {AbstractModelConstructor, AbstractModelInitOptions, Model, SubscribeProps} from "./types";
+import { type BoolValues, setup } from "../boolless"
+import { Field, type FieldErrors } from "../controls/field";
+import type { Resolver } from "../resolvers/type";
+import type { AbstractModelConstructor, AbstractModelInitOptions, Model, SubscribeProps } from "./types";
 
 export class AbstractModel<M extends Model> {
   id: string;
@@ -60,7 +60,7 @@ export class AbstractModel<M extends Model> {
 
   normalizeEffectFields() {
     for (let field of Object.values(this.fields)) {
-       field.normalizeDeps()
+      field.normalizeDeps()
     }
   }
 
@@ -141,13 +141,13 @@ export class AbstractModel<M extends Model> {
 
   mergeModel(model: M) {
     Object.values(this.fields).forEach((field) => {
-      if (!field.properties) { // leaf node
+      if (field.isLeaf) { // leaf node
         const value = get(model, field.path)
         if (typeof value === "undefined") {
           return;
         }
         if (value !== field.value) {
-          field.setValue(value)
+          field.value = value
         }
       }
     })
