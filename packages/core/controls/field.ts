@@ -100,7 +100,7 @@ export class Field<T = any, D = any> {
 
   set isUpdating(v: boolean) {
     this._isUpdating.value = v
-    if (v) {
+    if (v === true) {
       this.effectFields.forEach((field) => {
         field.isUpdating = true
       })
@@ -129,15 +129,12 @@ export class Field<T = any, D = any> {
 
   set value(v: T) {
     this.abstractModel.setFieldValue(this.path, v)
-    this.effectFields.forEach((field) => field.isUpdating = true)
+    this.isUpdating = false
+    // this.effectFields.forEach((field) => field.isUpdating = true)
   }
 
   update() {
     this.tracks.forEach(fn => fn())
-  }
-
-  setValue(v: T) {
-    this.value = v
   }
 
   setProps(props: Record<string, any>) {
@@ -204,7 +201,7 @@ export class Field<T = any, D = any> {
         if (isHidden.value && recoverValueOnHidden) {
           this.onHidden?.(this.isHidden.peek())
           return
-        };
+        }
         if (recoverValueOnShown) {
           if (!isHidden.value && this.$value !== this.peek()) {
             this.value = this.$value;
@@ -264,6 +261,25 @@ export class Field<T = any, D = any> {
             }))
 
     this.normalizeEffects()
+  }
+
+  getDepsValue(deps?: string | string[] | Record<string, string>,) {
+    let injectValues: any = undefined
+    if (Array.isArray(deps)) {
+      injectValues = deps.map((dep: string) => this.deps[dep].value)
+    } else if (typeof deps === 'object') {
+      injectValues = Object.fromEntries(Object.entries(deps).map(([key, dep]) => {
+        return [key, this.deps[dep as string].value]
+      })
+      )
+    } else if (typeof deps === 'string') {
+      injectValues = this.deps[deps].value
+    }
+    return injectValues
+  }
+
+  get getDepsCombinedUpdating() {
+    return Object.values(this.deps).some(dep => dep.isUpdating)
   }
 
   normalizeEffects() {

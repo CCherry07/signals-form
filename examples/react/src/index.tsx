@@ -1,5 +1,5 @@
 import React from 'react';
-import {createRoot} from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import {
   Actions,
   Component,
@@ -22,13 +22,13 @@ import Checkbox from "./components/Checkbox"
 import InputNumber from "./components/InputNumber"
 import Cascader from './components/Cascader';
 import Select from './components/Select';
-import {Card as CardComponent} from './components/Card';
-import {createGroupForm} from "@rxform/react"
-import {App} from "./App"
-import {z} from 'zod';
-import {zodResolver} from "@rxform/resolvers"
-import {DeepSignal} from 'alien-deepsignals';
-import {signal} from 'alien-signals';
+import { Card as CardComponent } from './components/Card';
+import { createGroupForm } from "@rxform/react"
+import { App } from "./App"
+import { z } from 'zod';
+import { zodResolver } from "@rxform/resolvers"
+import { DeepSignal } from 'alien-deepsignals';
+import { signal } from 'alien-signals';
 
 type Model = DeepSignal<{
   userinfo: {
@@ -222,7 +222,14 @@ class Gender extends Field {
   })
   onDonationValue(fields: Record<string, any>) {
     console.log("onDonationValue", fields);
-    this.value = "handle change"
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        this.value = "female"
+        // Math.floor(Math.random() * 100)
+        this.isUpdating = false
+        resolve(this.value)
+      }, 500)
+    })
   }
 }
 
@@ -242,7 +249,6 @@ class Captcha extends Field {
   })
   onGenderValue(fields: Record<string, any>) {
     console.log("onGenderValue", fields);
-    this.isUpdating = false
   }
 }
 @Component({

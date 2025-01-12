@@ -54,12 +54,7 @@ export class AbstractModel<M extends Model> {
     this.normalizeEffectFields()
     // handle field effectFields
     effect(() => {
-      this.isUpdating.value = Object.values(this.fields ?? {}).some((field) => {
-        if (field.isUpdating){
-          console.log(field.id)
-        }
-        return field.isUpdating
-      }) ?? false
+      this.isUpdating.value = Object.values(this.fields ?? {}).some((field) => field.isUpdating) ?? false
     })
   }
 
