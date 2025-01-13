@@ -64,12 +64,15 @@ export function FieldControl(props: Props) {
       })
       effect(() => {
         field.isHidden.value = field.hidden?.evaluate(field.bools) ?? false
+      })
+      effect(() => {
         field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
       })
+
       effect(() => {
         setFiledState(normalizeProps(field))
       });
-      // @ts-ignore
+
       (field.$effects ?? []).forEach((fn: Function) => {
         fn.call(field)
       })

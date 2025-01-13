@@ -165,11 +165,11 @@ export class Field<T = any, D = any> {
 
   private injectFields: Record<string, string> = {}
 
-
   private propKeys: string[] = needInjectPropKeys
   private eventKeys: string[] = []
 
   constructor() {
+    this.normalizeFieldMetaDate()
     const e = effectScope()
     e.run(() => {
       // validate
@@ -204,7 +204,6 @@ export class Field<T = any, D = any> {
       })
     })
     this.cleanups.push(e.stop)
-    this.normalizeFieldMetaDate()
   }
 
   normalizeFieldMetaDate() {
@@ -222,18 +221,6 @@ export class Field<T = any, D = any> {
     this.injectFields = constructor[Symbol.metadata][METADATA_INJECTFIELD] ?? {}
     this.validator = constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {}
 
-    // const properties = (componentMeta.properties ??= []).map((Property: typeof Field) =>  {
-    //   const field = new Property()
-    //   field.parent = this
-    //   field.parentpath = this.path
-    //   // injects.forEach((inject) => {
-    //   //   inject.call(this)
-    //   // })
-    //   console.log("init");
-
-    //   return field
-    // });
-    // componentMeta.properties = properties
     this.propKeys.push(...constructor[Symbol.metadata][METADATA_PROP] ?? [])
     this.eventKeys = constructor[Symbol.metadata][METADATA_EVENT] ?? []
 
