@@ -29,8 +29,7 @@ import { createGroupForm } from "@rxform/react"
 import { App } from "./App"
 import { z } from 'zod';
 import { zodResolver } from "@rxform/resolvers"
-import { DeepSignal } from 'alien-deepsignals';
-import { signal } from 'alien-signals';
+import { DeepSignal, signal } from 'alien-deepsignals';
 
 type Model = DeepSignal<{
   userinfo: {
@@ -98,7 +97,7 @@ class Email extends Field {
 
   onInit(): void {
     console.log(this);
-    
+
   }
 
   onDestroy(): void {

@@ -1,22 +1,15 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
-import { FiledUpdateType, normalizeSignal, Resolver, toValue, validate, type Field } from "@rxform/core"
+import { normalizeSignal, Resolver, validate, type Field } from "@rxform/core"
 import { effect } from "alien-signals";
 import { signal, computed } from "alien-deepsignals";
 
 function normalizeProps(field: Field) {
-  return {
-    isBlurred: field.isBlurred.value,
-    isFocused: field.isFocused.value,
-    isInit: field.isInit.value,
-    isDestroyed: field.isDestroyed.value,
-    isHidden: field.isHidden.value,
-    isDisabled: field.isDisabled.value,
-    isValid: field.isValid.value,
-    errors: field.errors.value,
-    value: field.value,
-    ...field.props
-  }
+  return field.getProps()
+}
+
+function normalizeEvents(field: Field) {
+  return field.getEvents()
 }
 
 export const FieldControl = defineComponent({
@@ -29,9 +22,11 @@ export const FieldControl = defineComponent({
     validatorResolvers: Object as PropType<Record<string, Resolver>>
   },
   setup(props) {
+    // @ts-ignore
     const { initiative, signal: signalValidator } = props.field?.validator ?? {}
     const field = props.field!
     const filedState = shallowRef(normalizeProps(field))
+    const events = normalizeEvents(field)
     const cleanups: Function[] = [];
     onBeforeMount(() => {
       const onValidateDispose = effect(() => {
@@ -40,7 +35,7 @@ export const FieldControl = defineComponent({
             state: field.value,
             updateOn: "signal",
             defaultValidatorEngine: props.defaultValidatorEngine!,
-            boolsConfig: field.bools,
+            boolValues: field.bools,
             model: props.model!.value
           }, signalValidator.all, props.validatorResolvers!).then(errors => {
             if (Object.keys(errors).length === 0) {
@@ -54,43 +49,18 @@ export const FieldControl = defineComponent({
           })
         }
       })
-      field.onTrack(() => {
-        filedState.value = normalizeProps(field)
-      })
       const onStatesDispose = effect(() => {
         field.isHidden.value = field.hidden?.evaluate(field.bools) ?? false
         field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
       })
-      const onSignalsDispose = effect(() => {
-        if (field.signals) {
-          Object.entries(field.signals).forEach(([signalKey, fn]) => {
-            const signalValue = computed(() => normalizeSignal(signalKey, signal({ $: props.model!.value })).value)
-            fn.call(field, signalValue.value, field.bools, props.model!.value)
-          })
-        }
-      })
       const onStateDispose = effect(() => {
         filedState.value = normalizeProps(field)
       })
-      cleanups.push(onValidateDispose.stop, onStatesDispose.stop, onSignalsDispose.stop, onStateDispose.stop)
+      field.$effects.forEach(effect => {
+        effect.call(field)
+      })
+      cleanups.push(onValidateDispose.stop, onStatesDispose.stop, onStateDispose.stop)
     })
-
-    const events = Object.fromEntries(Object.entries(field.events || {}).map(([e, fn]) => {
-      return [e, function (data?: any) {
-        fn.call(field, data)
-        if (initiative) {
-          validate({
-            state: toValue(field.value),
-            updateOn: e,
-            defaultValidatorEngine: props.defaultValidatorEngine!,
-            boolsConfig: field.bools, model: props.model!.value
-          }, initiative.all, props.validatorResolvers!).then(errors => {
-            field.errors.value = errors
-          })
-        }
-      }]
-    }))
-
 
     const onChange = (value: any) => {
       if (events.onChange) {

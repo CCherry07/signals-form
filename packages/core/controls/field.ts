@@ -1,4 +1,7 @@
 import { effect, effectScope } from "alien-signals";
+import { signal, Signal } from "alien-deepsignals";
+import { isFunction, isPromise, set, toValue } from "@rxform/shared";
+
 import type { BoolValues, Decision } from "../boolless";
 import {
   METADATA_ACTIONS,
@@ -13,9 +16,6 @@ import {
   METADATA_VALIDATOR,
   ValidatorMetaData,
 } from "../decorators";
-
-import { isFunction, isPromise, set, toValue } from "@rxform/shared";
-import { signal, Signal } from "alien-deepsignals";
 import { emitter } from "../emitter";
 
 import type { AbstractModelMethods } from "../model/types";
@@ -24,6 +24,20 @@ export interface FieldError {
   message: string
   type: string
 }
+
+const needInjectPropKeys = [
+  "isUpdating",
+  "isBlurred",
+  "isFocused",
+  "isInit",
+  "isDestroyed",
+  "isHidden",
+  "isDisabled",
+  "isValid",
+  "errors",
+  "isMounted",
+  "value"
+]
 
 export type FieldErrors = Record<string, FieldError>
 
@@ -116,16 +130,6 @@ export class Field<T = any, D = any> {
     this.tracks.forEach(fn => fn())
   }
 
-  setProps(props: Record<string, any>) {
-    Object.assign(this, props)
-    this.update()
-  }
-
-  setProp(this: Field & Record<string, any>, prop: string, value: any) {
-    this[prop] = value
-    this.update()
-  }
-
   onTrack(fn: Function): void {
     this.tracks.push(fn)
   }
@@ -162,7 +166,7 @@ export class Field<T = any, D = any> {
   private injectFields: Record<string, string> = {}
 
 
-  private propKeys: string[] = []
+  private propKeys: string[] = needInjectPropKeys
   private eventKeys: string[] = []
 
   constructor() {
@@ -230,8 +234,8 @@ export class Field<T = any, D = any> {
     //   return field
     // });
     // componentMeta.properties = properties
-    this.propKeys = constructor[Symbol.metadata][METADATA_PROP] ?? []
-    this.eventKeys = constructor[Symbol.metadata][METADATA_EVENT]?? []
+    this.propKeys.push(...constructor[Symbol.metadata][METADATA_PROP] ?? [])
+    this.eventKeys = constructor[Symbol.metadata][METADATA_EVENT] ?? []
 
     Object.assign(this, componentMeta)
   }
@@ -386,7 +390,6 @@ export class Field<T = any, D = any> {
 
   getProps() {
     const entries = this.propKeys.map(key => [key, toValue((this as Record<string, any>)[key])])
-      .concat([['value', this.value], ['errors', toValue(this.errors)]])
     return Object.fromEntries(entries)
   }
 

@@ -74,9 +74,6 @@ export function FieldControl(props: Props) {
         fn.call(field)
       })
     })
-    field.onTrack(() => {
-      setFiledState(normalizeProps(field))
-    })
     field.isMounted.value = true
     return () => {
       scope.stop()
@@ -152,7 +149,7 @@ export function FieldControl(props: Props) {
 
   return createElement("div", {
     "data-field-id": field.id,
-    hidden: field.isHidden.value,
+    hidden: filedState.isHidden,
   },
     createElement(resolveComponent(field.component), {
       ...filedState,
