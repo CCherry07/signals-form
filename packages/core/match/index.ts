@@ -10,7 +10,7 @@ export const _ = Symbol('_');
 
 export function match<T, R>(value: T, patterns: Array<[Pattern<T> | typeof _, (value?: T) => R]>): R {
   for (const [pattern, handler] of patterns) {
-    switch (true) {
+  switch (true) {
       case pattern === _:
         return handler(value);
       case typeof pattern === 'function' && (pattern as (value: T) => boolean)(value):

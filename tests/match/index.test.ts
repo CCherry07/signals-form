@@ -9,7 +9,7 @@ describe("match", () => {
       [{ type: 'user', age: js`value > 18` }, () => 'Matched adult user'],
       [{ type: 'user', age: (age) => age <= 18 }, () => 'Matched minor user'],
       [/^hello/, () => 'Matched pattern starting with hello'],
-      ['value.length > 3', () => 'Matched string with length > 3'],
+      [js`value.length > 3`, () => 'Matched string with length > 3'],
       [_, () => 'Default case']
     ]);
 

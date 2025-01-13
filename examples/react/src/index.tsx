@@ -208,25 +208,14 @@ class Gender extends Field {
     }
   ]
 
-  onChange(data: any) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(data)
-        this.value = data
-      }, 500)
-    })
-  }
-
   @Fields({
     donation: "donation"
-  })
+  }) // 当donation变化时，触发onDonationValue
   onDonationValue(fields: Record<string, any>) {
     console.log("onDonationValue", fields);
     return new Promise((resolve) => {
       setTimeout(() => {
         this.value = "female"
-        // Math.floor(Math.random() * 100)
-        this.isUpdating = false
         resolve(this.value)
       }, 500)
     })
@@ -238,19 +227,22 @@ class Gender extends Field {
   id: "captcha",
   component: "input",
 })
-@InjectFields({
+@InjectFields({ // 注入依赖项
   gender: "userinfo.gender",
+  donation: "userinfo.donation"
 })
 class Captcha extends Field {
   title = "Captcha"
 
   @Fields({
     gender: "gender",
-  })
+    donation: "donation"
+  }) // 订阅gender，donation变化，会等待gender 和 donation 处理完毕，触发onGenderValue，
   onGenderValue(fields: Record<string, any>) {
     console.log("onGenderValue", fields);
   }
 }
+
 @Component({
   id: "agreement",
   component: "checkbox",

@@ -14,7 +14,7 @@ export function Fields(
             const values = computed(() => {
                 return this.getDepsValue(deps)
             })
-            const isUpdating = computed(() => this.getDepsCombinedUpdating)
+            const isUpdating = computed(() => this.getDepsCombinedUpdating(deps))
             effect(() => {
                 if (isUpdating.value) {
                     return

@@ -1,5 +1,5 @@
-import {effect, effectScope} from "alien-signals";
-import type {BoolValues, Decision} from "../boolless";
+import { effect, effectScope } from "alien-signals";
+import type { BoolValues, Decision } from "../boolless";
 import {
   METADATA_ACTIONS,
   METADATA_COMPONENT,
@@ -12,11 +12,11 @@ import {
   ValidatorMetaData,
 } from "../decorators";
 
-import {isFunction, isPromise, set, toValue} from "@rxform/shared";
-import {signal, Signal} from "alien-deepsignals";
-import {emitter} from "../emitter";
+import { isFunction, isPromise, set, toValue } from "@rxform/shared";
+import { signal, Signal } from "alien-deepsignals";
+import { emitter } from "../emitter";
 
-import type {AbstractModelMethods} from "../model/types";
+import type { AbstractModelMethods } from "../model/types";
 
 export interface FieldError {
   message: string
@@ -130,7 +130,6 @@ export class Field<T = any, D = any> {
   set value(v: T) {
     this.abstractModel.setFieldValue(this.path, v)
     this.isUpdating = false
-    // this.effectFields.forEach((field) => field.isUpdating = true)
   }
 
   update() {
@@ -253,12 +252,12 @@ export class Field<T = any, D = any> {
   // all fields are initialized, we can inject fields now
   normalizeDeps() {
     this.deps = Object.fromEntries(
-        Object.entries(this.injectFields)
-            .map(([key, value]) => {
-              const targetField = this.abstractModel.getField(value)
-              targetField.appendEffectField(this)
-              return [key, this.abstractModel.getField(value)]
-            }))
+      Object.entries(this.injectFields)
+        .map(([key, value]) => {
+          const targetField = this.abstractModel.getField(value)
+          targetField.appendEffectField(this)
+          return [key, this.abstractModel.getField(value)]
+        }))
 
     this.normalizeEffects()
   }
@@ -278,8 +277,17 @@ export class Field<T = any, D = any> {
     return injectValues
   }
 
-  get getDepsCombinedUpdating() {
-    return Object.values(this.deps).some(dep => dep.isUpdating)
+  getDepsCombinedUpdating(deps?: string | string[] | Record<string, string>) {
+    if (deps === undefined) {
+      return Object.values(this.deps).some(dep => dep.isUpdating)
+    }
+    if (Array.isArray(deps)) {
+      return deps.some(dep => this.deps[dep].isUpdating)
+    } else if (typeof deps === 'object') {
+      return Object.values(deps).some(dep => this.deps[dep as string].isUpdating)
+    } else if (typeof deps === 'string') {
+      return this.deps[deps].isUpdating
+    }
   }
 
   normalizeEffects() {
@@ -309,8 +317,8 @@ export class Field<T = any, D = any> {
       this.isUpdating = true
       filedValue.then((value) => {
         this.value = value
-        this.isUpdating = false
       })
+      this.isUpdating = false
     } else {
       this.value = filedValue!
       this.isUpdating = false
@@ -391,10 +399,10 @@ export class Field<T = any, D = any> {
 
   getStateToProps() {
     const entries = Object.getOwnPropertyNames(this)
-        .filter((key) => !markOwnKeys.includes(key))
-        .map(key => [key, toValue((this as Record<string, any>)[key])])
-        .concat([['value', this.value]]
-    )
+      .filter((key) => !markOwnKeys.includes(key))
+      .map(key => [key, toValue((this as Record<string, any>)[key])])
+      .concat([['value', this.value]]
+      )
     return Object.fromEntries(entries)
   }
 
