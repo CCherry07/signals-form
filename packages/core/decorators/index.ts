@@ -12,3 +12,5 @@ export * from "./watch";
 export * from "./injectFields.ts";
 export * from "./metaKeys";
 export * from "./fields";
+export * from "./prop";
+export * from "./event";

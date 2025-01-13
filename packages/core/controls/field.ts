@@ -5,8 +5,10 @@ import {
   METADATA_COMPONENT,
   METADATA_CONDITIONS,
   METADATA_EFFECT,
+  METADATA_EVENT,
   METADATA_INJECT,
   METADATA_INJECTFIELD,
+  METADATA_PROP,
   METADATA_PROVIDE,
   METADATA_VALIDATOR,
   ValidatorMetaData,
@@ -25,31 +27,6 @@ export interface FieldError {
 
 export type FieldErrors = Record<string, FieldError>
 
-const markOwnKeys: string[] = [
-  "id",
-  "path",
-  "signalPath",
-  "parentpath",
-  "bools",
-  "recoverValueOnHidden",
-  "recoverValueOnShown",
-  "component",
-  "hidden",
-  "disabled",
-  "properties",
-  "validator",
-  "setDefaultValue",
-  "onSubmitValue",
-  "tracks",
-  "abstractModel",
-  "appContext",
-  "parent",
-  "provides",
-  "actions",
-  "$effects",
-  "$value",
-]
-
 export class Field<T = any, D = any> {
   id!: string;
   path!: string;
@@ -63,7 +40,6 @@ export class Field<T = any, D = any> {
   disabled?: Decision;
   properties?: Field[]
   validator?: ValidatorMetaData;
-  setDefaultValue?: (data?: D) => T;
   onSubmitValue?: (model: T) => D;
   private tracks: Array<Function> = []
   // @ts-ignore
@@ -80,6 +56,10 @@ export class Field<T = any, D = any> {
     onSubmitValue?: (model: T) => D;
   } = {};
 
+  // to Component props
+  methods: Record<string, Function> = {}
+
+  // ignore to Component props
   get emitter() {
     return emitter
   }
@@ -181,6 +161,10 @@ export class Field<T = any, D = any> {
 
   private injectFields: Record<string, string> = {}
 
+
+  private propKeys: string[] = []
+  private eventKeys: string[] = []
+
   constructor() {
     const e = effectScope()
     e.run(() => {
@@ -233,7 +217,7 @@ export class Field<T = any, D = any> {
 
     this.injectFields = constructor[Symbol.metadata][METADATA_INJECTFIELD] ?? {}
     this.validator = constructor[Symbol.metadata][METADATA_VALIDATOR] ?? {}
-    // console.log(JSON.stringify(this.provides));
+
     // const properties = (componentMeta.properties ??= []).map((Property: typeof Field) =>  {
     //   const field = new Property()
     //   field.parent = this
@@ -246,6 +230,9 @@ export class Field<T = any, D = any> {
     //   return field
     // });
     // componentMeta.properties = properties
+    this.propKeys = constructor[Symbol.metadata][METADATA_PROP] ?? []
+    this.eventKeys = constructor[Symbol.metadata][METADATA_EVENT]?? []
+
     Object.assign(this, componentMeta)
   }
 
@@ -312,7 +299,7 @@ export class Field<T = any, D = any> {
 
   resetModel(model?: T | Promise<T>) {
     this.isUpdating = true
-    const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
+    const filedValue: any = isFunction(this.actions.setDefaultValue) ? this.actions.setDefaultValue() : model;
     if (isPromise(filedValue)) {
       this.isUpdating = true
       filedValue.then((value) => {
@@ -352,7 +339,7 @@ export class Field<T = any, D = any> {
   init(model?: T) {
     this.value = undefined as unknown as T
     this.resetState()
-    const filedValue: any = isFunction(this.setDefaultValue) ? this.setDefaultValue() : model;
+    const filedValue: any = isFunction(this.actions.setDefaultValue) ? this.actions.setDefaultValue() : model;
     if (this.properties) {
       const fields = Object.values(this.properties!)
       if (isPromise(filedValue)) {
@@ -397,13 +384,14 @@ export class Field<T = any, D = any> {
     })
   }
 
-  getStateToProps() {
-    const entries = Object.getOwnPropertyNames(this)
-      .filter((key) => !markOwnKeys.includes(key))
-      .map(key => [key, toValue((this as Record<string, any>)[key])])
-      .concat([['value', this.value]]
-      )
+  getProps() {
+    const entries = this.propKeys.map(key => [key, toValue((this as Record<string, any>)[key])])
+      .concat([['value', this.value], ['errors', toValue(this.errors)]])
     return Object.fromEntries(entries)
   }
 
+  getEvents() {
+    const entries = this.eventKeys.map(key => [key, (this as Record<string, any>)[key].bind(this)])
+    return Object.fromEntries(entries)
+  }
 }

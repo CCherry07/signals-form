@@ -11,9 +11,11 @@ import {
   Inject,
   InjectFields,
   match,
+  Prop,
   Provide,
   SubscribeData,
-  Validator
+  Validator,
+  Event,
 } from "@rxform/core"
 import Form from "./components/Form"
 import Input from "./components/Input"
@@ -48,6 +50,7 @@ const bools = {
   component: 'inputNumber',
 })
 class Phone extends Field {
+  @Prop()
   title = "Phone Number"
 }
 
@@ -83,13 +86,22 @@ class Phone extends Field {
   }
 })
 class Email extends Field {
+  @Prop()
   title = "email"
-  onInit(): void {
-  }
-  onDestroy(): void {
-  }
+
+  @Event()
   onChange(data: any) {
+    console.log("onChange", data);
     this.value = data
+    console.log("onChange", this.value);
+  }
+
+  onInit(): void {
+    console.log(this);
+    
+  }
+
+  onDestroy(): void {
   }
 }
 @Component({
@@ -107,7 +119,9 @@ class Email extends Field {
   },
 })
 class Password extends Field {
+  @Prop()
   type = "Password"
+  @Prop()
   title = "password"
 
   @Inject({
@@ -124,7 +138,9 @@ class Password extends Field {
   component: "input",
 })
 class Nickname extends Field {
+  @Prop()
   title = "Nickname"
+
   @SubscribeData('userinfo')
   onUserInfo(data: any) {
     console.log("onUserInfo", data);
@@ -136,7 +152,9 @@ class Nickname extends Field {
   component: "cascader",
 })
 class Residence extends Field {
+  @Prop()
   title = "Habitual Residence"
+  @Prop()
   options = [
     {
       value: 'zhejiang',
@@ -162,7 +180,9 @@ class Residence extends Field {
   component: "inputType",
 })
 class Intro extends Field {
+  @Prop()
   title = "Intro"
+  @Prop()
   type = "TextArea"
 }
 
@@ -181,6 +201,7 @@ class Intro extends Field {
   }
 })
 class Donation extends Field {
+  @Prop()
   title = "Donation"
 }
 
@@ -192,7 +213,9 @@ class Donation extends Field {
   donation: "userinfo.donation"
 })
 class Gender extends Field {
+  @Prop()
   title = "Gender"
+  @Prop()
   options = [
     {
       value: "male",
@@ -213,6 +236,7 @@ class Gender extends Field {
   }) // 当donation变化时，触发onDonationValue
   onDonationValue(fields: Record<string, any>) {
     console.log("onDonationValue", fields);
+    this.title = Math.floor(Math.random() * 100) + ''
     return new Promise((resolve) => {
       setTimeout(() => {
         this.value = "female"
@@ -232,6 +256,7 @@ class Gender extends Field {
   donation: "userinfo.donation"
 })
 class Captcha extends Field {
+  @Prop()
   title = "Captcha"
 
   @Fields({
@@ -248,6 +273,7 @@ class Captcha extends Field {
   component: "checkbox",
 })
 class Agreement extends Field {
+  @Prop()
   title = "agreement"
 }
 
@@ -287,6 +313,7 @@ class UserInfo extends Field {
   @Provide('provideValues')
   provideValues = signal({})
 
+  @Prop()
   style = {
     width: "400px"
   }

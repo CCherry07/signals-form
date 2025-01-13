@@ -1,5 +1,5 @@
-import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useState } from 'react';
-import {Field, isPromise, validate} from "@rxform/core"
+import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { Field, isPromise, validate } from "@rxform/core"
 import { computed } from "alien-deepsignals"
 import { effect, effectScope } from "alien-signals"
 import { Resolver } from '@rxform/core';
@@ -25,11 +25,15 @@ interface Props {
 // }
 
 function normalizeProps(field: Field) {
-  return field.getStateToProps()
+  return field.getProps()
+}
+function normalizeEvents(field: Field) {
+  return field.getEvents()
 }
 export function FieldControl(props: Props) {
   const { field, resolveComponent } = props;
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
+  const methods = useMemo(() => normalizeEvents(field), [])
   const model = computed(() => props.model)
   const {
     signal: signalValidator
@@ -84,8 +88,8 @@ export function FieldControl(props: Props) {
 
   const onChange = useCallback((value: any) => {
     field.isUpdating = true
-    if (field.onChange) {
-      const maybePromise = field.onChange(value)
+    if (methods.onChange) {
+      const maybePromise = methods.onChange(value)
       if (isPromise(maybePromise)) {
         maybePromise.then(() => {
           field.isUpdating = false
@@ -100,8 +104,8 @@ export function FieldControl(props: Props) {
 
   const onBlur = useCallback((value: any) => {
     field.isUpdating = true
-    if (field.onBlur) {
-      field.onBlur(value)
+    if (methods.onBlur) {
+      methods.onBlur(value)
     } else {
       field.value = value
     }
@@ -110,8 +114,8 @@ export function FieldControl(props: Props) {
   }, [])
 
   const onFocus = useCallback(() => {
-    if (field.onFocus) {
-      field.onFocus()
+    if (methods.onFocus) {
+      methods.onFocus()
     }
     field.isBlurred.value = false
     field.isFocused.value = true
@@ -152,6 +156,7 @@ export function FieldControl(props: Props) {
   },
     createElement(resolveComponent(field.component), {
       ...filedState,
+      ...methods,
       onChange,
       onBlur,
       onFocus

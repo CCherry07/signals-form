@@ -1,10 +1,13 @@
-import { METADATA_INJECT } from "./metaKeys";
+import { METADATA_IGNORE, METADATA_INJECT } from "./metaKeys";
 import { Field } from "../controls/field";
 import { isArray, isObject, isString } from "@rxform/shared";
+import { useOrCreateMetaData } from "./utils/setMetaData";
 
 export function Inject(deps?: string[] | Record<string, string> | string) {
   return function (_target: any, ctx: ClassFieldDecoratorContext) {
     const meta: Record<string | symbol, any> = ctx.metadata![METADATA_INJECT] ??= [];
+    const ignoreMeta = useOrCreateMetaData(ctx, METADATA_IGNORE, [])
+    ignoreMeta.push(ctx.name);
     const inject = function (this: Field) {
       const provides = {
         ...this.appContext.provides,
