@@ -136,8 +136,8 @@ export class Field<T = any, D = any> {
 
   async _onSubmitValue() {
     const fieldPathLength = this.path.length + 1
-    if (isFunction(this.onSubmitValue)) {
-      return await this.onSubmitValue(this.peek())
+    if (isFunction(this.actions.onSubmitValue)) {
+      return await this.actions.onSubmitValue(this.peek())
     } else if (this.properties) {
       const model: any = {}
       await Promise.all(this.properties.map(async (field) => {

@@ -146,6 +146,16 @@ class Nickname extends Field {
   }
 }
 
+
+@Component({
+  id: "agreement",
+  component: "checkbox",
+})
+class Agreement extends Field {
+  @Prop()
+  title = "agreement"
+}
+
 @Component({
   id: "residence",
   component: "cascader",
@@ -189,6 +199,9 @@ class Intro extends Field {
 @Component({
   id: "donation",
   component: "inputNumber",
+  hidden: D.use('isNickname'),
+  disabled: D.use('isNickname'),
+  recoverValueOnShown: true,
 })
 @Actions({
   onSubmitValue(model: number) {
@@ -245,7 +258,6 @@ class Gender extends Field {
   }
 }
 
-
 @Component({
   id: "captcha",
   component: "input",
@@ -265,15 +277,6 @@ class Captcha extends Field {
   onGenderValue(fields: Record<string, any>) {
     console.log("onGenderValue", fields);
   }
-}
-
-@Component({
-  id: "agreement",
-  component: "checkbox",
-})
-class Agreement extends Field {
-  @Prop()
-  title = "agreement"
 }
 
 @Component({
@@ -315,6 +318,13 @@ class UserInfo extends Field {
   @Prop()
   style = {
     width: "400px"
+  }
+
+  @Event()
+  onChange(data: any) {
+    console.log("onChange", data);
+    this.value = data
+    console.log("onChange", this.value);
   }
 
   px = match(this.style, [

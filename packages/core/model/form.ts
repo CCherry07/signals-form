@@ -8,7 +8,7 @@ export function createRXForm(config: FormConfig) {
   const methods: AbstractModelMethods = {
     setFieldValue: form.setFieldValue.bind(form),
     setErrors: form.setErrors.bind(form),
-    setFieldProps: form.setFieldProps.bind(form),
+    // setFieldProps: form.setFieldProps.bind(form),
     cleanErrors: form.cleanErrors.bind(form),
     onSubscribe: form.onSubscribe.bind(form),
     setFieldErrors: form.setFieldErrors.bind(form),

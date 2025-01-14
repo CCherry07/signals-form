@@ -43,6 +43,7 @@ export class AbstractModel<M extends Model> {
     this.errors = {};
     this.modelId = 'default'
     this.defaultValidatorEngine = defaultValidatorEngine
+    // @ts-ignore
     this.bools = Object.freeze(setup(boolsConfig, this.model))
 
     Object.values(fields!)!.forEach((field) => {
@@ -178,9 +179,9 @@ export class AbstractModel<M extends Model> {
     set(this.model, field, value)
   }
 
-  setFieldProps(field: string, props: any) {
-    this.fields[field].setProps(props)
-  }
+  // setFieldProps(field: string, props: any) {
+  //   this.fields[field].setProps(props)
+  // }
 
   getFieldValue(field: string) {
     return get(this.model, field)
