@@ -1,5 +1,5 @@
-import {Computed, Signal} from "alien-deepsignals";
-import {isFunction} from "./utils";
+import { Signal, Computed } from "alien-signals";
+import { isFunction } from "./utils";
 
 export type MaybeSignalOrComputed<T = any> =
   | T
@@ -27,11 +27,11 @@ export function isSignalOrComputed<T>(v: MaybeSignalOrComputed<T>): v is Signal<
 }
 
 export function unSignal<T>(signal: MaybeSignal<T>): T {
-  return isSignal(signal) ? signal.value : signal
+  return isSignal(signal) ? signal.get() : signal
 }
 
 export function unSignalOrComputed<T>(signal: MaybeSignalOrComputed<T>): T {
-  return isSignalOrComputed(signal) ? signal.value : unSignal(signal)
+  return isSignalOrComputed(signal) ? signal.get() : unSignal(signal)
 }
 
 export function toValue<T>(source: MaybeSignalOrComputedOrGetter<T>): T {
@@ -42,7 +42,7 @@ export function toDeepValue<T>(source: MaybeSignalOrGetter<T>): T {
   if (isFunction(source)) {
     return toDeepValue(source());
   } else if (isSignal(source)) {
-    return toDeepValue(source.value);
+    return toDeepValue(source.get());
   } else if (Array.isArray(source)) {
     return source.map(toDeepValue) as T;
   } else if (typeof source === 'object' && source !== null) {
@@ -97,7 +97,7 @@ export function toRaw<T>(source: MaybeSignalOrGetter<T>): T {
   if (isFunction(source)) {
     return toRaw(source());
   } else if (isSignal(source)) {
-    return toRaw(source.peek());
+    return toRaw(source.currentValue);
   } else if (Array.isArray(source)) {
     return source.map(toRaw) as T;
   } else if (typeof source === 'object' && source !== null) {

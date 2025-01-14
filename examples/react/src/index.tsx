@@ -320,12 +320,6 @@ class UserInfo extends Field {
     width: "400px"
   }
 
-  @Event()
-  onChange(data: any) {
-    console.log("onChange", data);
-    this.value = data
-    console.log("onChange", this.value);
-  }
 
   px = match(this.style, [
     [{ width: "400px" }, () => {
