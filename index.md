@@ -1,7 +1,3 @@
-Certainly! Here's the content formatted in Markdown:
-
----
-
 # 入门指南
 
 ## 什么是Form？
@@ -76,9 +72,9 @@ const root = createRoot(document.getElementById('root')!);
 root.render(app);
 ```
 
-# 社区支持
+## 社区支持
 
-# Feature
+## Feature
 
 ## 决策
 

@@ -40,6 +40,9 @@
     "alien-signals": "latest",
     "lodash.clonedeep": "^4.5.0",
     "mitt": "^3.0.1",
+    "next": "^15.1.4",
+    "nextra": "^4.0.0",
+    "nextra-theme-docs": "^4.0.0",
     "rxjs": "8.0.0-alpha.14",
     "zod": "^3.24.1"
   }
