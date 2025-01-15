@@ -9,5 +9,6 @@ export function Signal(_target: any, ctx: ClassFieldDecoratorContext) {
   })
   return function (initValue: any) {
     prop.set(initValue);
+    return initValue;
   }
 }

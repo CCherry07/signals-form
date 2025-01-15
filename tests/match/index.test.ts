@@ -12,7 +12,6 @@ describe("match", () => {
       [js`value.length > 3`, () => 'Matched string with length > 3'],
       [_, () => 'Default case']
     ]);
-
     expect(result).toMatchInlineSnapshot(`"Matched adult user"`);
   })
 

@@ -1,3 +1,4 @@
+import { deepSignal } from "alien-deepsignals"
 import { Field } from "../controls/field"
 import { METADATA_PROP } from "./metaKeys"
 import { useOrCreateMetaData } from "./utils/setMetaData"
@@ -5,13 +6,12 @@ import { useOrCreateMetaData } from "./utils/setMetaData"
 export function Prop<T>() {
   return function (_target: any, ctx: ClassFieldDecoratorContext) {
     const meta = useOrCreateMetaData(ctx, METADATA_PROP, [])
-    let value = undefined as T
+    let ref = deepSignal({ value: undefined as T })
     function set(this: Field, data: any) {
-      value = data
-      this.update()
+      ref.value = data
     }
     function get() {
-      return value
+      return ref.value
     }
     const propertyDescriptor: PropertyDescriptor = {
       configurable: true,
@@ -23,7 +23,7 @@ export function Prop<T>() {
     ctx.addInitializer(function () {
       Object.defineProperty(this, ctx.name, propertyDescriptor)
     })
-    return function (this:Field, initValue: T) {
+    return function (this: Field, initValue: T) {
       set.call(this, initValue)
       return initValue
     }
