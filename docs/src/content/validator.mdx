@@ -1,0 +1,123 @@
+## 校验器 - Validator
+
+- 校验器装饰器，可配置字段的校验模式及其规则
+
+```typescript
+@Validator({
+  initiative: [
+      {
+        schema: z.string(),
+        updateOn: ['onChange','onInput']
+      }
+    ],
+  signal: [
+      {
+        fact: {
+            value: "$value",
+            email: "$.userinfo.email"
+          },
+        schema: z.object({
+            value: z.string(),
+            email: z.string().email({ message: "E-mail is not a valid email address" }),
+        })
+      }
+  ]
+})
+```
+
+
+### initiative
+
+- 此属性可配置具体的事件触发时的校验规则
+- 其ts类型
+
+```typescript
+export interface ValidateItem {
+  schema: any;
+  engine?: string;
+  fact?: string | object;
+  updateOn?: string | string[];
+  needValidate?: Decision;
+  factoryOptions?: FactoryOptions;
+  schemaOptions?: any;
+}
+
+type Initiative = ValidateItem[];
+```
+
+#### schema
+
+- 表示当前校验器采用什么校验函数
+
+#### engine
+
+- 表示当前校验器采用什么校验引擎
+
+#### fact
+
+- 表示校验器对什么形状的数据进行校验，多用于signal模式中
+- 在initiative中，直接为value，在signal模式中，可为对象，此对象也就是当前校验器的依赖项
+- `$` 表示，表单model，`$value` 表示当前字段的value
+
+```typescript
+{
+   fact: {
+       value: "$value",
+       email: "$.userinfo.email"
+   }
+}
+```
+
+#### needValidate
+
+- 表示当前校验是否需要校验，value为D
+
+```typescript
+{
+   needValidate: D.and('isA','isB')
+}
+```
+
+#### factoryOptions
+
+- 作为校验引擎的参数
+
+#### schemaOptions
+
+- 作为校验引擎的参数
+
+### signal
+
+- 此属性可配置字段被动校验的规则
+- 其余与initiative一致
+
+### 自定义校验引擎
+
+```typescript
+import { zodResolver } from "@rxform/resolvers"; // official engine
+
+// 参数为 上述ValidateItem中的 schema, schemaOptions, resolverOptions
+const customResolver = (schema, schemaOptions, resolverOptions = {}) =>{
+
+    return {
+        errors: {},
+        values
+    }
+}
+
+const { form, app } = createForm({
+  graph: [
+      UserInfo
+  ],
+  resolvers: {
+    validator: {
+      zod: zodResolver,
+      custom: customResolver
+    }
+  },
+  components: {
+    form: Form,
+    input: Input
+  },
+});
+```

@@ -1,0 +1,24 @@
+
+## 值行为 - Actions
+
+- **Actions装饰器负责处理字段的输入输出的初始化与回调**
+
+### setDefaultValue
+
+- 此函数的返回值作为字段的初始值
+
+### onSubmitValue
+
+- 此函数的的参数为当前字段的value，返回值为提交时的值
+
+```typescript
+@Actions({
+  setDefaultValue() {
+    // set default value logic
+  },
+
+  onSubmitValue(model: any) {
+    // submit value logic
+  }
+})
+```

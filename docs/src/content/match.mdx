@@ -1,0 +1,33 @@
+
+## 模式匹配
+
+- 用于优化流程控制的一种范式
+- 配合决策树，可发挥非常强大的流程控制能力，在表单中能发挥强大的关联关系处理能力
+
+```typescript
+const value = { type: 'user', name: 'Alice', age: 30 };
+const result = match(value, [
+      [{ type: 'admin' }, () => 'Matched admin'],
+      [{ type: 'user', age: js`value > 18` }, () => 'Matched adult user'],
+      [{ type: 'user', age: (age) => age <= 18 }, () => 'Matched minor user'],
+      [/^hello/, () => 'Matched pattern starting with hello'],
+      [js`value.length > 3`, () => 'Matched string with length > 3'],
+      [_, () => 'Default case']
+]);
+
+console.log(result); // 'Matched adult user'
+
+const result1 = match(D.and('isA','isB'), [
+      [true, () => 'Matched true'],
+      [false, () => 'Matched false'],
+      [_, () => 'Default case']
+]);
+console.log(result1); // 'Matched true'
+
+const result1 = match(true, [
+      [D.and('isA','isB'), () => 'Matched isA + isB'],
+      [D.and('isA','isC'), () => 'Matched isA + isC'],
+      [_, () => 'Default case']
+]);
+console.log(result1); // 'Matched isA + isB'
+```

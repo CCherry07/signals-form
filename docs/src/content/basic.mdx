@@ -1,0 +1,102 @@
+## 基础配置 - Component
+
+- **id**: 表示字段的key
+- **component**: 表示字段所渲染的组件，支持字符串或者组件构造器
+
+```typescript
+@Component({
+  id: 'email',
+  component: 'input', // InputComponent
+})
+class Email extends Field {}
+```
+
+- **properties**: 表示字段的子字段，可以是字段的构造函数，亦可为字段的实例
+
+```typescript
+@Component({
+  id: 'userinfo',
+  component: 'form',
+  properties: [
+    Email,
+    new Password(),
+    Nickname,
+    Residence,
+    Phone,
+    Donation,
+    Intro,
+    Gender,
+    Captcha,
+    Agreement
+  ],
+})
+```
+
+- 在react中，properties传递到字段的组件时，为children，是一个数组
+
+```typescript
+import { Form } from "antd";
+import React from "react";
+
+export default function (props: any) {
+  const { children,style } = props;
+  return (
+    <Form style={style}>
+      {children}
+    </Form>
+  );
+}
+```
+
+- 在vue中，properties传递到字段的组件时，为slots，注意，插槽名为其各个子字段的id
+
+```html
+<template>
+  <div>
+    <Form :style="style">
+      <template v-for="(, name) in slots" :key="name">
+        <slot :name="name"></slot>
+      </template>
+    </Form>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { Form } from 'ant-design-vue';
+import { useSlots } from 'vue';
+defineOptions({
+  inheritAttrs: false,
+});
+const slots:Record<string,any> = useSlots();
+</script>
+```
+
+### Hidden
+
+- **Hidden**：字段隐藏时，会将Value清理为undefined
+- **recoverValueOnHidden**：表示，字段隐藏时，其value，不会被清理为undefined
+- **recoverValueOnShown**：表示，字段显示时，其value会被回填
+
+```typescript
+import { D as d } from "form";
+
+@Component({
+  id: 'email',
+  component: 'input',
+  hidden: d.and('isA','isB').or('isC')
+})
+class Email extends Field {}
+```
+
+### Disabled
+
+```typescript
+import { D as d } from "form";
+
+@Component({
+  id: 'email',
+  component: 'input',
+  disabled: d.and('isA','isB').or('isC')
+})
+class Email extends Field {}
+```

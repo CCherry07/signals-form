@@ -1,0 +1,14 @@
+## 组件属性 - Props
+
+- **Prop装饰器，此装饰器不仅能修饰此属性为字段的组件props，也能使其具有响应化（signal）**
+
+```typescript
+@Component({
+  id: "nickname",
+  component: "input",
+})
+class Nickname extends Field {
+  @Prop()
+  title = "Nickname";
+}
+```

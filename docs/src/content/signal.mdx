@@ -1,0 +1,22 @@
+
+## 响应式属性 - Signal
+
+```typescript
+@Component({
+  id: "gender",
+  component: "select",
+})
+class Gender extends Field {
+  // 原始数据，不具有响应式
+  jsData = {
+    a: 1,
+    b: 2
+  };
+
+  @Signal // 响应式数据, 类似 reactiveData = deepSignal({  a: 1, b: 2 })
+  reactiveData = {
+    a: 1,
+    b: 2
+  };
+}
+```

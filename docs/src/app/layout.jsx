@@ -7,13 +7,13 @@ import 'nextra-theme-docs/style.css'
 export const metadata = {
   metadataBase: new URL('https://nextra.site'),
   title: {
-    template: '%s - Nextra'
+    template: '%s - Form'
   },
-  description: 'Nextra: the Next.js site builder',
-  applicationName: 'Nextra',
+  description: 'Form: the Next.js site builder',
+  applicationName: 'Form',
   generator: 'Next.js',
   appleWebApp: {
-    title: 'Nextra'
+    title: 'Form'
   },
   other: {
     'msapplication-TileImage': '/ms-icon-144x144.png',
@@ -29,8 +29,8 @@ export default async function RootLayout({ children }) {
     <Navbar
       logo={
         <div>
-          <b>Nextra</b>{' '}
-          <span style={{ opacity: '60%' }}>The Next Docs Builder</span>
+          <b>Form</b>{' '}
+          {/* <span style={{ opacity: '60%' }}>The Next Docs Builder</span> */}
         </div>
       }
       // Next.js discord server
@@ -42,7 +42,7 @@ export default async function RootLayout({ children }) {
       <Head faviconGlyph="✦" />
       <body>
         <Layout
-          banner={<Banner storageKey="Nextra 2">Nextra 2 Alpha</Banner>}
+          banner={<Banner storageKey="Nextra 2">Form 2 Alpha</Banner>}
           navbar={navbar}
           footer={<Footer />}
           editLink="Edit this page on GitHub"

@@ -1,0 +1,103 @@
+## 决策
+
+- 通过一段布尔表达式，来确定最终的true 和 false，下文均称为"D"
+- demo
+
+```typescript
+import { D as d } from "form";
+const boolValues = {
+    isA: true,
+    isB: false,
+    isC: false
+};
+const is = d.or('isA','isB').and('isC').evaluate(boolValues); // true
+```
+
+### 布尔运算符
+
+- **And**: `D.and('isA','isB') // isA && isB`
+- **Or**: `D.or('isA','isB') // isA || isB`
+- **Not**: `D.not('isA') // !isA`
+- **Use**: `D.use('isA') // isA`
+
+### 自定义运算符
+
+- 创建一个 `n_and`
+
+```typescript
+import { registerCustomOperator } from "@form/core";
+registerCustomOperator(
+  "n_and",
+  {
+    operator(...bools: boolean[]) {
+      return !bools.every(Boolean)
+    },
+  }
+);
+
+D.n_and('isA','isB') // !isA && !isB
+```
+
+### 嵌套写法
+
+- 支持链式调用（会将左侧的运算接口，放置后一个操作的第一个参数位置）
+
+```typescript
+// isA = true ,isB = false,isC = true
+D.and('isA', 'isC')
+    .or(
+        D.and('isB', 'isC')
+       ) // true
+```
+
+1. `D.and('isA', 'isC')`: true
+2. `D.or(true, D.and('isB', 'isC'))`
+3. `D.or(true, false) // true`
+
+### 注册布尔配置
+
+```typescript
+type Model = DeepSignal<{
+  userinfo: {
+    email: string,
+    password: number,
+    nickname: string,
+    residence: string[],
+    phone: number,
+    donation: number,
+  }
+}>;
+
+const boolsConfig = {
+  isNickname: (model: Model) => model.userinfo.nickname === "cherry",
+  // ...
+};
+
+const { form, app } = createForm({
+  graph: [
+      UserInfo
+  ],
+  boolsConfig, // 布尔运算配置
+  components: {
+    form: Form,
+    input: Input
+  },
+});
+```
+
+### 在成员函数中使用
+
+```typescript
+@Component({
+  id: 'email',
+  component: 'input',
+})
+class Email extends Field {
+
+    onChange(){
+       if( this.evaluateDecision(D.use('isA')) ) { // 或者使用模式匹配
+           
+       }
+    }
+}
+```

@@ -1,0 +1,47 @@
+## 无关系字段通信
+
+### DispatchData
+
+- 装饰器参数：第一个参数为发布的key，第二参数为，初始化时，是否主动派发一次
+- 当 genderData被修改时，即刻派发
+
+```typescript
+@Component({
+  id: "gender",
+  component: "select",
+})
+class Gender extends Field {
+  @DispatchData("gender", false)
+  genderData = "";
+}
+```
+
+### SubscribeData
+
+- 装饰器参数：第一个参数为订阅的key
+
+```typescript
+@Component({
+  id: "name",
+  component: "input",
+})
+class Gender extends Field {
+  @SubscribeData("gender")
+  genderData = "";
+}
+```
+
+### Emitter
+
+```typescript
+@Component({
+  id: "name",
+  component: "input",
+})
+class Gender extends Field {
+
+    onChange(){
+        this.emitter.emit('key','value');
+    }
+}
+```

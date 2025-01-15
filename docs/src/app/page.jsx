@@ -10,7 +10,7 @@ export default function IndexPage() {
         fontWeight: 'bold'
       }}
     >
-      Index page
+      Welcome to Form!
     </h1>
   )
 }
