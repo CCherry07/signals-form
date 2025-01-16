@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "docs": "npx nx dev docs",
     "play:react": "npx nx dev playground-react",
     "play:vue": "npx nx dev playground-vue",
     "build": "npx nx affected:build",

@@ -101,6 +101,10 @@ export class Field<T = any, D = any> {
     }
   }
 
+  subscribeFields: Record<string, Function> = {
+    
+  }
+
   get isRoot() {
     return this.parent === null
   }

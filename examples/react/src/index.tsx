@@ -256,7 +256,7 @@ class Gender extends Field {
   id: "captcha",
   component: "input",
 })
-@InjectFields({ // 注入依赖项
+@InjectFields({ // 注入依赖项，虽然注入了依赖项但是没有使用，所以不会触发onGenderValue
   gender: "userinfo.gender",
   donation: "userinfo.donation"
 })
@@ -264,13 +264,13 @@ class Captcha extends Field {
   @Prop()
   title = "Captcha"
 
-  @Fields({
-    gender: "gender",
-    donation: "donation"
-  }) // 订阅gender，donation变化，会等待gender 和 donation 处理完毕，触发onGenderValue，
-  onGenderValue(fields: Record<string, any>) {
-    console.log("onGenderValue", fields);
-  }
+  // @Fields({
+  //   gender: "gender",
+  //   donation: "donation"
+  // }) // 订阅gender，donation变化，会等待gender 和 donation 处理完毕，触发onGenderValue，
+  // onGenderValue(fields: Record<string, any>) {
+  //   console.log("onGenderValue", fields);
+  // }
 }
 
 @Component({
