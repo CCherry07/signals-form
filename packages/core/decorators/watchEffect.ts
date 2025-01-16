@@ -1,4 +1,4 @@
-import { effect } from "alien-signals";
+import { effect } from "alien-deepsignals";
 import { METADATA_WATCH_EFFECT } from "./metaKeys";
 export function WatchEffect(
   method: Function,

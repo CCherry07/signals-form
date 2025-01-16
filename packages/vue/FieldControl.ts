@@ -1,8 +1,8 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
-import { normalizeSignal, Resolver, validate, type Field } from "@rxform/core"
-import { effect } from "alien-signals";
-import { signal, computed } from "alien-deepsignals";
+import { Resolver, validate, type Field } from "@rxform/core"
+import { effect } from "alien-deepsignals";
+import { effectScope } from "alien-signals";
 
 function normalizeProps(field: Field) {
   return field.getProps()
@@ -29,37 +29,41 @@ export const FieldControl = defineComponent({
     const events = normalizeEvents(field)
     const cleanups: Function[] = [];
     onBeforeMount(() => {
-      const onValidateDispose = effect(() => {
-        if (signalValidator) {
-          validate({
-            state: field.value,
-            updateOn: "signal",
-            defaultValidatorEngine: props.defaultValidatorEngine!,
-            boolValues: field.bools,
-            model: props.model!.value
-          }, signalValidator.all, props.validatorResolvers!).then(errors => {
-            if (Object.keys(errors).length === 0) {
-              field.abstractModel?.cleanErrors([String(field.path)])
-            } else {
-              field.abstractModel?.setErrors({
-                [String(field.path)]: errors
-              })
-            }
-            field.errors.value = errors
-          })
-        }
+      const stop = effectScope(() => {
+        effect(() => {
+          if (signalValidator) {
+            validate({
+              state: field.value,
+              updateOn: "signal",
+              defaultValidatorEngine: props.defaultValidatorEngine!,
+              boolValues: field.bools,
+              model: props.model!.value
+            }, signalValidator.all, props.validatorResolvers!).then(errors => {
+              if (Object.keys(errors).length === 0) {
+                field.abstractModel?.cleanErrors([String(field.path)])
+              } else {
+                field.abstractModel?.setErrors({
+                  [String(field.path)]: errors
+                })
+              }
+              field.errors.value = errors
+            })
+          }
+        })
+        effect(() => {
+          field.isHidden.value = field.hidden?.evaluate(field.bools) ?? false
+        })
+        effect(() => {
+          field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
+        })
+        effect(() => {
+          filedState.value = normalizeProps(field)
+        })
+        field.$effects.forEach(effect => {
+          effect.call(field)
+        })
       })
-      const onStatesDispose = effect(() => {
-        field.isHidden.value = field.hidden?.evaluate(field.bools) ?? false
-        field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
-      })
-      const onStateDispose = effect(() => {
-        filedState.value = normalizeProps(field)
-      })
-      field.$effects.forEach(effect => {
-        effect.call(field)
-      })
-      cleanups.push(onValidateDispose.stop, onStatesDispose.stop, onStateDispose.stop)
+      cleanups.push(stop)
     })
 
     const onChange = (value: any) => {

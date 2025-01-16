@@ -1,4 +1,4 @@
-import { effect } from "alien-signals";
+import { effect } from "alien-deepsignals";
 import { Decision } from "../boolless";
 import { Field } from "../controls/field";
 import { METADATA_CONDITIONS, METADATA_IGNORE } from "./metaKeys";

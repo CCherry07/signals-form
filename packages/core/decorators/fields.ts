@@ -1,6 +1,5 @@
 import { isPromise } from "@rxform/shared";
-import { effect } from "alien-signals";
-import { computed } from "alien-deepsignals";
+import { computed, effect } from "alien-deepsignals";
 import { useOrCreateMetaData } from "./utils/setMetaData";
 import { METADATA_EFFECT, METADATA_IGNORE } from "./metaKeys"
 import { Field } from "../controls/field";

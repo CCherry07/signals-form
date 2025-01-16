@@ -1,11 +1,11 @@
-import { signal } from "alien-deepsignals"
-import { isFunction, toValue } from "@rxform/shared"
+import { signal, toValue } from "alien-deepsignals"
+import { isFunction } from "@rxform/shared"
 import { Field } from "../controls/field"
 import type { AbstractModelMethods, Model } from "./types"
 
 export async function createModel(graph: Field[], model?: Model) {
   return Object.entries(graph).reduce(async (_parent, [, field]) => {
-    const { setDefaultValue, properties } = field
+    const { actions: { setDefaultValue }, properties } = field
     let filedValue = undefined
     if (isFunction(setDefaultValue)) {
       filedValue = await setDefaultValue()
@@ -70,7 +70,7 @@ export async function syncBindingModel(
   path: string,
 ) {
   return Object.entries(graph).reduce(async (_parent, [, field]) => {
-    const { id, setDefaultValue, properties } = field
+    const { id, actions: { setDefaultValue }, properties } = field
     const filedValue = signal()
     if (isFunction(setDefaultValue)) {
       field.isUpdating = true

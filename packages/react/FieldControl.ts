@@ -1,7 +1,7 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Field, isPromise, validate } from "@rxform/core"
-import { computed } from "alien-deepsignals"
-import { effect, effectScope } from "alien-signals"
+import { computed, effect } from "alien-deepsignals"
+import { effectScope } from "alien-signals"
 import { Resolver } from '@rxform/core';
 interface Props {
   field: Field & Record<string, any>;
@@ -41,8 +41,7 @@ export function FieldControl(props: Props) {
 
   useEffect(() => {
     field.onMounted?.()
-    const scope = effectScope();
-    scope.run(() => {
+    const stopScope = effectScope(() => {
       effect(() => {
         if (signalValidator) {
           validate({
@@ -76,10 +75,10 @@ export function FieldControl(props: Props) {
       (field.$effects ?? []).forEach((fn: Function) => {
         fn.call(field)
       })
-    })
+    });
     field.isMounted.value = true
     return () => {
-      scope.stop()
+      stopScope()
       field.onDestroy?.()
       field.onUnmounted?.()
       field.isDestroyed.value = true

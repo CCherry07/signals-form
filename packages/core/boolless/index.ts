@@ -1,7 +1,6 @@
-import { computed } from 'alien-deepsignals';
-import { MaybeSignal, MaybeSignalOrComputedOrGetter, toValue } from '@rxform/shared';
+import { computed, MaybeSignal, MaybeSignalOrGetter, toValue } from 'alien-deepsignals';
 
-export type BoolValues = MaybeSignal<Record<string, MaybeSignalOrComputedOrGetter<boolean>>>;
+export type BoolValues = MaybeSignal<Record<string, MaybeSignalOrGetter<boolean>>>;
 
 export enum OperatorEnum {
   AND = "and",
@@ -127,7 +126,7 @@ export interface BoolsConfig<C> {
   [key: string]: (context: C) => boolean;
 }
 
-export const setup = <C>(bools: MaybeSignal<BoolsConfig<C>>, context: MaybeSignalOrComputedOrGetter) => {
+export const setup = <C>(bools: MaybeSignal<BoolsConfig<C>>, context: MaybeSignalOrGetter) => {
   return Object.fromEntries(Object.entries(toValue(bools)).map(([key, check]) => {
     return [key, createBoolSignal(() => check(toValue(context)))];
   }));

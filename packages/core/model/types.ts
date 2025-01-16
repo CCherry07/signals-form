@@ -1,9 +1,8 @@
 import type {AbstractModel} from "./abstract_model";
-import {Signal} from "alien-signals";
 import {BoolsConfig, BoolValues} from "../boolless";
 import {Field, FieldErrors} from "../controls/field";
 import {Resolver} from "../resolvers/type";
-import {DeepSignal} from "alien-deepsignals";
+import {DeepSignal, Signal} from "alien-deepsignals";
 
 export interface FormConfig {
   graph: typeof Field[];

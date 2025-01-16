@@ -1,5 +1,4 @@
-import { deepSignal } from "alien-deepsignals"
-import { toValue, type MaybeSignalOrComputedOrGetter } from "./signal";
-export function ref<T>(getter: MaybeSignalOrComputedOrGetter) {
+import { deepSignal, MaybeSignalOrGetter, toValue } from "alien-deepsignals"
+export function ref<T>(getter: MaybeSignalOrGetter) {
   return deepSignal({ value: toValue(getter) as T });
 }

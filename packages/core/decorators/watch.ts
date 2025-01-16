@@ -1,7 +1,6 @@
-import { effect } from "alien-signals";
+import { effect, toValue } from "alien-deepsignals";
 import { METADATA_WATCH } from "./metaKeys";
 import { computed } from "alien-deepsignals";
-import { toValue } from "@rxform/shared";
 export function Watch(deps: string| string[]) {
   if (typeof deps === "string") {
     deps = [deps]

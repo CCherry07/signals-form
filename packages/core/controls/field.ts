@@ -1,6 +1,6 @@
 import { effect, effectScope } from "alien-signals";
-import { signal, Signal } from "alien-deepsignals";
-import { isFunction, isPromise, set, toValue } from "@rxform/shared";
+import { signal, Signal, toValue } from "alien-deepsignals";
+import { isFunction, isPromise, set } from "@rxform/shared";
 
 import type { BoolValues, Decision } from "../boolless";
 import {
@@ -170,8 +170,7 @@ export class Field<T = any, D = any> {
 
   constructor() {
     this.normalizeFieldMetaDate()
-    const e = effectScope()
-    e.run(() => {
+    const stop = effectScope(() => {
       // validate
       effect(() => {
         this.isValid.value = Object.keys(this.errors.value).length === 0
@@ -203,7 +202,7 @@ export class Field<T = any, D = any> {
         }
       })
     })
-    this.cleanups.push(e.stop)
+    this.cleanups.push(stop)
   }
 
   normalizeFieldMetaDate() {

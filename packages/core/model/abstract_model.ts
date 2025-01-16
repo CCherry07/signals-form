@@ -1,5 +1,4 @@
-import { effect } from "alien-signals"
-import { deepSignal, peek, Signal, signal } from "alien-deepsignals";
+import { deepSignal, peek, Signal, signal, effect } from "alien-deepsignals";
 import { clonedeep, get, set } from "@rxform/shared";
 import { createModel } from "./utils";
 

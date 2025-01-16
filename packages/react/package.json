@@ -14,8 +14,6 @@
   "description": "",
   "dependencies": {
     "@rxform/core": "workspace:*",
-    "@rxform/shared": "workspace:*",
-    "alien-deepsignals": "^0.0.2",
-    "alien-signals": "^0.4.12"
+    "@rxform/shared": "workspace:*"
   }
 }
