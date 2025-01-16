@@ -1,6 +1,6 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
-import { Resolver, validate, type Field } from "@rxform/core"
+import { isPromise, Resolver, validate, type Field } from "@rxform/core"
 import { effect } from "alien-deepsignals";
 import { effectScope } from "alien-signals";
 
@@ -22,11 +22,81 @@ export const FieldControl = defineComponent({
     validatorResolvers: Object as PropType<Record<string, Resolver>>
   },
   setup(props) {
-    // @ts-ignore
-    const { initiative, signal: signalValidator } = props.field?.validator ?? {}
-    const field = props.field!
+    const { initiative: initiativeValidator = [], signal: signalValidator } = props.field?.validator ?? {}
+    const field = props.field! as Field & Record<string, any>
     const filedState = shallowRef(normalizeProps(field))
-    const events = normalizeEvents(field)
+    
+    const triggerValidate = (key: string) => {
+      validate({
+        state: field.value,
+        updateOn: key,
+        defaultValidatorEngine: props.defaultValidatorEngine!,
+        boolValues: field.bools,
+        model: props.model!
+      }, initiativeValidator, props.validatorResolvers!).then(errors => {
+        if (Object.keys(errors).length === 0) {
+          field.abstractModel?.cleanErrors([String(field.path)])
+        } else {
+          field.abstractModel?.setErrors({
+            [String(field.path)]: errors
+          })
+        }
+        field.errors.value = errors
+      })
+    }
+
+    const onChange = (...args: any[]) => {
+      field.isUpdating = true
+      if (field.onChange) {
+        const maybePromise = field.onChange(...args)
+        if (isPromise(maybePromise)) {
+          maybePromise.then(() => {
+            field.isUpdating = false
+          })
+        } else {
+          field.isUpdating = false
+        }
+      } else {
+        field.value = args[0]
+      }
+      triggerValidate("onChange")
+    }
+
+    const onBlur = (value: any) => {
+      field.isUpdating = true
+      if (field.onBlur) {
+        field.onBlur(value)
+      } else {
+        field.value = value
+      }
+      field.isFocused.value = false
+      field.isBlurred.value = true
+      triggerValidate("onBlur")
+    }
+
+    const onFocus = () => {
+      if (field.onFocus) {
+        field.onFocus()
+      }
+      field.isBlurred.value = false
+      field.isFocused.value = true
+      triggerValidate("onFocus")
+    }
+    const events = {
+      onChange,
+      onBlur,
+      onFocus
+    } as Record<string, Function>
+    normalizeEvents(field).forEach((key) => {
+      if (key === "onChange" || key === "onBlur" || key === "onFocus") {
+        return
+      }
+      events[key] = (...args: any[]) => {
+        field[key](...args)
+        triggerValidate(key)
+      }
+    })
+
     const cleanups: Function[] = [];
     onBeforeMount(() => {
       const stop = effectScope(() => {
@@ -38,7 +108,7 @@ export const FieldControl = defineComponent({
               defaultValidatorEngine: props.defaultValidatorEngine!,
               boolValues: field.bools,
               model: props.model!.value
-            }, signalValidator.all, props.validatorResolvers!).then(errors => {
+            }, signalValidator, props.validatorResolvers!).then(errors => {
               if (Object.keys(errors).length === 0) {
                 field.abstractModel?.cleanErrors([String(field.path)])
               } else {
@@ -66,31 +136,6 @@ export const FieldControl = defineComponent({
       cleanups.push(stop)
     })
 
-    const onChange = (value: any) => {
-      if (events.onChange) {
-        events.onChange(value)
-      } else {
-        field.value = value
-      }
-    }
-
-    const onBlur = (value: any) => {
-      if (events.onBlur) {
-        events.onBlur(value)
-      } else {
-        field.value = value
-      }
-      field.isFocused.value = false
-      field.isBlurred.value = true
-    }
-
-    const onFocus = () => {
-      if (events.onFocus) {
-        events.onFocus()
-      }
-      field.isBlurred.value = false
-      field.isFocused.value = true
-    }
 
     onScopeDispose(() => {
       cleanups.forEach(cleanup => cleanup())
@@ -123,9 +168,7 @@ export const FieldControl = defineComponent({
       const component = props.resolveComponent!(field.component)
       return h('div', { hidden: filedState.value.isHidden, "data-field-id": field.id }, h(component, {
         ...filedState.value,
-        onChange,
-        onBlur,
-        onFocus,
+        ...events,
       }, {
         ...getChildren()
       }))

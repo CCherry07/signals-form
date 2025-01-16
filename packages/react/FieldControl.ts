@@ -1,6 +1,6 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Field, isPromise, validate } from "@rxform/core"
-import { computed, effect } from "alien-deepsignals"
+import { effect } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
 import { Resolver } from '@rxform/core';
 interface Props {
@@ -44,7 +44,7 @@ export function FieldControl(props: Props) {
       updateOn: key,
       defaultValidatorEngine: props.defaultValidatorEngine,
       boolValues: field.bools,
-      model
+      model: props.model
     }, initiativeValidator, props.validatorResolvers).then(errors => {
       if (Object.keys(errors).length === 0) {
         field.abstractModel?.cleanErrors([String(field.path)])
@@ -113,7 +113,6 @@ export function FieldControl(props: Props) {
       onFocus,
     }
   }, [])
-  const model = computed(() => props.model)
   useEffect(() => {
     field.onMounted?.()
     const stopScope = effectScope(() => {
@@ -124,7 +123,7 @@ export function FieldControl(props: Props) {
             updateOn: "signal",
             defaultValidatorEngine: props.defaultValidatorEngine,
             boolValues: field.bools,
-            model
+            model: props.model
           }, signalValidator, props.validatorResolvers).then(errors => {
             if (Object.keys(errors).length === 0) {
               field.abstractModel?.cleanErrors([String(field.path)])
@@ -167,7 +166,7 @@ export function FieldControl(props: Props) {
         return createElement(FieldControl, {
           key: child.path,
           field: child,
-          model,
+          model: props.model,
           defaultValidatorEngine: props.defaultValidatorEngine,
           validatorResolvers: props.validatorResolvers,
           resolveComponent
