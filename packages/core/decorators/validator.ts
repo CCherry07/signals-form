@@ -1,8 +1,8 @@
 import { ValidateItem } from "../validator";
 import { METADATA_VALIDATOR } from "./metaKeys";
 export interface ValidatorMetaData {
-  signal?: Record<string, ValidateItem[]>;
-  initiative?: Record<string, ValidateItem[]>;
+  signal?: ValidateItem[];
+  initiative?: ValidateItem[];
 }
 
 export function Validator(metadata: ValidatorMetaData) {

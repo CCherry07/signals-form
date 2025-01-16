@@ -380,7 +380,6 @@ export class Field<T = any, D = any> {
   }
 
   getEvents() {
-    const entries = this.eventKeys.map(key => [key, (this as Record<string, any>)[key].bind(this)])
-    return Object.fromEntries(entries)
+    return this.eventKeys
   }
 }

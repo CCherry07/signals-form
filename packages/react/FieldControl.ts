@@ -33,23 +33,99 @@ function normalizeEvents(field: Field) {
 export function FieldControl(props: Props) {
   const { field, resolveComponent } = props;
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
-  const methods = useMemo(() => normalizeEvents(field), [])
-  const model = computed(() => props.model)
   const {
-    signal: signalValidator
+    initiative: initiativeValidator = [],
+    signal: signalValidator = []
   } = field.validator ?? {}
 
+  const triggerValidate = useCallback((key: string) => {
+    validate({
+      state: field.value,
+      updateOn: key,
+      defaultValidatorEngine: props.defaultValidatorEngine,
+      boolValues: field.bools,
+      model
+    }, initiativeValidator, props.validatorResolvers).then(errors => {
+      if (Object.keys(errors).length === 0) {
+        field.abstractModel?.cleanErrors([String(field.path)])
+      } else {
+        field.abstractModel?.setErrors({
+          [String(field.path)]: errors
+        })
+      }
+      field.errors.value = errors
+    })
+  }, [])
+
+  const methods = useMemo(() => {
+    const onChange = (...args: any[]) => {
+      field.isUpdating = true
+      if (field.onChange) {
+        const maybePromise = field.onChange(...args)
+        if (isPromise(maybePromise)) {
+          maybePromise.then(() => {
+            field.isUpdating = false
+          })
+        } else {
+          field.isUpdating = false
+        }
+      } else {
+        field.value = args[0]
+      }
+      triggerValidate("onChange")
+    }
+
+    const onBlur = (value: any) => {
+      field.isUpdating = true
+      if (field.onBlur) {
+        field.onBlur(value)
+      } else {
+        field.value = value
+      }
+      field.isFocused.value = false
+      field.isBlurred.value = true
+      triggerValidate("onBlur")
+    }
+
+    const onFocus = () => {
+      if (field.onFocus) {
+        field.onFocus()
+      }
+      field.isBlurred.value = false
+      field.isFocused.value = true
+      triggerValidate("onFocus")
+    }
+    const events = {} as Record<string, Function>
+    normalizeEvents(field).forEach((key) => {
+      if (key === "onChange" || key === "onBlur" || key === "onFocus") {
+        return
+      }
+      events[key] = (...args: any[]) => {
+        field[key](...args)
+        triggerValidate(key)
+      }
+    })
+
+    return {
+      ...events,
+      onChange,
+      onBlur,
+      onFocus,
+    }
+  }, [])
+  const model = computed(() => props.model)
   useEffect(() => {
     field.onMounted?.()
     const stopScope = effectScope(() => {
       effect(() => {
         if (signalValidator) {
           validate({
-            state: field.value, updateOn: "signal",
+            state: field.value,
+            updateOn: "signal",
             defaultValidatorEngine: props.defaultValidatorEngine,
             boolValues: field.bools,
             model
-          }, signalValidator.all, props.validatorResolvers).then(errors => {
+          }, signalValidator, props.validatorResolvers).then(errors => {
             if (Object.keys(errors).length === 0) {
               field.abstractModel?.cleanErrors([String(field.path)])
             } else {
@@ -83,41 +159,6 @@ export function FieldControl(props: Props) {
       field.onUnmounted?.()
       field.isDestroyed.value = true
     }
-  }, [])
-
-  const onChange = useCallback((value: any) => {
-    field.isUpdating = true
-    if (methods.onChange) {
-      const maybePromise = methods.onChange(value)
-      if (isPromise(maybePromise)) {
-        maybePromise.then(() => {
-          field.isUpdating = false
-        })
-      } else {
-        field.isUpdating = false
-      }
-    } else {
-      field.value = value
-    }
-  }, [])
-
-  const onBlur = useCallback((value: any) => {
-    field.isUpdating = true
-    if (methods.onBlur) {
-      methods.onBlur(value)
-    } else {
-      field.value = value
-    }
-    field.isFocused.value = false
-    field.isBlurred.value = true
-  }, [])
-
-  const onFocus = useCallback(() => {
-    if (methods.onFocus) {
-      methods.onFocus()
-    }
-    field.isBlurred.value = false
-    field.isFocused.value = true
   }, [])
 
   function getChildren(): ReactNode[] {
@@ -156,9 +197,6 @@ export function FieldControl(props: Props) {
     createElement(resolveComponent(field.component), {
       ...filedState,
       ...methods,
-      onChange,
-      onBlur,
-      onFocus
     }, getChildren())
   );
 }

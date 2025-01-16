@@ -60,13 +60,11 @@ class Phone extends Field {
   recoverValueOnShown: true,
 })
 @Validator({
-  initiative: {
-    all: [
-      {
-        schema: z.string().email({ message: "E-mail is not a valid email address" }),
-      }
-    ]
-  },
+  initiative: [
+    {
+      schema: z.string().email({ message: "E-mail is not a valid email address" }),
+    }
+  ]
 })
 @Actions({
   setDefaultValue() {
@@ -90,9 +88,7 @@ class Email extends Field {
 
   @Event()
   onChange(data: any) {
-    console.log("onChange", data);
     this.value = data
-    console.log("onChange", this.value);
   }
 
   onInit(): void {
@@ -109,13 +105,11 @@ class Email extends Field {
   disabled: D.use('isNickname'),
 })
 @Validator({
-  initiative: {
-    all: [
-      {
-        schema: z.number({ message: "a is not number" }),
-      }
-    ]
-  },
+  initiative: [
+    {
+      schema: z.number({ message: "a is not number" }),
+    }
+  ]
 })
 class Password extends Field {
   @Prop()

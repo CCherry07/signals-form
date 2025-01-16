@@ -17,7 +17,7 @@ export function App(props: Parops) {
       setSubmitted(props.forms[0].submiting.value)
     })
     effect(() => {
-      setModel(props.forms[0].model.value)
+      setModel(props.forms[0].model)
     })
   }, [])
   return <div style={{ display: "flex" }}>
