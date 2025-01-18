@@ -3,7 +3,7 @@ import { Input, Form } from "ant-design-vue"
 interface Props {
   errors: any;
   value: any
-  title: string
+  label: string
   isDisabled: boolean
   type?: "Group" | "Search" | "TextArea" | "Password" | "OTP";
 }
@@ -18,7 +18,7 @@ const handleChange = (e: any) => {
 </script>
 
 <template>
-  <Form.Item :label="title">
+  <Form.Item :label="label">
     <Input :value="value" :disabled="isDisabled" @change="handleChange"/>
   </Form.Item>
 </template>

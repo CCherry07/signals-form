@@ -1,33 +1,20 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { Field, isPromise, validate } from "@rxform/core"
+import { FieldBuilder, isPromise, validate } from "@rxform/core"
 import { effect } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
 import { Resolver } from '@rxform/core';
 interface Props {
-  field: Field & Record<string, any>;
+  field: FieldBuilder & Record<string, any>;
   model: any
   defaultValidatorEngine: string;
   resolveComponent: (component: string | FunctionComponent<any> | ComponentClass<any, any>) => string | FunctionComponent<any> | ComponentClass<any, any>
   validatorResolvers: Record<string, Resolver>
 };
 
-// function bindingMethods(field: Field) {
-//   const methodsMap = {} as Record<string, Function>
-//   // @ts-ignore
-//   Object.getOwnPropertyNames(field.__proto__).forEach(method => {
-//     // @ts-ignore
-//     if (typeof field[method] === 'function' && method !== 'constructor' && method !== "setDefaultValue" && method !== "onSubmitValue" && method !== "component") {
-//       // @ts-ignore
-//       methodsMap[method as any] = field[method]?.bind(field)
-//     }
-//   })
-//   return methodsMap
-// }
-
-function normalizeProps(field: Field) {
+function normalizeProps(field: FieldBuilder) {
   return field.getProps()
 }
-function normalizeEvents(field: Field) {
+function normalizeEvents(field: FieldBuilder) {
   return field.getEvents()
 }
 export function FieldControl(props: Props) {
@@ -36,7 +23,7 @@ export function FieldControl(props: Props) {
   const {
     initiative: initiativeValidator = [],
     signal: signalValidator = []
-  } = field.validator ?? {}
+  } = field._validator ?? {}
 
   const triggerValidate = useCallback((key: string) => {
     validate({
@@ -175,25 +162,12 @@ export function FieldControl(props: Props) {
     }
     return []
   }
-  // function getChildren(): Record<string, ReactNode> {
-  //   const slots = {} as Record<string, any>
-  //   if (field.properties) {
-  //     (field.properties).forEach((child) => {
-  //       slots[child.id] = createElement(FieldControl, {
-  //         field: child,
-  //         model: model,
-  //         resolveComponent
-  //       })
-  //     })
-  //   }
-  //   return slots
-  // }
 
   return createElement("div", {
     "data-field-id": field.id,
     hidden: filedState.isHidden,
   },
-    createElement(resolveComponent(field.component), {
+    createElement(resolveComponent(field._component), {
       ...filedState,
       ...methods,
     }, getChildren())

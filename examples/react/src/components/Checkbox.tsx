@@ -5,12 +5,12 @@ interface Props {
   errors: any;
   value: any
   onChange: any
-  title: string
+  label: string
 }
 export default function (props: Props) {
-  const { onChange, value, title, errors } = props
+  const { onChange, value, label, errors } = props
   return <div>
-    <Form.Item label={title}>
+    <Form.Item label={label}>
       <Checkbox checked={value} onChange={(e) => {
         onChange(e.target.checked)
       }} />

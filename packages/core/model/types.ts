@@ -1,11 +1,12 @@
 import type {AbstractModel} from "./abstract_model";
-import {BoolsConfig, BoolValues} from "../boolless";
-import {Field, FieldErrors} from "../controls/field";
+import {BoolsConfig, BoolContext} from "../boolless";
 import {Resolver} from "../resolvers/type";
 import {DeepSignal, Signal} from "alien-deepsignals";
+import { FieldBuilder } from "../builder/field";
+import { FieldErrors } from "../types/field";
 
 export interface FormConfig {
-  graph: typeof Field[];
+  graph: FieldBuilder[];
   defaultValidatorEngine: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
   id: string;
@@ -18,7 +19,7 @@ export type Model = Record<string, any>;
 
 
 export interface SubscribeProps<M> {
-  bools: BoolValues;
+  boolContext: BoolContext;
   submitted: Signal<boolean>;
   errors: Record<string, FieldErrors>;
   model: M;
@@ -34,8 +35,8 @@ export type AbstractModelMethods = Pick<AbstractModel<DeepSignal<Model>>,
 export interface AbstractModelInitOptions<M extends Model> {
   defaultValidatorEngine: string;
   boolsConfig: BoolsConfig<M>
-  graph: Field[]
-  fields: Record<string, Field>
+  graph: FieldBuilder[]
+  fields: Record<string, FieldBuilder>
 }
 
 export interface AbstractModelConstructor {

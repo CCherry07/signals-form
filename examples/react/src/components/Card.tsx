@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { Card as AntdCard } from "antd"
 interface Props {
   children: ReactNode,
-  title: string,
+  label: string,
   onChange: (data: any) => void,
   value: any
 }

@@ -1,9 +1,9 @@
 import { isProd, isArray, isObject, isString, get, isFunction } from "@rxform/shared"
 
-import { type BoolValues, Decision } from "../boolless"
+import { type BoolContext, Decision } from "../boolless"
 import type { FactoryOptions, Resolver } from "../resolvers/type"
-import type { FieldErrors } from "../controls/field"
 import type { AbstractModel } from "../model/abstract_model"
+import { FieldErrors } from "../types/field"
 
 export interface ValidateItem {
   schema: any
@@ -53,7 +53,7 @@ interface Context<T> {
   updateOn: string
   defaultValidatorEngine: string
   model: Record<string, any>
-  boolValues: BoolValues
+  boolValues: BoolContext
 }
 
 type ValidatorResolvers = Record<string, Resolver>

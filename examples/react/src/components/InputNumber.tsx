@@ -6,12 +6,12 @@ interface Props {
   value: any
   onChange: any
   type: "number" | "text",
-  title: string
+  label: string
   isDisabled: boolean
 }
 export default function (props: Props) {
-  const { onChange, value, errors, title, isDisabled } = props;
-  return <Form.Item label={title}>
+  const { onChange, value, errors, label, isDisabled } = props;
+  return <Form.Item label={label}>
     <InputNumber style={{width:"100%"}} disabled={isDisabled} value={value} onChange={onChange} />
     <FieldError errors={errors} />
   </Form.Item>

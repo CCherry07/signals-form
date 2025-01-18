@@ -56,7 +56,7 @@ import { z } from 'zod';
     // if (D.and('isA','isB').evaluate(this.bools)) { // 可使用boolsConfig 来处理 大量的逻辑判断
     //   // TODO
     // }
-    // this.abstractModel.setFieldProps("phone", { title: "phone number" }) // 可以使用abstractModel来处理其他字段的属性
+    // this.abstractModel.setFieldProps("phone", { label: "phone number" }) // 可以使用abstractModel来处理其他字段的属性
     // this.abstractModel.setFieldValue("phone", 123) // 可以使用abstractModel来处理其他字段的属性,当然还有要其他的api 例如 errors 等
     this.value = data// 修改当前字段的值
   }

@@ -1,6 +1,6 @@
 import { computed, MaybeSignal, MaybeSignalOrGetter, toValue } from 'alien-deepsignals';
 
-export type BoolValues = MaybeSignal<Record<string, MaybeSignalOrGetter<boolean>>>;
+export type BoolContext = MaybeSignal<Record<string, MaybeSignalOrGetter<boolean>>>;
 
 export enum OperatorEnum {
   AND = "and",
@@ -10,10 +10,10 @@ export enum OperatorEnum {
 }
 
 export const Operator = {
-  [OperatorEnum.AND]: (nodes: Node[], values: BoolValues) => nodes.every(node => node.evaluate(values)),
-  [OperatorEnum.OR]: (nodes: Node[], values: BoolValues) => nodes.some(node => node.evaluate(values)),
-  [OperatorEnum.NOT]: (node: Node, values: BoolValues) => !node.evaluate(values),
-  [OperatorEnum.USE]: (node: Node, values: BoolValues) => node.evaluate(values),
+  [OperatorEnum.AND]: (nodes: Node[], values: BoolContext) => nodes.every(node => node.evaluate(values)),
+  [OperatorEnum.OR]: (nodes: Node[], values: BoolContext) => nodes.some(node => node.evaluate(values)),
+  [OperatorEnum.NOT]: (node: Node, values: BoolContext) => !node.evaluate(values),
+  [OperatorEnum.USE]: (node: Node, values: BoolContext) => node.evaluate(values),
 }
 
 export const CustomOperator = {} as { [key: string]: (...bools: boolean[]) => boolean }
@@ -48,7 +48,7 @@ export class Decision {
     this.nodes = nodes;
   }
 
-  evaluate(values: BoolValues): boolean {
+  evaluate(values: BoolContext): boolean {
     if (CustomOperator[this.operator]) {
       return CustomOperator[this.operator](...this.nodes.map(n => n.evaluate(values)));
     }
@@ -102,7 +102,7 @@ export class LeafNode {
   constructor(name: string | (() => string)) {
     this.name = toValue(name) as string;
   }
-  evaluate(values: BoolValues): boolean {
+  evaluate(values: BoolContext): boolean {
     const ctx = toValue(values) as Record<string, MaybeSignal<boolean>>;
     if (ctx[this.name] === undefined) {
       throw new Error(`Unknown bool config: ${this.name}`);

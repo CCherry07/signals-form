@@ -9,7 +9,7 @@ import { App } from "./App1"
   id: 'input',
   component: 'input',
   props: {
-    title: "Phone Number"
+    label: "Phone Number"
   }
 })
 class InputCentral extends Field {

@@ -1,9 +1,9 @@
 import { ComponentClass, createElement, FunctionComponent } from 'react';
 import { FieldControl } from "./FieldControl";
-import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
+import { createRXForm, FieldBuilder, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
 import type { Resolver, FormConfig as CoreFormConfig } from '@rxform/core'
 export interface FormConfig extends CoreFormConfig {
-  components: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
+  components?: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
   resolvers?: {
     validator?: Record<string, Resolver>
   }
@@ -43,13 +43,13 @@ export const createForm = (config: FormConfig) => {
   }
 
   function resolveComponent(component: string | FunctionComponent<any> | ComponentClass<any, any>) {
-    if (typeof component === 'string') {
+    if (typeof component === 'string' && components) {
       return components[component]
     }
     return component
   }
 
-  const app = createElement('div', {}, form.graph.map((field: Field) => {
+  const app = createElement('div', {}, form.graph.map((field: FieldBuilder) => {
     return createElement(FieldControl, {
       key: field.path,
       field,
@@ -74,7 +74,7 @@ export const createGroupForm = (options: Options) => {
   const createApp = (config: FormConfig) => {
     const form = formGroup.create(config)
     function resolveComponent(component: string | FunctionComponent<any> | ComponentClass<any, any>) {
-      if (typeof component === 'string') {
+      if (typeof component === 'string' && config.components) {
         return config.components[component]
       }
       return component
@@ -85,7 +85,7 @@ export const createGroupForm = (options: Options) => {
         setupValidator.call(form, validator, resolver)
       })
     }
-    const app = createElement('div', {}, form.graph.map((field: Field) => {
+    const app = createElement('div', {}, form.graph.map((field: FieldBuilder) => {
       return createElement(FieldControl, {
         key: field.path,
         field,

@@ -2,19 +2,20 @@ import { deepSignal, peek, Signal, signal, effect } from "alien-deepsignals";
 import { clonedeep, get, set } from "@rxform/shared";
 import { createModel } from "./utils";
 
-import { type BoolValues, setup } from "../boolless"
-import { Field, type FieldErrors } from "../controls/field";
+import { type BoolContext, setup } from "../boolless"
 import type { Resolver } from "../resolvers/type";
 import type { AbstractModelConstructor, AbstractModelInitOptions, Model, SubscribeProps } from "./types";
+import { FieldBuilder } from "../builder/field";
+import { FieldErrors } from "../types/field";
 
 export class AbstractModel<M extends Model> {
   id: string;
   models: Map<string, Model>;
   modelId: string;
   defaultValidatorEngine!: string;
-  graph!: Field[];
-  fields!: Record<string, Field>;
-  bools!: BoolValues;
+  graph!: FieldBuilder[];
+  fields!: Record<string, FieldBuilder>;
+  boolContext!: BoolContext;
   submitted: Signal<boolean>;
   submiting: Signal<boolean>;
   isUpdating: Signal<boolean>;
@@ -43,10 +44,10 @@ export class AbstractModel<M extends Model> {
     this.modelId = 'default'
     this.defaultValidatorEngine = defaultValidatorEngine
     // @ts-ignore
-    this.bools = Object.freeze(setup(boolsConfig, this.model))
+    this.boolContext = Object.freeze(setup(boolsConfig, this.model))
 
     Object.values(fields!)!.forEach((field) => {
-      field.bools = this.bools
+      field.boolContext = this.boolContext
       field.appContext = this.appContext
     })
     this.graph = graph!
@@ -54,7 +55,7 @@ export class AbstractModel<M extends Model> {
     this.normalizeEffectFields()
     // handle field effectFields
     effect(() => {
-      this.isUpdating.value = Object.values(this.fields ?? {}).some((field) => field.isUpdating) ?? false
+      // this.isUpdating.value = Object.values(this.fields ?? {}).some((field) => field.isUpdating) ?? false
     })
   }
 
@@ -125,7 +126,7 @@ export class AbstractModel<M extends Model> {
   onSubscribe(fn: (props: SubscribeProps<M>) => void) {
     return effect(() => {
       const cleanup = fn({
-        bools: this.bools,
+        boolContext: this.boolContext,
         submitted: this.submitted,
         errors: this.errors,
         model: this.model,

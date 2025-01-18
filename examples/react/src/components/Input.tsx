@@ -5,16 +5,16 @@ interface Props {
   errors: any;
   value: any
   onChange: any
-  title: string
+  label: string
   isDisabled: boolean
   onBlur: Function
   onFocus: Function
   type?: "Group" | "Search" | "TextArea" | "Password" | "OTP" ;
 }
 export default function (props: Props) {
-  const { onChange, value, errors, title, isDisabled, onBlur, onFocus , type } = props
+  const { onChange, value, errors, label, isDisabled, onBlur, onFocus , type } = props
   return <div>
-    <Form.Item label={title}>
+    <Form.Item label={label}>
       <AInput disabled={isDisabled} value={value}
         onFocus={() => {
           onFocus()
