@@ -15,7 +15,6 @@ export interface ValidateItem {
   schemaOptions?: any
 }
 
-
 export function setup(this: AbstractModel<any>, validator: string, resolver: Resolver) {
   if (!isProd && this.validatorResolvers[validator]) {
     console.warn(`${validator} is already registered`);

@@ -22,17 +22,16 @@ export async function createModel(graph: FieldBuilder[], model?: Model) {
   }, Promise.resolve({}))
 }
 
-export function createGraph(graph: (typeof FieldBuilder | FieldBuilder)[], appContext: any): FieldBuilder[] {
-  return graph.map(Field => {
-    const f = isFunction(Field) ? new Field() : Field
-    if (f.properties) {
-      f.properties = createGraph(f.properties, appContext).map((field) => {
-        field.parent = f
-        field.appContext = appContext
-        return field
+export function createGraph(graph:  FieldBuilder[], appContext: any): FieldBuilder[] {
+  return graph.map(field => {
+    if (field.properties) {
+      field.properties = createGraph(field.properties, appContext).map((child) => {
+        child.parent = field
+        child.appContext = appContext
+        return child
       })
     }
-    return f
+    return field
   })
   // return graph.map(Field => isFunction(Field)? new Field() : Field)
 }
@@ -57,7 +56,7 @@ export function asyncBindingModel(
       }
       field.reset()
       field.onInit?.()
-    }, {} as Record<string, any>)
+    })
   }
   binding(abstractModelMethods, graph, fields, "")
   return { model, fields }

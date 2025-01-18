@@ -17,7 +17,7 @@ export function createRXForm(config: FormConfig) {
     getField: form.getField.bind(form)
   }
   const graph = createGraph(config.graph!, form.appContext)
-  const { fields } = asyncBindingModel(methods, form.model, graph!)
+  const { fields } = asyncBindingModel(methods, form.model, config.graph!)
 
   form.init({
     ...config,

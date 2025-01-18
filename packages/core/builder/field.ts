@@ -44,13 +44,11 @@ export class FieldBuilder<T = any> {
   }
 
   peek() {
-    const data = this.abstractModel?.peekFieldValue?.(this.parentpath, this.id)
-    console.log(data);
-
-    return data
+    return this.abstractModel?.peekFieldValue?.(this.parentpath, this.id)
   }
 
   set value(v: T) {
+    // console.log('set value', v, this.path);
     this.abstractModel.setFieldValue(this.path, v)
   }
 
@@ -60,6 +58,8 @@ export class FieldBuilder<T = any> {
   _actions: ActionOptions<T> = {}
   _effects: Array<Function> = []
   _provides: Record<string | symbol, any> = {}
+  _events: Record<string, Function> = {}
+
 
   private deps: Record<string, FieldBuilder> = {}
   private effectFields: Set<FieldBuilder> = new Set()
@@ -241,15 +241,22 @@ export class FieldBuilder<T = any> {
     this._effects = effects
   }
 
+  events(events: Record<string, Function>) {
+    Object.entries(events).forEach(([key, value]) => {
+      this._events[key] = value.bind(this)
+    })
+  }
+
   getProps() {
     return {
       ...this.props,
-      errors: this.errors.value
-    }
+      errors: this.errors.value,
+      value: this.value,
+    } as Record<string, any>
   }
 
   getEvents() {
-    return []
+    return this._events
   }
 
   build() {
@@ -258,7 +265,7 @@ export class FieldBuilder<T = any> {
       effect(() => {
         this.isValid.value = Object.keys(this.errors.value).length === 0
       })
-
+      
       // disabled
       effect(() => {
         this.onDisabled?.(this.isDisabled.value)

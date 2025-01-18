@@ -1,6 +1,6 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { FieldBuilder, isPromise, validate } from "@rxform/core"
-import { effect } from "alien-deepsignals"
+import { batch, effect } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
 import { Resolver } from '@rxform/core';
 interface Props {
@@ -47,14 +47,14 @@ export function FieldControl(props: Props) {
   const methods = useMemo(() => {
     const onChange = (...args: any[]) => {
       field.isUpdating = true
-      if (field.onChange) {
-        const maybePromise = field.onChange(...args)
+      if (field._events.onChange) {
+        const maybePromise = field._events.onChange(...args)
         if (isPromise(maybePromise)) {
           maybePromise.then(() => {
-            field.isUpdating = false
+            // field.isUpdating = false
           })
         } else {
-          field.isUpdating = false
+          // field.isUpdating = false
         }
       } else {
         field.value = args[0]
@@ -63,32 +63,31 @@ export function FieldControl(props: Props) {
     }
 
     const onBlur = (value: any) => {
-      field.isUpdating = true
-      if (field.onBlur) {
-        field.onBlur(value)
-      } else {
-        field.value = value
-      }
-      field.isFocused.value = false
-      field.isBlurred.value = true
+      field._events?.onBlur?.(value)
+      batch(() => {
+        field.isFocused.value = false
+        field.isBlurred.value = true
+      })
       triggerValidate("onBlur")
     }
 
     const onFocus = () => {
-      if (field.onFocus) {
-        field.onFocus()
+      if (field._events.onFocus) {
+        field._events.onFocus()
       }
-      field.isBlurred.value = false
-      field.isFocused.value = true
+      batch(() => {
+        field.isBlurred.value = false
+        field.isFocused.value = true
+      })
       triggerValidate("onFocus")
     }
     const events = {} as Record<string, Function>
-    normalizeEvents(field).forEach((key) => {
+    Object.entries(normalizeEvents(field)).forEach(([key, event]) => {
       if (key === "onChange" || key === "onBlur" || key === "onFocus") {
         return
       }
       events[key] = (...args: any[]) => {
-        field[key](...args)
+        event(...args)
         triggerValidate(key)
       }
     })
@@ -129,11 +128,9 @@ export function FieldControl(props: Props) {
       effect(() => {
         field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
       })
-
       effect(() => {
         setFiledState(normalizeProps(field))
       });
-
       (field.$effects ?? []).forEach((fn: Function) => {
         fn.call(field)
       })
