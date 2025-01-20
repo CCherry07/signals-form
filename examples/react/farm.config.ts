@@ -6,10 +6,5 @@ export default defineConfig({
     presetEnv: false,
     minify: false,
     sourcemap: true,
-    script:{
-      decorators: {
-        decoratorVersion: "2022-03",
-      },
-    }
   }
 });

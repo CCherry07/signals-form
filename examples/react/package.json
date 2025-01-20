@@ -10,7 +10,6 @@
     "clean": "farm clean"
   },
   "dependencies": {
-    "@babel/plugin-proposal-decorators": "^7.25.9",
     "@rxform/core": "workspace:*",
     "@rxform/react": "workspace:*",
     "@rxform/resolvers": "workspace:*",
