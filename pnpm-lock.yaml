@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       alien-deepsignals:
-        specifier: 0.0.6
-        version: 0.0.6
+        specifier: 0.1.0
+        version: 0.1.0
       alien-signals:
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.0.1
+        version: 1.0.1
       lodash.clonedeep:
         specifier: ^4.5.0
         version: 4.5.0
@@ -2209,11 +2209,11 @@ packages:
   ajv@6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
 
-  alien-deepsignals@0.0.6:
-    resolution: {integrity: sha512-zGmV7WaD7+VXn76O/xnbpGiPA/yQ139B5yeWYYLVXSjgY+tXcXGu3zNk+bOKJlHNZFXnJJavC4BwHzWcYVs7MQ==}
+  alien-deepsignals@0.1.0:
+    resolution: {integrity: sha512-sP1JRIqLNbQ9gt31Kmv182sq4gAx6tW0mF+YXIsNrvkd2J/x0ifdsiI162M5x2fjCo8zkZFzUFxaa9S2vWC/sA==}
 
-  alien-signals@1.0.0:
-    resolution: {integrity: sha512-Fd2sYMdyjWD6VKxeewCYHXsIYAiELGMtQzGJ6vyxpxtQ1exXYiNTynSqGllkk+mOqhtBFYcC1Qvb49FbCSvsQw==}
+  alien-signals@1.0.1:
+    resolution: {integrity: sha512-oOo4M4xdTUCFK2oG2shusk7FR4hmpg0OJGlGEeLwQYctoJ+6UWOpHtU6Y6rBuFUaR34mgLpakcCFKeGFaoeJ0A==}
 
   ansi-colors@4.1.3:
     resolution: {integrity: sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw==}
@@ -7513,11 +7513,11 @@ snapshots:
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
 
-  alien-deepsignals@0.0.6:
+  alien-deepsignals@0.1.0:
     dependencies:
-      alien-signals: 1.0.0
+      alien-signals: 1.0.1
 
-  alien-signals@1.0.0: {}
+  alien-signals@1.0.1: {}
 
   ansi-colors@4.1.3: {}
 

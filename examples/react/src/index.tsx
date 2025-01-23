@@ -100,7 +100,10 @@ const userinfo = defineField().component({
   component: Form,
   id: "userinfo",
   props: {
-    label: "用户信息"
+    label: "用户信息",
+    style: {
+      width: "400px"
+    }
   },
   properties: [
     email,
