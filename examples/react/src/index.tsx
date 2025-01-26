@@ -10,7 +10,7 @@ import { createForm } from "@rxform/react"
 import { App } from "./App"
 import { zodResolver } from "@rxform/resolvers"
 import { DeepSignal } from 'alien-deepsignals';
-import { defineField } from "@rxform/core"
+import { D, defineField } from "@rxform/core"
 
 type Model = DeepSignal<{
   userinfo: {
@@ -32,6 +32,7 @@ const bools = {
 const email = defineField()
   .component({
     component: Input,
+    hidden: D.use('isNickname'),
     id: "email",
     props: {
       placeholder: "请输入邮箱",

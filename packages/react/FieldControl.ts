@@ -30,7 +30,7 @@ export function FieldControl(props: Props) {
       state: field.value,
       updateOn: key,
       defaultValidatorEngine: props.defaultValidatorEngine,
-      boolValues: field.bools,
+      boolValues: field.boolContext,
       model: props.model
     }, initiativeValidator, props.validatorResolvers).then(errors => {
       if (Object.keys(errors).length === 0) {
@@ -108,7 +108,7 @@ export function FieldControl(props: Props) {
             state: field.value,
             updateOn: "signal",
             defaultValidatorEngine: props.defaultValidatorEngine,
-            boolValues: field.bools,
+            boolValues: field.boolContext,
             model: props.model
           }, signalValidator, props.validatorResolvers).then(errors => {
             if (Object.keys(errors).length === 0) {
@@ -123,10 +123,10 @@ export function FieldControl(props: Props) {
         }
       })
       effect(() => {
-        field.isHidden.value = field.hidden?.evaluate(field.bools) ?? false
+        field.isHidden.value = field.hidden?.evaluate(field.boolContext) ?? false
       })
       effect(() => {
-        field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
+        field.isDisabled.value = field.disabled?.evaluate(field.boolContext) ?? false
       })
       effect(() => {
         setFiledState(normalizeProps(field))

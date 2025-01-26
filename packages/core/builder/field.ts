@@ -252,6 +252,14 @@ export class FieldBuilder<T = any> {
       ...this.props,
       errors: this.errors.value,
       value: this.value,
+      isHidden: this.isHidden.value,
+      isBlurred: this.isBlurred.value,
+      isFocused: this.isFocused.value,
+      isMounted: this.isMounted.value,
+      isDestroyed: this.isDestroyed.value,
+      isInit: this.isInit.value,
+      isDisabled: this.isDisabled.value,
+      isUpdating: this.isInit.value,
     } as Record<string, any>
   }
 
