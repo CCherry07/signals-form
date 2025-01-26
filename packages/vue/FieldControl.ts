@@ -1,31 +1,34 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
-import { isPromise, Resolver, validate, type Field } from "@rxform/core"
+import { isPromise, Resolver, validate, FieldBuilder } from "@rxform/core"
 import { effect } from "alien-deepsignals";
 import { effectScope } from "alien-signals";
 
-function normalizeProps(field: Field) {
+function normalizeProps(field: FieldBuilder) {
   return field.getProps()
 }
 
-function normalizeEvents(field: Field) {
+function normalizeEvents(field: FieldBuilder) {
   return field.getEvents()
 }
 
 export const FieldControl = defineComponent({
   inheritAttrs: false,
   props: {
-    field: Object as PropType<Field>,
+    field: Object as PropType<FieldBuilder>,
     model: Object as PropType<Record<string, any>>,
     resolveComponent: Function as PropType<(component: string | Component | DefineComponent) => Component | DefineComponent>,
     defaultValidatorEngine: String as PropType<string>,
     validatorResolvers: Object as PropType<Record<string, Resolver>>
   },
   setup(props) {
-    const { initiative: initiativeValidator = [], signal: signalValidator } = props.field?.validator ?? {}
-    const field = props.field! as Field & Record<string, any>
+    const field = props.field! as FieldBuilder & Record<string, any>
+    const {
+      initiative: initiativeValidator = [],
+      signal: signalValidator = []
+    } = field!._validator ?? {}
     const filedState = shallowRef(normalizeProps(field))
-    
+
     const triggerValidate = (key: string) => {
       validate({
         state: field.value,
@@ -51,10 +54,10 @@ export const FieldControl = defineComponent({
         const maybePromise = field.onChange(...args)
         if (isPromise(maybePromise)) {
           maybePromise.then(() => {
-            field.isUpdating = false
+            // field.isUpdating = false
           })
         } else {
-          field.isUpdating = false
+          // field.isUpdating = false
         }
       } else {
         field.value = args[0]
@@ -87,12 +90,12 @@ export const FieldControl = defineComponent({
       onBlur,
       onFocus
     } as Record<string, Function>
-    normalizeEvents(field).forEach((key) => {
+    Object.entries(normalizeEvents(field)).forEach(([key, event]) => {
       if (key === "onChange" || key === "onBlur" || key === "onFocus") {
         return
       }
       events[key] = (...args: any[]) => {
-        field[key](...args)
+        event(...args)
         triggerValidate(key)
       }
     })
@@ -129,13 +132,12 @@ export const FieldControl = defineComponent({
         effect(() => {
           filedState.value = normalizeProps(field)
         })
-        field.$effects.forEach(effect => {
-          effect.call(field)
-        })
+        // field.$effects?.forEach(effect => {
+        //   effect.call(field)
+        // })
       })
       cleanups.push(stop)
     })
-
 
     onScopeDispose(() => {
       cleanups.forEach(cleanup => cleanup())
@@ -165,7 +167,7 @@ export const FieldControl = defineComponent({
     })
 
     return () => {
-      const component = props.resolveComponent!(field.component)
+      const component = props.resolveComponent!(field._component)
       return h('div', { hidden: filedState.value.isHidden, "data-field-id": field.id }, h(component, {
         ...filedState.value,
         ...events,
