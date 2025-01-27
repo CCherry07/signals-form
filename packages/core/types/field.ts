@@ -49,7 +49,7 @@ export interface ComponentOptions {
   wrapper?: any;
   hidden?: Decision;
   disabled?: Decision;
-  recoverValueOnHidden?: boolean
+  removeValueOnHidden?: boolean
   recoverValueOnShown?: boolean
   props: Record<string, any>;
   properties?: FieldBuilder[]

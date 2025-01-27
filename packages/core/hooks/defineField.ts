@@ -1,5 +1,5 @@
 import { FieldBuilder } from "../builder/field";
 
-export const defineField = (): FieldBuilder => {
-  return new FieldBuilder()
+export const defineField = <T, P extends Record<string, any>>(): FieldBuilder => {
+  return new FieldBuilder<T, P>()
 }

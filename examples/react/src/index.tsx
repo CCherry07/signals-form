@@ -22,11 +22,9 @@ type Model = DeepSignal<{
     donation: number,
   }
 }>
+
 const bools = {
-  isNickname: (model: Model) => {
-    console.log(model.userinfo.nickname);
-    return model.userinfo.nickname === "cherry"
-  }
+  isNickname: (model: Model) => model.userinfo.nickname === "cherry"
 }
 
 const email = defineField()
@@ -37,7 +35,9 @@ const email = defineField()
     props: {
       placeholder: "请输入邮箱",
       label: "邮箱"
-    }
+    },
+    removeValueOnHidden: false,
+    recoverValueOnShown: true
   }).build()
 
 const password = defineField()
@@ -97,25 +97,26 @@ const select = defineField().component({
   }
 }).build()
 
-const userinfo = defineField().component({
-  component: Form,
-  id: "userinfo",
-  props: {
-    label: "用户信息",
-    style: {
-      width: "400px"
-    }
-  },
-  properties: [
-    email,
-    nickname,
-    password,
-    phone,
-    donation,
-    residence,
-    select
-  ]
-}).build()
+const userinfo = defineField()
+  .component({
+    component: Form,
+    id: "userinfo",
+    props: {
+      label: "用户信息",
+      style: {
+        width: "400px"
+      }
+    },
+    properties: [
+      email,
+      nickname,
+      password,
+      phone,
+      donation,
+      residence,
+      select
+    ]
+  }).build()
 
 const { app, form } = createForm({
   graph: [
