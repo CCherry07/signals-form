@@ -3,12 +3,12 @@ import { ReactNode } from "react";
 import { Submit } from "./components/Submit";
 import { Spin } from "antd";
 import { effect, watch } from "alien-deepsignals";
-interface Parops {
+interface Props {
   app: ReactNode,
   form: any
 }
 
-export function App(props: Parops) {
+export function App(props: Props) {
   const [state, setState] = useState(false)
   const [submitting, setSubmitted] = useState(false)
   const [model, setModel] = useState({} as any)

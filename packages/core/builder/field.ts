@@ -3,7 +3,7 @@ import { effectScope } from "alien-signals"
 import { AbstractModelMethods, ActionOptions, ComponentOptions, FieldError, FieldErrors, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
 import { isArray, isPromise, set } from "@rxform/shared"
-
+import { defineRelation } from "../hooks/defineRelation"
 export class FieldBuilder<T = any, P extends Record<string, any> = Record<string, any>> {
   hidden?: Decision;
   disabled?: Decision;
@@ -32,6 +32,8 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
   path!: string
   parentpath!: string
   signalPath!: string
+
+  #relations?: ReturnType<typeof defineRelation>
 
   appContext: {
     provides?: Record<string, any>
@@ -154,6 +156,9 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
     // injects.forEach((inject) => {
     //   inject.call(this)
     // })
+    this.#relations?.forEach(r=>{
+      r.call(this)
+    })
     const filedValue: any = isFunction(this._actions.setDefaultValue) ? this._actions.setDefaultValue() : model;
     if (this.properties?.length && filedValue === undefined) {
       return
@@ -220,6 +225,10 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
     props = shallow(props as P)
     Object.assign(this.props, props)
     Object.assign(this, rest)
+    return this
+  }
+  relation(relations: ReturnType<typeof defineRelation>){
+    this.#relations = relations
     return this
   }
 

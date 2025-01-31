@@ -1,4 +1,4 @@
 export * from "./defineField"
 export * from "./useEmitter"
 export * from "./defineForm"
-export * from "./defineEffect"
+export * from "./defineRelation"

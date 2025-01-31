@@ -191,7 +191,7 @@ export class AbstractModel<M extends Model> {
     if (isString(fields)) {
       return this.getFieldValue(fields)
     } else if (isArray(fields)) {
-      return fields.map(this.getFieldValue)
+      return fields.map((key) => this.getFieldValue(key))
     } else {
       throw new Error("not found")
     }

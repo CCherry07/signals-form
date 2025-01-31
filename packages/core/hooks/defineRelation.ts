@@ -1,12 +1,14 @@
 import type { FieldBuilder } from "../builder/field";
 import { Effect, isArray } from "alien-deepsignals"
 
-export type Relation = {
+export type Relation = [
   deps: string | string[],
   cb: (this: FieldBuilder, depValues: any) => void
-}
-
-export function createRelation({ deps, cb }: Relation) {
+]
+export function createRelation([
+  deps,
+  cb
+]: Relation) {
   return function (this: FieldBuilder) {
     let field = this
     const getter = () => this.abstractModel.getFieldValues(deps)
@@ -16,13 +18,14 @@ export function createRelation({ deps, cb }: Relation) {
       const newValue = effect.run()
       cb.call(field, newValue)
     }
+    effect.run()
     return effect
   }
 }
 
 export function defineRelation(relation: Relation | Relation[]) {
   if (isArray(relation)) {
-    return relation.map(createRelation)
+    return (relation as Relation[]).map(createRelation)
   } else {
     return [createRelation(relation)]
   }

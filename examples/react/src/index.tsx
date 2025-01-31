@@ -11,7 +11,25 @@ import { createForm } from "@rxform/react"
 import { App } from "./App"
 import { zodResolver } from "@rxform/resolvers"
 import { DeepSignal } from 'alien-deepsignals';
-import { D, defineField } from "@rxform/core"
+import { D, defineField, defineRelation } from "@rxform/core"
+
+const emailRelation = defineRelation([
+  [
+    'userinfo.email',
+    function (depValues) {
+      console.log(depValues);
+    }
+  ],
+  [
+    [
+      "userinfo.email",
+      "userinfo.phone"
+    ],
+    function (depValues) {
+      console.log(depValues);
+    }
+  ]
+])
 
 type Model = DeepSignal<{
   userinfo: {
@@ -89,13 +107,16 @@ const residence = defineField().component({
   }
 }).build()
 
-const nickname = defineField().component({
-  component: Input,
-  id: "nickname",
-  props: {
-    label: "昵称",
-  }
-}).build()
+const nickname = defineField()
+  .component({
+    component: Input,
+    id: "nickname",
+    props: {
+      label: "昵称",
+    }
+  })
+  .relation(emailRelation)
+  .build()
 
 const select = defineField().component({
   component: Select,
