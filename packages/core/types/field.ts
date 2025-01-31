@@ -28,7 +28,7 @@ export interface SubscribeProps<M> {
 export type AbstractModelMethods = Pick<AbstractModel<DeepSignal<Model>>,
   'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors'
   | 'cleanErrors' | 'onSubscribe' | "peekFieldValue"
-  | "getField"
+  | "getField" | 'getFieldValues'
 >
 
 export interface AbstractModelInitOptions<M extends Model> {
@@ -43,7 +43,7 @@ export interface AbstractModelConstructor {
 }
 
 
-export interface ComponentOptions {
+export interface ComponentOptions<P extends Record<string, any>> {
   id: string;
   component?: any;
   wrapper?: any;
@@ -51,7 +51,7 @@ export interface ComponentOptions {
   disabled?: Decision;
   removeValueOnHidden?: boolean
   recoverValueOnShown?: boolean
-  props: Record<string, any>;
+  props: P;
   properties?: FieldBuilder[]
 }
 

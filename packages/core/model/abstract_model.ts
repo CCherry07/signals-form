@@ -1,4 +1,4 @@
-import { deepSignal, peek, Signal, signal, effect } from "alien-deepsignals";
+import { deepSignal, peek, Signal, signal, effect, isString, isArray } from "alien-deepsignals";
 import { clonedeep, get, set } from "@rxform/shared";
 import { createModel } from "./utils";
 
@@ -185,6 +185,16 @@ export class AbstractModel<M extends Model> {
 
   getFieldValue(field: string) {
     return get(this.model, field)
+  }
+
+  getFieldValues(fields: string | string[]) {
+    if (isString(fields)) {
+      return this.getFieldValue(fields)
+    } else if (isArray(fields)) {
+      return fields.map(this.getFieldValue)
+    } else {
+      throw new Error("not found")
+    }
   }
 
   peekFieldValue(parentpath: string, id: string) {

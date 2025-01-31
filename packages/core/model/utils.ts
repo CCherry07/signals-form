@@ -1,7 +1,7 @@
 import { signal, toValue } from "alien-deepsignals"
 import { isFunction } from "@rxform/shared"
-import type { AbstractModelMethods, Model } from "./types"
 import { FieldBuilder } from "../builder/field"
+import type { AbstractModelMethods, Model } from "./types"
 
 export async function createModel(graph: FieldBuilder[], model?: Model) {
   return Object.entries(graph).reduce(async (_parent, [, field]) => {

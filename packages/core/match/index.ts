@@ -1,9 +1,5 @@
-import { isObject, createTemplateLiterals as js } from "@rxform/shared";
-
-export {
-  js
-}
-
+import { createTemplateLiterals as js } from "@rxform/shared";
+import { isFunction, isMap, isPlainObject, isRegExp, isSet, isString } from "alien-deepsignals";
 type Pattern<T> = T | RegExp | ((value: T) => boolean) | { [K in keyof T]?: Pattern<T[K]> } | string;
 
 export const _ = Symbol('_');
@@ -13,17 +9,17 @@ export function match<T, R>(value: T, patterns: Array<[Pattern<T> | typeof _, (v
   switch (true) {
       case pattern === _:
         return handler(value);
-      case typeof pattern === 'function' && (pattern as (value: T) => boolean)(value):
+      case isFunction(pattern) && (pattern as (value: T) => boolean)(value):
         return handler(value);
-      case pattern instanceof RegExp && typeof value === 'string' && pattern.test(value):
+      case isRegExp(pattern) && isString(value) && pattern.test(value):
         return handler(value);
       case Array.isArray(pattern) && Array.isArray(value) && matchArray(value, pattern):
         return handler(value);
-      case pattern instanceof Map && value instanceof Map && matchMap(value, pattern):
+      case isMap(pattern) && isMap(value) && matchMap(value, pattern):
         return handler(value);
-      case pattern instanceof Set && value instanceof Set && matchSet(value, pattern):
+      case isSet(pattern) && isSet(value) && matchSet(value, pattern):
         return handler(value);
-      case isObject(pattern) && isObject(value) && matchObject(value, pattern as Object):
+      case isPlainObject(pattern) && isPlainObject(value) && matchObject(value, pattern as Object):
         return handler(value);
       case pattern === value:
         return handler(value);
@@ -81,4 +77,8 @@ function matchSet<T>(value: Set<T>, pattern: Set<Pattern<T>>): boolean {
   const valueArray = Array.from(value);
   const patternArray = Array.from(pattern);
   return matchArray(valueArray, patternArray);
+}
+
+export {
+  js
 }

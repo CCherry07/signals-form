@@ -1,5 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { z } from "zod"
 import Form from "./components/Form"
 import Input from "./components/Input"
 import InputType from "./components/InputType"
@@ -38,7 +39,16 @@ const email = defineField()
     },
     removeValueOnHidden: false,
     recoverValueOnShown: true
-  }).build()
+  })
+  .validator({
+    initiative: [
+      {
+        schema: z.string({ message: "必须是一个字符串" })
+          .email({ message: "输入的字符串必须是一个合法的邮箱" })
+      }
+    ]
+  })
+  .build()
 
 const password = defineField()
   .component({

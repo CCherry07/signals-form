@@ -1,6 +1,6 @@
 import { deepSignal, effect, isFunction, shallow, signal, Signal } from "alien-deepsignals"
-import { AbstractModelMethods, ActionOptions, ComponentOptions, FieldError, FieldErrors, ValidatorOptions } from "../types/field"
 import { effectScope } from "alien-signals"
+import { AbstractModelMethods, ActionOptions, ComponentOptions, FieldError, FieldErrors, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
 import { isArray, isPromise, set } from "@rxform/shared"
 
@@ -213,7 +213,7 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
     return this
   }
 
-  component(component: ComponentOptions) {
+  component(component: ComponentOptions<P>) {
     const { component: _component, ...options } = component
     this._component = _component
     let { props = {}, ...rest } = options
