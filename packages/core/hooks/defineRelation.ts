@@ -1,17 +1,14 @@
 import type { FieldBuilder } from "../builder/field";
-import { Effect, isArray } from "alien-deepsignals"
+import { Effect, isArray, isFunction } from "alien-deepsignals"
 
 export type Relation = [
-  deps: string | string[],
+  deps: string | string[] | ((field: FieldBuilder) => void),
   cb: (this: FieldBuilder, depValues: any) => void
 ]
-export function createRelation([
-  deps,
-  cb
-]: Relation) {
+export function createRelation([deps, cb]: Relation) {
   return function (this: FieldBuilder) {
     let field = this
-    const getter = () => this.getAbstractModel().getFieldValues(deps)
+    const getter = isFunction(deps) ? deps.bind(null, field) : () => this.getAbstractModel().getFieldValues(deps)
     const effect = new Effect(getter)
     effect.scheduler = function () {
       if (!effect.active || !effect.dirty) return

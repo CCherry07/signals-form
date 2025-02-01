@@ -291,7 +291,7 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
     return this
   }
 
-  events(events: Record<string, Function>) {
+  events(events: Record<string, (this: FieldBuilder, ...args: any[]) => void>) {
     Object.entries(events).forEach(([key, value]) => {
       this.#events[key] = value.bind(this)
     })

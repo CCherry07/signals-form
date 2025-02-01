@@ -49,7 +49,7 @@ export function FieldControl(props: Props) {
     const onChange = (...args: any[]) => {
       field.isUpdating = true
       if (_events.onChange) {
-        const maybePromise = field._events.onChange(...args)
+        const maybePromise = _events.onChange(...args)
         if (isPromise(maybePromise)) {
           maybePromise.then(() => {
             // field.isUpdating = false

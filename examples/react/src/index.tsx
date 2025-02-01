@@ -10,9 +10,14 @@ import Select from './components/Select';
 import { createForm } from "@rxform/react"
 import { App } from "./App"
 import { zodResolver } from "@rxform/resolvers"
-import { DeepSignal } from 'alien-deepsignals';
+import { deepSignal, DeepSignal } from 'alien-deepsignals';
 import { D, defineField, defineRelation } from "@rxform/core"
-
+const store = deepSignal({
+  name: "cherry",
+  info: {
+    age: 12
+  }
+})
 const nicknameRelation = defineRelation([
   [
     'userinfo.email',
@@ -21,15 +26,19 @@ const nicknameRelation = defineRelation([
     }
   ],
   [
-    [
-      "userinfo.email",
-      "userinfo.phone"
-    ],
+    function(field){
+      const data = store.info.age
+      return data
+    },
     function (depValues) {
       console.log(depValues);
     }
   ]
 ])
+
+setTimeout(() => {
+  store.info.age = 90
+}, 1000);
 
 type Model = DeepSignal<{
   userinfo: {
@@ -56,6 +65,11 @@ const email = defineField()
       label: "邮箱"
     },
     recoverValueOnShown: true
+  })
+  .events({
+    onChange(value: any) {
+      console.log(value, 'onChange');
+    }
   })
   .validator({
     initiative: [
@@ -167,4 +181,3 @@ const { app, form } = createForm({
 const root = createRoot(document.getElementById('root')!);
 
 root.render(<App app={app} form={form} />);
-
