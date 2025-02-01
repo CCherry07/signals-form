@@ -13,7 +13,7 @@ import { zodResolver } from "@rxform/resolvers"
 import { DeepSignal } from 'alien-deepsignals';
 import { D, defineField, defineRelation } from "@rxform/core"
 
-const emailRelation = defineRelation([
+const nicknameRelation = defineRelation([
   [
     'userinfo.email',
     function (depValues) {
@@ -115,18 +115,19 @@ const nickname = defineField()
       label: "昵称",
     }
   })
-  .relation(emailRelation)
+  .relation(nicknameRelation)
   .build()
 
-const select = defineField().component({
-  component: Select,
-  id: "select",
-  props: {
-    placeholder: "请选择",
-    label: "选择",
-    options: []
-  }
-}).build()
+const select = defineField()
+  .component({
+    component: Select,
+    id: "select",
+    props: {
+      placeholder: "请选择",
+      label: "选择",
+      options: []
+    }
+  }).build()
 
 const userinfo = defineField()
   .component({
