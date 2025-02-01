@@ -5,65 +5,98 @@ import { BoolContext, Decision } from "../boolless"
 import { isArray, isPromise, set } from "@rxform/shared"
 import { defineRelation } from "../hooks/defineRelation"
 export class FieldBuilder<T = any, P extends Record<string, any> = Record<string, any>> {
-  hidden?: Decision;
-  disabled?: Decision;
-  properties: FieldBuilder[] | undefined
-  public isBlurred: Signal<boolean> = signal(false)
-  public isFocused: Signal<boolean> = signal(false)
-  public isInit: Signal<boolean> = signal(false)
-  public isDestroyed: Signal<boolean> = signal(false)
-  public isHidden: Signal<boolean> = signal(false)
-  public isDisabled: Signal<boolean> = signal(false)
-  public isValid: Signal<boolean> = signal(true)
-  public errors: Signal<FieldErrors> = signal({})
-  public isMounted: Signal<boolean> = signal(false)
-
-  props = deepSignal({} as P)
-
-  private $value: T = undefined as unknown as T
-  private cleanups: Array<Function> = []
-
-  removeValueOnHidden?: boolean
-  recoverValueOnShown?: boolean
-
-  abstractModel!: AbstractModelMethods;
 
   id!: string
   path!: string
   parentpath!: string
   signalPath!: string
 
-  #relations?: ReturnType<typeof defineRelation>
+  hidden?: Decision;
+  disabled?: Decision;
+  properties?: FieldBuilder[]
 
-  appContext: {
+  isBlurred: Signal<boolean> = signal(false)
+  isFocused: Signal<boolean> = signal(false)
+  isInit: Signal<boolean> = signal(false)
+  isDestroyed: Signal<boolean> = signal(false)
+  isHidden: Signal<boolean> = signal(false)
+  isDisabled: Signal<boolean> = signal(false)
+  isValid: Signal<boolean> = signal(true)
+  errors: Signal<FieldErrors> = signal({})
+  isMounted: Signal<boolean> = signal(false)
+
+  #props = deepSignal({} as P)
+  #$value: T = undefined as unknown as T
+  #cleanups: Array<Function> = []
+  #removeValueOnHidden: boolean = true
+  #recoverValueOnShown: boolean = false
+  #abstractModel!: AbstractModelMethods;
+  #relations?: ReturnType<typeof defineRelation>
+  #appContext: {
     provides?: Record<string, any>
   } = {}
+
+  setAppContext(appContext: any) {
+    this.#appContext = appContext
+  }
+
+  setAbstractModel(abstractModel: AbstractModelMethods) {
+    this.#abstractModel = abstractModel
+  }
+
+  getAbstractModel() {
+    return this.#abstractModel
+  }
 
   parent: FieldBuilder | null = null
 
   get value() {
-    return this.abstractModel.getFieldValue(this.path)
+    return this.#abstractModel.getFieldValue(this.path)
   }
 
   peek() {
-    return this.abstractModel?.peekFieldValue?.(this.parentpath, this.id)
+    return this.#abstractModel?.peekFieldValue?.(this.parentpath, this.id)
   }
 
   set value(v: T) {
-    this.abstractModel.setFieldValue(this.path, v)
+    this.#abstractModel.setFieldValue(this.path, v)
   }
 
-  _component?: any;
-  _injectFields?: Record<string, string> = {}
-  _validator: ValidatorOptions = {}
-  _actions: ActionOptions<T> = {}
-  _effects: Array<(this: Pick<FieldBuilder, 'props' | 'value'>) => void> = []
-  _provides: Record<string | symbol, any> = {}
-  _events: Record<string, Function> = {}
+  #component?: any;
+  #injectFields: Record<string, string> = {}
+  #validator: ValidatorOptions = {}
+  #actions: ActionOptions<T> = {}
+  #effects: Array<(this: FieldBuilder) => void> = []
+  #provides: Record<string | symbol, any> = {}
+  #events: Record<string, Function> = {}
+
+  getComponent() {
+    return this.#component
+  }
+
+  getActions() {
+    return this.#actions
+  }
+
+  getValidator() {
+    return this.#validator
+  }
+
+  getProvides() {
+    return this.#provides
+  }
 
   private deps: Record<string, FieldBuilder> = {}
   private effectFields: Set<FieldBuilder> = new Set()
-  boolContext: BoolContext = {}
+  #boolContext: BoolContext = {}
+
+  setBoolContext(boolContext: BoolContext) {
+    this.#boolContext = boolContext
+  }
+
+  get boolContext() {
+    return this.#boolContext
+  }
 
   onBeforeInit?(): void
   onInit?(): void
@@ -81,27 +114,27 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
   // all fields are initialized, we can inject fields now
   normalizeDeps() {
     this.deps = Object.fromEntries(
-      Object.entries(this.injectFields)
+      Object.entries(this.#injectFields)
         .map(([key, value]) => {
-          const targetField = this.abstractModel.getField(value)
-          targetField.appendEffectField(this as FieldBuilder)
-          return [key, this.abstractModel.getField(value)]
+          const targetField = this.#abstractModel.getField(value)
+          targetField.#appendEffectField(this as FieldBuilder)
+          return [key, this.#abstractModel.getField(value)]
         }))
 
-    this.normalizeEffects()
+    this.#normalizeEffects()
   }
 
-  appendEffectField(field: FieldBuilder) {
+  #appendEffectField(field: FieldBuilder) {
     this.effectFields.add(field)
   }
 
-  normalizeEffects() {
-    this._effects.forEach((effect) => {
+  #normalizeEffects() {
+    this.#effects.forEach((effect) => {
       effect.call(this as FieldBuilder)
     })
   }
 
-  getDepsValue(deps?: string | string[] | Record<string, string>,) {
+  #getDepsValue(deps?: string | string[] | Record<string, string>) {
     let injectValues: any = undefined
     if (Array.isArray(deps)) {
       injectValues = deps.map((dep: string) => this.deps[dep].value)
@@ -134,11 +167,12 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
     this.isDestroyed.value = false
     this.isValid.value = true
     this.errors.value = {}
-    this.$value = undefined as unknown as T
+    this.#$value = undefined as unknown as T
   }
 
   resetModel(model?: T | Promise<T>) {
-    const filedValue: any = isFunction(this._actions.setDefaultValue) ? this._actions.setDefaultValue() : model;
+    const { setDefaultValue } = this.#actions
+    const filedValue: any = isFunction(setDefaultValue) ? setDefaultValue() : model;
     if (isPromise(filedValue)) {
       filedValue.then((value) => {
         this.value = value
@@ -156,10 +190,11 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
     // injects.forEach((inject) => {
     //   inject.call(this)
     // })
-    this.#relations?.forEach(r=>{
+    this.#relations?.forEach(r => {
       r.call(this)
     })
-    const filedValue: any = isFunction(this._actions.setDefaultValue) ? this._actions.setDefaultValue() : model;
+    const { setDefaultValue } = this.#actions
+    const filedValue: any = isFunction(setDefaultValue) ? setDefaultValue() : model;
     if (this.properties?.length && filedValue === undefined) {
       return
     }
@@ -173,17 +208,17 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
   }
 
   evaluateDecision(decision: Decision) {
-    return decision.evaluate(this.boolContext)
+    return decision.evaluate(this.#boolContext)
   }
 
   setFieldErrors(errors: FieldErrors) {
-    this.abstractModel.setFieldErrors(this.path, errors)
+    this.#abstractModel.setFieldErrors(this.path, errors)
   }
 
   cleanErrors(paths?: string[]) {
     if (paths === undefined) {
       this.errors.value = {};
-      this.abstractModel.cleanErrors([this.path])
+      this.#abstractModel.cleanErrors([this.path])
       return;
     }
     paths.forEach(p => {
@@ -198,14 +233,15 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
     }
   }
 
-  async _onSubmitValue(): Promise<T> {
+  async onSubmit(): Promise<T> {
     const fieldPathLength = this.path.length + 1
-    if (isFunction(this._actions.onSubmitValue)) {
-      return await this._actions.onSubmitValue(this.peek())
+    const { onSubmitValue } = this.#actions
+    if (isFunction(onSubmitValue)) {
+      return await onSubmitValue(this.peek())
     } else if (this.properties) {
       const model: any = {} as T
       await Promise.all(this.properties.map(async (field) => {
-        return set(model, field.path.slice(fieldPathLength), await field._onSubmitValue())
+        return set(model, field.path.slice(fieldPathLength), await field.onSubmit())
       }))
       return model
     } else {
@@ -214,56 +250,57 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
   }
 
   actions(actions: ActionOptions<T>) {
-    this._actions = actions
+    this.#actions = actions
     return this
   }
 
   component(component: ComponentOptions<P>) {
     const { component: _component, ...options } = component
-    this._component = _component
+    this.#component = _component
     let { props = {}, ...rest } = options
     props = shallow(props as P)
-    Object.assign(this.props, props)
+    Object.assign(this.#props, props)
     Object.assign(this, rest)
     return this
   }
-  relation(relations: ReturnType<typeof defineRelation>){
+
+  relation(relations: ReturnType<typeof defineRelation>) {
     this.#relations = relations
     return this
   }
 
   provides(provides: Record<string | symbol, any>) {
-    this._provides = provides
+    this.#provides = provides
     return this
   }
 
   injectFields(fields: Record<string, string>) {
-    this._injectFields = fields
+    this.#injectFields = fields
     return this
   }
 
   validator(options: ValidatorOptions) {
-    this._validator = options
+    this.#validator = options
     return this
   }
 
   effects(effects: Array<
-    (this: Pick<FieldBuilder, 'props' | 'value'>) => void
+    (this: FieldBuilder) => void
   >) {
-    this._effects = effects
+    this.#effects = effects
     return this
   }
 
   events(events: Record<string, Function>) {
     Object.entries(events).forEach(([key, value]) => {
-      this._events[key] = value.bind(this)
+      this.#events[key] = value.bind(this)
     })
     return this
   }
 
   getProps() {
     return {
-      ...this.props,
+      ...this.#props,
       errors: this.errors.value,
       value: this.value,
       isHidden: this.isHidden.value,
@@ -278,7 +315,7 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
   }
 
   getEvents() {
-    return this._events
+    return this.#events
   }
 
   build() {
@@ -295,17 +332,17 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
 
       // recover value when hidden and shown
       effect(() => {
-        const { isHidden, removeValueOnHidden = true, recoverValueOnShown = false } = this;
-        if (isHidden.value && !removeValueOnHidden) {
+        const { isHidden } = this;
+        if (isHidden.value && !this.#removeValueOnHidden) {
           this.onHidden?.(this.isHidden.peek())
           return
         }
-        if (recoverValueOnShown) {
-          if (!isHidden.value && this.$value !== this.peek()) {
-            this.value = this.$value;
+        if (this.#recoverValueOnShown) {
+          if (isHidden.value === false && this.#$value !== this.peek()) {
+            this.value = this.#$value;
             this.onHidden?.(this.isHidden.peek())
           } else {
-            this.$value = this.peek();
+            this.#$value = this.peek();
           }
         }
         if (isHidden.value) {
@@ -314,7 +351,7 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
         }
       })
     })
-    this.cleanups.push(stop)
+    this.#cleanups.push(stop)
     return this
   }
 }

@@ -5,7 +5,8 @@ import type { AbstractModelMethods, Model } from "./types"
 
 export async function createModel(graph: FieldBuilder[], model?: Model) {
   return Object.entries(graph).reduce(async (_parent, [, field]) => {
-    const { _actions: { setDefaultValue }, properties } = field
+    const { properties } = field
+    const { setDefaultValue } = field.getActions()
     let filedValue = undefined
     if (isFunction(setDefaultValue)) {
       filedValue = await setDefaultValue()
@@ -22,12 +23,12 @@ export async function createModel(graph: FieldBuilder[], model?: Model) {
   }, Promise.resolve({}))
 }
 
-export function createGraph(graph:  FieldBuilder[], appContext: any): FieldBuilder[] {
+export function createGraph(graph: FieldBuilder[], appContext: any): FieldBuilder[] {
   return graph.map(field => {
     if (field.properties) {
       field.properties = createGraph(field.properties, appContext).map((child) => {
         child.parent = field
-        child.appContext = appContext
+        child.setAppContext(appContext)
         return child
       })
     }
@@ -50,7 +51,7 @@ export function asyncBindingModel(
       field.path = path ? `${path}.${id}` : id;
       field.signalPath = path ? `${path}.$${id}` : id;
       fields[field.path] = field
-      field.abstractModel = abstractModelMethods
+      field.setAbstractModel(abstractModelMethods)
       if (properties) {
         binding(abstractModelMethods, properties, fields, field.path!)
       }
@@ -69,7 +70,8 @@ export async function syncBindingModel(
   path: string,
 ) {
   return Object.entries(graph).reduce(async (_parent, [, field]) => {
-    const { id, _actions: { setDefaultValue }, properties } = field
+    const { id, properties } = field
+    const { setDefaultValue } = field.getActions()
     const filedValue = signal()
     if (isFunction(setDefaultValue)) {
       filedValue.value = await setDefaultValue()
@@ -81,7 +83,7 @@ export async function syncBindingModel(
     field.value = parent.value[id!]
     field.path = path ? `${path}.${id}` : id;
     fields[field.path] = field
-    field.abstractModel = abstractModelMethods
+    field.setAbstractModel(abstractModelMethods)
     if (properties) {
       const childValue = (await syncBindingModel(abstractModelMethods, properties, fields, field.path!))?.value
       field.value!.value = {

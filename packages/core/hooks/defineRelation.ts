@@ -11,7 +11,7 @@ export function createRelation([
 ]: Relation) {
   return function (this: FieldBuilder) {
     let field = this
-    const getter = () => this.abstractModel.getFieldValues(deps)
+    const getter = () => this.getAbstractModel().getFieldValues(deps)
     const effect = new Effect(getter)
     effect.scheduler = function () {
       if (!effect.active || !effect.dirty) return

@@ -55,7 +55,6 @@ const email = defineField()
       placeholder: "请输入邮箱",
       label: "邮箱"
     },
-    removeValueOnHidden: false,
     recoverValueOnShown: true
   })
   .validator({

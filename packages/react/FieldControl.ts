@@ -45,9 +45,10 @@ export function FieldControl(props: Props) {
   }, [])
 
   const methods = useMemo(() => {
+    const _events = field.getEvents()
     const onChange = (...args: any[]) => {
       field.isUpdating = true
-      if (field._events.onChange) {
+      if (_events.onChange) {
         const maybePromise = field._events.onChange(...args)
         if (isPromise(maybePromise)) {
           maybePromise.then(() => {
@@ -63,7 +64,7 @@ export function FieldControl(props: Props) {
     }
 
     const onBlur = (value: any) => {
-      field._events?.onBlur?.(value)
+      _events?.onBlur?.(value)
       batch(() => {
         field.isFocused.value = false
         field.isBlurred.value = true
@@ -72,8 +73,8 @@ export function FieldControl(props: Props) {
     }
 
     const onFocus = () => {
-      if (field._events.onFocus) {
-        field._events.onFocus()
+      if (_events.onFocus) {
+        _events.onFocus()
       }
       batch(() => {
         field.isBlurred.value = false
@@ -164,7 +165,7 @@ export function FieldControl(props: Props) {
     "data-field-id": field.id,
     hidden: filedState.isHidden,
   },
-    createElement(resolveComponent(field._component), {
+    createElement(resolveComponent(field.getComponent()), {
       ...filedState,
       ...methods,
     }, getChildren())

@@ -47,8 +47,8 @@ export class AbstractModel<M extends Model> {
     this.boolContext = Object.freeze(setup(boolsConfig, this.model))
 
     Object.values(fields!)!.forEach((field) => {
-      field.boolContext = this.boolContext
-      field.appContext = this.appContext
+      field.setBoolContext(this.boolContext)
+      field.setAppContext(this.appContext)
     })
     this.graph = graph!
     this.fields = fields!
@@ -240,7 +240,7 @@ export class AbstractModel<M extends Model> {
     const model = {} as T
     await Promise.all(Object.values(this.graph).map(async (field) => {
       // @ts-ignore
-      return set(model, field.path, await field._onSubmitValue())
+      return set(model, field.path, await field.onSubmit())
     }))
     this.submitted.value = true;
     this.submiting.value = false;
