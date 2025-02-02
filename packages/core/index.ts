@@ -10,6 +10,5 @@ export {
   setup as setupValidator,
   validate
 } from "./validator"
-export type { ValidateItem } from "./validator"
 
 export type * from "./types/form"

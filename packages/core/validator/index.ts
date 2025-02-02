@@ -1,19 +1,9 @@
 import { isProd, isArray, isObject, isString, get, isFunction } from "@rxform/shared"
-
-import { type BoolContext, Decision } from "../boolless"
-import type { FactoryOptions, Resolver } from "../resolvers/type"
 import type { AbstractModel } from "../model/abstract_model"
 import { FieldErrors } from "../types/field"
-
-export interface ValidateItem {
-  schema: any
-  engine?: string
-  fact?: string | object
-  updateOn?: string | string[]
-  needValidate?: Decision
-  factoryOptions?: FactoryOptions
-  schemaOptions?: any
-}
+import { Resolver } from "../resolvers/type";
+import { Decision } from "../boolless";
+import { Context, ValidateItem, ValidatorResolvers } from "./types";
 
 export function setup(this: AbstractModel<any>, validator: string, resolver: Resolver) {
   if (!isProd && this.validatorResolvers[validator]) {
@@ -45,17 +35,6 @@ const getFactValue = (fact: string | Object | Array<string>, state: any, model: 
   }
   return fact
 }
-
-
-interface Context<T> {
-  state: T
-  updateOn: string
-  defaultValidatorEngine: string
-  model: Record<string, any>
-  boolValues: BoolContext
-}
-
-type ValidatorResolvers = Record<string, Resolver>
 
 export const validate = async <T>({ state, updateOn: _updateOn, model, boolValues, defaultValidatorEngine }: Context<T>, validates: ValidateItem[], validatorResolvers: ValidatorResolvers): Promise<FieldErrors> => {
   const fieldErrors = {} as FieldErrors

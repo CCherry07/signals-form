@@ -32,6 +32,7 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
   #recoverValueOnShown: boolean = false
   #abstractModel!: AbstractModelMethods;
   #relations?: ReturnType<typeof defineRelation>
+  // @ts-ignore
   #appContext: {
     provides?: Record<string, any>
   } = {}
@@ -134,6 +135,7 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
     })
   }
 
+  // @ts-ignore
   #getDepsValue(deps?: string | string[] | Record<string, string>) {
     let injectValues: any = undefined
     if (Array.isArray(deps)) {
