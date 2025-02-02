@@ -4,7 +4,7 @@ import { createModel } from "./utils";
 
 import { type BoolContext, setup } from "../boolless"
 import type { Resolver } from "../resolvers/type";
-import type { AbstractModelConstructor, AbstractModelInitOptions, Model, SubscribeProps } from "./types";
+import type { AbstractModelConstructor, AbstractModelInitOptions, Model, SubscribeProps } from "../types/form";
 import { FieldBuilder } from "../builder/field";
 import { FieldErrors } from "../types/field";
 

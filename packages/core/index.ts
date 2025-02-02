@@ -12,4 +12,4 @@ export {
 } from "./validator"
 export type { ValidateItem } from "./validator"
 
-export type * from "./model/types"
+export type * from "./types/form"

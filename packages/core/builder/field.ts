@@ -1,6 +1,6 @@
 import { deepSignal, effect, isFunction, shallow, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
-import { AbstractModelMethods, ActionOptions, ComponentOptions, FieldError, FieldErrors, ValidatorOptions } from "../types/field"
+import { AbstractModelMethods, ActionOptions, ComponentOptions, FieldError, FieldErrors, Lifecycle, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
 import { isArray, isPromise, set } from "@rxform/shared"
 import { defineRelation } from "../hooks/defineRelation"
@@ -247,6 +247,11 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
     } else {
       return this.peek()
     }
+  }
+
+  lifecycle(hooks: Lifecycle) {
+    Object.assign(this, hooks)
+    return this
   }
 
   actions(actions: ActionOptions<T>) {

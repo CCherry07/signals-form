@@ -70,3 +70,14 @@ export interface FieldError {
   type: string
 }
 export type FieldErrors = Record<string, FieldError>
+
+export interface Lifecycle {
+  onBeforeInit?(this: FieldBuilder): void
+  onInit?(this: FieldBuilder): void
+  onDestroy?(this: FieldBuilder): void
+  onDisabled?(this: FieldBuilder, state: boolean): void
+  onHidden?(this: FieldBuilder, state: boolean): void
+  onMounted?(this: FieldBuilder): void
+  onUnmounted?(this: FieldBuilder): void
+  onValidate?(this: FieldBuilder): void
+}

@@ -26,7 +26,7 @@ const nicknameRelation = defineRelation([
     }
   ],
   [
-    function(field){
+    function (field) {
       const data = store.info.age
       return data
     },
@@ -62,9 +62,12 @@ const email = defineField()
     id: "email",
     props: {
       placeholder: "请输入邮箱",
-      label: "邮箱"
+      label: "邮箱",
     },
     recoverValueOnShown: true
+  })
+  .lifecycle({
+    
   })
   .events({
     onChange(value: any) {

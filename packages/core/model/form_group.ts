@@ -1,4 +1,4 @@
-import type { FormConfig, AbstractModelMethods } from "./types";
+import type { FormConfig, AbstractModelMethods } from "../types/form";
 
 import { AbstractModel } from "./abstract_model"
 import { asyncBindingModel, createGraph } from "./utils";
