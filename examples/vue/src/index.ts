@@ -3,7 +3,7 @@ import { zodResolver } from "@rxform/resolvers"
 import { createForm } from "@rxform/vue"
 
 import App from './App.vue';
-import Form from "./components/From.vue"
+import Form from "./components/Form.vue"
 import Input from './components/Input.vue';
 import { z } from 'zod';
 import { defineField } from '@rxform/core';

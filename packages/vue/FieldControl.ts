@@ -147,14 +147,15 @@ export const FieldControl = defineComponent({
       const slots = {} as Record<string, () => any>
       if (field.properties) {
         (field.properties).forEach((child) => {
-          slots[child.id] = () => h(FieldControl, {
+          slots[child.id] = () => { 
+            return h(FieldControl, {
             key: child.path,
             field: child,
             model: props.model,
             resolveComponent: props.resolveComponent,
             validatorResolvers: props.validatorResolvers,
             defaultValidatorEngine: props.defaultValidatorEngine
-          })
+          })}
         })
       }
       return slots
@@ -167,7 +168,7 @@ export const FieldControl = defineComponent({
     })
 
     return () => {
-      const component = props.resolveComponent!(field._component)
+      const component = props.resolveComponent!(field.getComponent())
       return h('div', { hidden: filedState.value.isHidden, "data-field-id": field.id }, h(component, {
         ...filedState.value,
         ...events,
