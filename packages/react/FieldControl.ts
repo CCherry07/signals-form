@@ -1,5 +1,5 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { FieldBuilder, isPromise, validate } from "@rxform/core"
+import { FieldBuilder, validate } from "@rxform/core"
 import { batch, effect } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
 import { Resolver } from '@rxform/core';
@@ -23,7 +23,7 @@ export function FieldControl(props: Props) {
   const {
     initiative: initiativeValidator = [],
     signal: signalValidator = []
-  } = field._validator ?? {}
+  } = field.getValidator() ?? {}
 
   const triggerValidate = useCallback((key: string) => {
     validate({
@@ -32,31 +32,25 @@ export function FieldControl(props: Props) {
       defaultValidatorEngine: props.defaultValidatorEngine,
       boolValues: field.boolContext,
       model: props.model
-    }, initiativeValidator, props.validatorResolvers).then(errors => {
-      if (Object.keys(errors).length === 0) {
-        field.abstractModel?.cleanErrors([String(field.path)])
-      } else {
-        field.abstractModel?.setErrors({
-          [String(field.path)]: errors
-        })
-      }
-      field.errors.value = errors
-    })
+    }, initiativeValidator, props.validatorResolvers)
+      .then(errors => {
+        if (Object.keys(errors).length === 0) {
+          field.abstractModel?.cleanErrors([String(field.path)])
+        } else {
+          field.abstractModel?.setErrors({
+            [String(field.path)]: errors
+          })
+        }
+        field.errors.value = errors
+      })
   }, [])
 
   const methods = useMemo(() => {
     const _events = field.getEvents()
-    const onChange = (...args: any[]) => {
+    const onChange = async (...args: any[]) => {
       field.isUpdating = true
       if (_events.onChange) {
-        const maybePromise = _events.onChange(...args)
-        if (isPromise(maybePromise)) {
-          maybePromise.then(() => {
-            // field.isUpdating = false
-          })
-        } else {
-          // field.isUpdating = false
-        }
+        await _events.onChange(...args)
       } else {
         field.value = args[0]
       }

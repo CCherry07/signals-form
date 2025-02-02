@@ -26,7 +26,7 @@ export const FieldControl = defineComponent({
     const {
       initiative: initiativeValidator = [],
       signal: signalValidator = []
-    } = field!._validator ?? {}
+    } = field!.getValidator() ?? {}
     const filedState = shallowRef(normalizeProps(field))
 
     const triggerValidate = (key: string) => {
