@@ -1,11 +1,11 @@
 import { FieldControl } from "./FieldControl";
-import { createRXForm, Field, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
+import { createRXForm, FieldBuilder, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
 import type { Resolver, FormConfig as CoreFormConfig } from '@rxform/core'
 import { type Component, type DefineComponent, h } from "vue";
 
 interface FormConfig extends CoreFormConfig {
   components: Record<string, Component | DefineComponent>;
-  graph: typeof Field[];
+  graph: FieldBuilder[];
   defaultValidatorEngine: string;
   boolsConfig: Record<string, (...args: any[]) => boolean>;
   id: string;
