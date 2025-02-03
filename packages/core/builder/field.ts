@@ -179,10 +179,22 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
     const filedValue: any = isFunction(setDefaultValue) ? setDefaultValue() : model;
     if (isPromise(filedValue)) {
       filedValue.then((value) => {
-        this.value = value
+        if (this.isLeaf) {
+          this.value = value
+        } else {
+          this.properties?.forEach(filed => {
+            filed.resetModel(value?.[filed.id])
+          })
+        }
       })
     } else {
-      this.value = filedValue!
+      if (this.isLeaf) {
+        this.value = filedValue
+      } else {
+        this.properties?.forEach(filed => {
+          filed.resetModel(filedValue?.[filed.id])
+        })
+      }
     }
   }
 
