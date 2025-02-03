@@ -4,6 +4,8 @@ import { AbstractModelMethods, ActionOptions, ComponentOptions, FieldError, Fiel
 import { BoolContext, Decision } from "../boolless"
 import { isArray, isPromise, set } from "@rxform/shared"
 import { defineRelation } from "../hooks/defineRelation"
+import { formatValidateItem } from "../validator"
+
 export class FieldBuilder<T = any, P extends Record<string, any> = Record<string, any>> {
 
   id!: string
@@ -287,6 +289,9 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
   }
 
   validator(options: ValidatorOptions) {
+    if (options.initiative) {
+      options.initiative = formatValidateItem(options.initiative)
+    }
     this.#validator = options
     return this
   }

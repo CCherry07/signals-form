@@ -12,3 +12,4 @@ export {
 } from "./validator"
 
 export type * from "./types/form"
+export type * from "./validator/types"

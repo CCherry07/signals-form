@@ -61,8 +61,8 @@ export interface ActionOptions<T> {
 }
 
 export interface ValidatorOptions {
-  signal?: ValidateItem[];
-  initiative?: ValidateItem[];
+  passive?: ValidateItem[] | ValidateItem;
+  initiative?: ValidateItem[] | ValidateItem | Object;
 }
 
 export interface FieldError {

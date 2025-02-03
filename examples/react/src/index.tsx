@@ -73,12 +73,7 @@ const email = defineField()
     }
   })
   .validator({
-    initiative: [
-      {
-        schema: z.string({ message: "必须是一个字符串" })
-          .email({ message: "输入的字符串必须是一个合法的邮箱" }),
-      }
-    ]
+    initiative: z.string({ message: "必须是一个字符串" }).email({ message: "输入的字符串必须是一个合法的邮箱" }),
   })
   .build()
 

@@ -53,3 +53,16 @@ export const validate = async <T>({ state, updateOn: _updateOn, model, boolValue
   }
   return fieldErrors
 }
+
+
+export const formatValidateItem = (items: ValidateItem [] | ValidateItem | Object): ValidateItem[] => {
+  if (isArray(items)) {
+    return items.map(i => i?.schema ? i : { schema: i })
+  } else if ((items as ValidateItem)?.schema) {
+    return [items as ValidateItem]
+  } else {
+    return [{
+      schema: items as Object
+    }]
+  }
+}

@@ -1,5 +1,5 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { FieldBuilder, validate } from "@rxform/core"
+import { FieldBuilder, validate, ValidateItem } from "@rxform/core"
 import { batch, effect } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
 import { Resolver } from '@rxform/core';
@@ -22,7 +22,7 @@ export function FieldControl(props: Props) {
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
   const {
     initiative: initiativeValidator = [],
-    signal: signalValidator = []
+    passive: passiveValidator = []
   } = field.getValidator() ?? {}
 
   const triggerValidate = useCallback((key: string) => {
@@ -32,7 +32,7 @@ export function FieldControl(props: Props) {
       defaultValidatorEngine: props.defaultValidatorEngine,
       boolValues: field.boolContext,
       model: props.model
-    }, initiativeValidator, props.validatorResolvers)
+    }, initiativeValidator as ValidateItem[], props.validatorResolvers)
       .then(errors => {
         if (Object.keys(errors).length === 0) {
           field.abstractModel?.cleanErrors([String(field.path)])
@@ -98,14 +98,14 @@ export function FieldControl(props: Props) {
     field.onMounted?.()
     const stopScope = effectScope(() => {
       effect(() => {
-        if (signalValidator) {
+        if (passiveValidator) {
           validate({
             state: field.value,
             updateOn: "signal",
             defaultValidatorEngine: props.defaultValidatorEngine,
             boolValues: field.boolContext,
             model: props.model
-          }, signalValidator, props.validatorResolvers).then(errors => {
+          }, passiveValidator as ValidateItem[], props.validatorResolvers).then(errors => {
             if (Object.keys(errors).length === 0) {
               field.abstractModel?.cleanErrors([String(field.path)])
             } else {
