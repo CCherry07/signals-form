@@ -1,26 +1,37 @@
 import type { FieldBuilder } from "../builder/field";
-import { Effect, isArray, isFunction } from "alien-deepsignals"
+import { Effect, isArray, isFunction, effect } from "alien-deepsignals"
 
-export type Relation = [
-  deps: string | string[] | ((field: FieldBuilder) => void),
+
+export type RelationEntry = [
+  deps: string | string[],
   cb: (this: FieldBuilder, depValues: any) => void
 ]
-export function createRelation([deps, cb]: Relation) {
+export type RelationFn = (field: FieldBuilder) => void
+
+export type Relation = RelationFn | RelationEntry
+
+export function createRelation(relation: Relation) {
   return function (this: FieldBuilder) {
     let field = this
-    const getter = isFunction(deps) ? deps.bind(null, field) : () => this.getAbstractModel().getFieldValues(deps)
-    const effect = new Effect(getter)
-    effect.scheduler = function () {
-      if (!effect.active || !effect.dirty) return
-      const newValue = effect.run()
-      cb.call(field, newValue)
+    if (isFunction(relation)) {
+      return effect(() => {
+        relation.bind(null, field)
+      })
     }
-    effect.run()
-    return effect
+    const [deps, cb] = relation
+    const getter = () => this.getAbstractModel().getFieldValues(deps)
+    const e = new Effect(getter)
+    e.scheduler = function () {
+      if (!e.active || !e.dirty) return
+      const newValue = e.run()
+      cb?.call(field, newValue)
+    }
+    e.run()
+    return e
   }
 }
 
-export function defineRelation(relation: Relation | Relation[]) {
+export function defineRelation(relation: Relation[] | RelationFn) {
   if (isArray(relation)) {
     return (relation as Relation[]).map(createRelation)
   } else {

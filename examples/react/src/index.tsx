@@ -12,12 +12,18 @@ import { App } from "./App"
 import { zodResolver } from "@rxform/resolvers"
 import { deepSignal, DeepSignal } from 'alien-deepsignals';
 import { D, defineField, defineRelation } from "@rxform/core"
+
 const store = deepSignal({
   name: "cherry",
   info: {
     age: 12
   }
 })
+
+const nicknameRelation1 = defineRelation((field) => {
+
+})
+
 const nicknameRelation = defineRelation([
   [
     'userinfo.email',
@@ -26,18 +32,19 @@ const nicknameRelation = defineRelation([
     }
   ],
   [
-    function (field) {
-      const data = store.info.age
-      return data
-    },
+    ['userinfo.email', 'userinfo.phone'],
     function (depValues) {
       console.log(depValues);
     }
-  ]
+  ],
+  function (field) {
+    const data = store.name
+    field.value = data
+  }
 ])
 
 setTimeout(() => {
-  store.info.age = 90
+  store.name = "Tom"
 }, 1000);
 
 type Model = DeepSignal<{
@@ -75,6 +82,17 @@ const email = defineField()
   .validator({
     initiative: z.string({ message: "必须是一个字符串" }).email({ message: "输入的字符串必须是一个合法的邮箱" }),
   })
+  .build()
+
+const nickname = defineField()
+  .component({
+    component: Input,
+    id: "nickname",
+    props: {
+      label: "昵称",
+    }
+  })
+  .relation(nicknameRelation)
   .build()
 
 const password = defineField()
@@ -115,17 +133,6 @@ const residence = defineField().component({
     label: "地区"
   }
 }).build()
-
-const nickname = defineField()
-  .component({
-    component: Input,
-    id: "nickname",
-    props: {
-      label: "昵称",
-    }
-  })
-  .relation(nicknameRelation)
-  .build()
 
 const select = defineField()
   .component({
