@@ -1,12 +1,13 @@
 import type { FieldBuilder } from "../builder/field";
-import { Effect, isArray, isFunction, effect } from "alien-deepsignals"
+import type { Field } from "../types/field";
 
+import { Effect, isArray, isFunction, effect } from "alien-deepsignals"
 
 export type RelationEntry = [
   deps: string | string[],
   cb: (this: FieldBuilder, depValues: any) => void
 ]
-export type RelationFn = (field: FieldBuilder) => void
+export type RelationFn = (field: Field) => void
 
 export type Relation = RelationFn | RelationEntry
 

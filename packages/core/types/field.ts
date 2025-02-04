@@ -81,3 +81,6 @@ export interface Lifecycle {
   onUnmounted?(this: FieldBuilder): void
   onValidate?(this: FieldBuilder): void
 }
+
+type PickKeys = "value" | "getProps" | "getAppContext" | "getProvides" | "boolContext" | "isRoot" | "isLeaf" | "evaluateDecision" | "setFieldErrors" | "cleanErrors" | "setErrors"
+export type Field = Pick<FieldBuilder, PickKeys>

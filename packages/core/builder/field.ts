@@ -6,7 +6,7 @@ import { isArray, isPromise, set } from "@rxform/shared"
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
 
-export class FieldBuilder<T = any, P extends Record<string, any> = Record<string, any>> {
+export class FieldBuilder<T = any, P extends Object = Object> {
 
   id!: string
   path!: string
@@ -41,6 +41,10 @@ export class FieldBuilder<T = any, P extends Record<string, any> = Record<string
 
   setAppContext(appContext: any) {
     this.#appContext = appContext
+  }
+
+  getAppContext(){
+    return this.#appContext
   }
 
   setAbstractModel(abstractModel: AbstractModelMethods) {
