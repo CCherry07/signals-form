@@ -27,7 +27,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   errors: Signal<FieldErrors> = signal({})
   isMounted: Signal<boolean> = signal(false)
 
-  #props = deepSignal({} as P)
+  #props = deepSignal<P>({} as P)
   #$value: T = undefined as unknown as T
   #cleanups: Array<Function> = []
   #removeValueOnHidden: boolean = true
@@ -317,6 +317,16 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   >) {
     this.#effects = effects
     return this
+  }
+
+  props(ps: P) {
+    Object.assign(this.#props, ps)
+    return this
+  }
+
+  setProp<K extends keyof P, V extends P[K]>(key: K, value: V){
+    // @ts-ignore
+    this.#props[key] = value
   }
 
   events(events: Record<string, (this: FieldBuilder<T, P>, ...args: any[]) => void>) {

@@ -88,12 +88,12 @@ const email = defineField<string, { placeholder: string, label: string }>()
   })
   .lifecycle({
     onDisabled(state) {
+
     },
     onMounted() {
-
+      this.setProp("label", "📮")
     },
     onDestroy() {
-
     },
   })
   .build()
