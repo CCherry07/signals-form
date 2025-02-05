@@ -1,6 +1,6 @@
 {
   "name": "@formula/core",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "index.ts",
   "type": "module",
   "keywords": [],
@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "build": "tsup",
-    "build:watch": "tsup --watch"
+    "build:watch": "tsup --watch",
+    "release": "bumpp && npm run build && npm publish --registry=https://registry.npmjs.org/"
   },
   "dependencies": {
     "@formula/shared": "workspace:*"
