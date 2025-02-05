@@ -1,5 +1,5 @@
 {
-  "name": "@rxform/vue",
+  "name": "@formula/vue",
   "version": "1.0.0",
   "main": "index.ts",
   "files": [
@@ -13,7 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@rxform/core": "workspace:*",
+    "@formula/core": "workspace:*",
     "vue": "^3.5.13"
   }
 }

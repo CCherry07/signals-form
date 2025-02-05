@@ -2,7 +2,7 @@ import { deepSignal, effect, isFunction, shallow, signal, Signal } from "alien-d
 import { effectScope } from "alien-signals"
 import { AbstractModelMethods, ActionOptions, ComponentOptions, FieldError, FieldErrors, Lifecycle, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
-import { isArray, isPromise, set } from "@rxform/shared"
+import { isArray, isPromise, set } from "@formula/shared"
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
 

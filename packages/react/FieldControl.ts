@@ -1,8 +1,8 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { FieldBuilder, validate, ValidateItem } from "@rxform/core"
+import { FieldBuilder, validate, ValidateItem } from "@formula/core"
 import { batch, effect } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
-import { Resolver } from '@rxform/core';
+import { Resolver } from '@formula/core';
 interface Props {
   field: FieldBuilder & Record<string, any>;
   model: any

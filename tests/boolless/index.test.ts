@@ -1,5 +1,5 @@
 import { signal } from "alien-deepsignals"
-import { D, Decision, type Node, registerCustomOperator } from "@rxform/core"
+import { D, Decision, type Node, registerCustomOperator } from "@formula/core"
 import { test, expect } from "vitest"
 
 registerCustomOperator(

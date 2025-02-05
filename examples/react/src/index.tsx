@@ -7,11 +7,11 @@ import InputType from "./components/InputType"
 import InputNumber from "./components/InputNumber"
 import Cascader from './components/Cascader';
 import Select from './components/Select';
-import { createForm } from "@rxform/react"
+import { createForm } from "@formula/react"
 import { App } from "./App"
-import { zodResolver } from "@rxform/resolvers"
+import { zodResolver } from "@formula/resolvers"
 import { deepSignal, DeepSignal } from 'alien-deepsignals';
-import { D, defineField, defineRelation } from "@rxform/core"
+import { D, defineField, defineRelation } from "@formula/core"
 
 const store = deepSignal({
   name: "cherry",

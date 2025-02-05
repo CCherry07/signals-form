@@ -118,16 +118,16 @@ importers:
 
   examples/react:
     dependencies:
-      '@rxform/core':
+      '@formula/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@rxform/react':
+      '@formula/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@rxform/resolvers':
+      '@formula/resolvers':
         specifier: workspace:*
         version: link:../../packages/resolvers
-      '@rxform/shared':
+      '@formula/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       antd:
@@ -170,13 +170,13 @@ importers:
 
   examples/vue:
     dependencies:
-      '@rxform/core':
+      '@formula/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@rxform/resolvers':
+      '@formula/resolvers':
         specifier: workspace:*
         version: link:../../packages/resolvers
-      '@rxform/vue':
+      '@formula/vue':
         specifier: workspace:*
         version: link:../../packages/vue
       ant-design-vue:
@@ -201,7 +201,7 @@ importers:
 
   packages/core:
     dependencies:
-      '@rxform/shared':
+      '@formula/shared':
         specifier: workspace:*
         version: link:../shared
     devDependencies:
@@ -211,10 +211,10 @@ importers:
 
   packages/react:
     dependencies:
-      '@rxform/core':
+      '@formula/core':
         specifier: workspace:*
         version: link:../core
-      '@rxform/shared':
+      '@formula/shared':
         specifier: workspace:*
         version: link:../shared
 
@@ -248,7 +248,7 @@ importers:
 
   packages/vue:
     dependencies:
-      '@rxform/core':
+      '@formula/core':
         specifier: workspace:*
         version: link:../core
       vue:

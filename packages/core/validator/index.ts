@@ -1,4 +1,4 @@
-import { isProd, isArray, isObject, isString, get, isFunction } from "@rxform/shared"
+import { isProd, isArray, isObject, isString, get, isFunction } from "@formula/shared"
 import type { AbstractModel } from "../model/abstract_model"
 import { FieldErrors } from "../types/field"
 import { Resolver } from "../resolvers/type";

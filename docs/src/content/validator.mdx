@@ -94,7 +94,7 @@ type Initiative = ValidateItem[];
 ### 自定义校验引擎
 
 ```typescript
-import { zodResolver } from "@rxform/resolvers"; // official engine
+import { zodResolver } from "@formula/resolvers"; // official engine
 
 // 参数为 上述ValidateItem中的 schema, schemaOptions, resolverOptions
 const customResolver = (schema, schemaOptions, resolverOptions = {}) =>{

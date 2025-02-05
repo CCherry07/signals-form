@@ -1,5 +1,5 @@
 {
-  "name": "@rxform/react",
+  "name": "@formula/react",
   "version": "1.0.0",
   "main": "index.ts",
   "files": [
@@ -13,7 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@rxform/core": "workspace:*",
-    "@rxform/shared": "workspace:*"
+    "@formula/core": "workspace:*",
+    "@formula/shared": "workspace:*"
   }
 }

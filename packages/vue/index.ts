@@ -1,6 +1,6 @@
 import { FieldControl } from "./FieldControl";
-import { createRXForm, FieldBuilder, setupValidator, createGroupForm as createRXGroupForm } from "@rxform/core"
-import type { Resolver, FormConfig as CoreFormConfig } from '@rxform/core'
+import { createRXForm, FieldBuilder, setupValidator, createGroupForm as createRXGroupForm } from "@formula/core"
+import type { Resolver, FormConfig as CoreFormConfig } from '@formula/core'
 import { type Component, type DefineComponent, h } from "vue";
 
 interface FormConfig extends CoreFormConfig {

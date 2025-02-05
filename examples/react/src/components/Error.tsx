@@ -1,4 +1,4 @@
-import { FieldErrors } from "@rxform/core/types/field";
+import { FieldErrors } from "@formula/core/types/field";
 import React from "react";
 
 export function FieldError({

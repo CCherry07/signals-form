@@ -1,4 +1,4 @@
-import { match, js, _ } from "@rxform/core"
+import { match, js, _ } from "@formula/core"
 import { expect, describe, it } from "vitest"
 
 describe("match", () => {

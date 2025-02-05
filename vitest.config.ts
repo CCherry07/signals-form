@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.ts'],
     alias: {
-      '@rxform/': new URL('./packages/', import.meta.url).pathname,
+      '@formula/': new URL('./packages/', import.meta.url).pathname,
     },
   },
 })

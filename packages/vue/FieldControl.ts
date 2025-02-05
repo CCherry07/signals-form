@@ -1,6 +1,6 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
-import { isPromise, Resolver, validate, FieldBuilder } from "@rxform/core"
+import { isPromise, Resolver, validate, FieldBuilder } from "@formula/core"
 import { effect } from "alien-deepsignals";
 import { effectScope } from "alien-signals";
 

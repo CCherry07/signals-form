@@ -1,5 +1,5 @@
 {
-  "name": "@rxform/core",
+  "name": "@formula/core",
   "version": "1.0.0",
   "main": "index.ts",
   "type": "module",
@@ -15,7 +15,7 @@
     "build:watch": "tsup --watch"
   },
   "dependencies": {
-    "@rxform/shared": "workspace:*"
+    "@formula/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.5"

@@ -1,5 +1,5 @@
 import { signal, toValue } from "alien-deepsignals"
-import { isFunction } from "@rxform/shared"
+import { isFunction } from "@formula/shared"
 import { FieldBuilder } from "../builder/field"
 import type { AbstractModelMethods, Model } from "../types/form"
 
