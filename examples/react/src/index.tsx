@@ -14,14 +14,18 @@ import { deepSignal, DeepSignal } from 'alien-deepsignals';
 import { D, defineField, defineRelation } from "@formula/core"
 
 const store = deepSignal({
-  name: "cherry",
+  name: "bar",
   info: {
     age: 12
   }
 })
 
 const nicknameRelation1 = defineRelation((field) => {
-
+  if (store.info.age > 18) {
+    field.value = 'foo'
+  } else {
+    // do something
+  }
 })
 
 const nicknameRelation = defineRelation([
@@ -62,25 +66,35 @@ const bools = {
   isNickname: (model: Model) => model.userinfo.nickname === "cherry"
 }
 
-const email = defineField()
+const email = defineField<string, { placeholder: string, label: string }>()
   .component({
     component: Input,
     hidden: D.use('isNickname'),
     id: "email",
     props: {
       placeholder: "请输入邮箱",
-      label: "邮箱",
+      label: "邮箱"
     },
     recoverValueOnShown: true
   })
   .events({
-    onChange(value: any) {
+    onChange(value) {
       console.log(value, 'onChange');
       this.value = value
     }
   })
   .validator({
     initiative: z.string({ message: "必须是一个字符串" }).email({ message: "输入的字符串必须是一个合法的邮箱" }),
+  })
+  .lifecycle({
+    onDisabled(state) {
+    },
+    onMounted() {
+
+    },
+    onDestroy() {
+
+    },
   })
   .build()
 

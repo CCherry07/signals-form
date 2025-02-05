@@ -71,15 +71,15 @@ export interface FieldError {
 }
 export type FieldErrors = Record<string, FieldError>
 
-export interface Lifecycle {
-  onBeforeInit?(this: FieldBuilder): void
-  onInit?(this: FieldBuilder): void
-  onDestroy?(this: FieldBuilder): void
-  onDisabled?(this: FieldBuilder, state: boolean): void
-  onHidden?(this: FieldBuilder, state: boolean): void
-  onMounted?(this: FieldBuilder): void
-  onUnmounted?(this: FieldBuilder): void
-  onValidate?(this: FieldBuilder): void
+export interface Lifecycle<T, P extends Object> {
+  onBeforeInit?(this: FieldBuilder<T, P>): void
+  onInit?(this: FieldBuilder<T, P>): void
+  onDestroy?(this: FieldBuilder<T, P>): void
+  onDisabled?(this: FieldBuilder<T, P>, state: boolean): void
+  onHidden?(this: FieldBuilder<T, P>, state: boolean): void
+  onMounted?(this: FieldBuilder<T, P>): void
+  onUnmounted?(this: FieldBuilder<T, P>): void
+  onValidate?(this: FieldBuilder<T, P>): void
 }
 
 type PickKeys = "value" | "getProps" | "getAppContext" | "getProvides" | "boolContext" | "isRoot" | "isLeaf" | "evaluateDecision" | "setFieldErrors" | "cleanErrors" | "setErrors"

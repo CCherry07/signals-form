@@ -43,7 +43,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     this.#appContext = appContext
   }
 
-  getAppContext(){
+  getAppContext() {
     return this.#appContext
   }
 
@@ -57,11 +57,11 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   parent: FieldBuilder | null = null
 
-  get value() {
+  get value(): T {
     return this.#abstractModel.getFieldValue(this.path)
   }
 
-  peek() {
+  peek(): T {
     return this.#abstractModel?.peekFieldValue?.(this.parentpath, this.id)
   }
 
@@ -73,7 +73,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   #injectFields: Record<string, string> = {}
   #validator: ValidatorOptions = {}
   #actions: ActionOptions<T> = {}
-  #effects: Array<(this: FieldBuilder) => void> = []
+  #effects: Array<(this: FieldBuilder<T, P>) => void> = []
   #provides: Record<string | symbol, any> = {}
   #events: Record<string, Function> = {}
 
@@ -93,8 +93,8 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this.#provides
   }
 
-  private deps: Record<string, FieldBuilder> = {}
-  private effectFields: Set<FieldBuilder> = new Set()
+  private deps: Record<string, FieldBuilder<T, P>> = {}
+  private effectFields: Set<FieldBuilder<T, P>> = new Set()
   #boolContext: BoolContext = {}
 
   setBoolContext(boolContext: BoolContext) {
@@ -124,20 +124,20 @@ export class FieldBuilder<T = any, P extends Object = Object> {
       Object.entries(this.#injectFields)
         .map(([key, value]) => {
           const targetField = this.#abstractModel.getField(value)
-          targetField.#appendEffectField(this as FieldBuilder)
+          targetField.#appendEffectField(this as any)
           return [key, this.#abstractModel.getField(value)]
-        }))
+        })) as any
 
     this.#normalizeEffects()
   }
 
-  #appendEffectField(field: FieldBuilder) {
+  #appendEffectField(field: FieldBuilder<T, P>) {
     this.effectFields.add(field)
   }
 
   #normalizeEffects() {
     this.#effects.forEach((effect) => {
-      effect.call(this as FieldBuilder)
+      effect.call(this as FieldBuilder<T, P>)
     })
   }
 
@@ -211,7 +211,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     //   inject.call(this)
     // })
     this.#relations?.forEach(r => {
-      r.call(this)
+      r.call(this as any)
     })
     const { setDefaultValue } = this.#actions
     const filedValue: any = isFunction(setDefaultValue) ? setDefaultValue() : model;
@@ -269,7 +269,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     }
   }
 
-  lifecycle(hooks: Lifecycle) {
+  lifecycle(hooks: Lifecycle<T, P>) {
     Object.assign(this, hooks)
     return this
   }
@@ -313,13 +313,13 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   effects(effects: Array<
-    (this: FieldBuilder) => void
+    (this: FieldBuilder<T, P>) => void
   >) {
     this.#effects = effects
     return this
   }
 
-  events(events: Record<string, (this: FieldBuilder, ...args: any[]) => void>) {
+  events(events: Record<string, (this: FieldBuilder<T, P>, ...args: any[]) => void>) {
     Object.entries(events).forEach(([key, value]) => {
       this.#events[key] = value.bind(this)
     })
