@@ -24,6 +24,7 @@
     "@types/react-dom": "18.3.0",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitejs/plugin-vue": "^5.2.1",
+    "bumpp": "^10.0.1",
     "core-js": "^3.40.0",
     "nx": "20.3.0",
     "react": "18.3.1",
