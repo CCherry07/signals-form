@@ -29,7 +29,7 @@ export interface SubscribeProps<M> {
 export type AbstractModelMethods = Pick<AbstractModel<DeepSignal<Model>>,
     'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors'
     | 'cleanErrors' | 'onSubscribe' | "peekFieldValue"
-    | "getField" | "getFieldValues"
+    | "getField" | "getFieldsValue"
     >
 
 export interface AbstractModelInitOptions<M extends Model> {

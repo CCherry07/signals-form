@@ -52,16 +52,16 @@ export class AbstractModel<M extends Model> {
     })
     this.graph = graph!
     this.fields = fields!
-    this.normalizeEffectFields()
+    this.normalizeFieldsRelation()
     // handle field effectFields
     effect(() => {
       // this.isUpdating.value = Object.values(this.fields ?? {}).some((field) => field.isUpdating) ?? false
     })
   }
 
-  normalizeEffectFields() {
+  normalizeFieldsRelation() {
     for (let field of Object.values(this.fields)) {
-      field.normalizeDeps()
+      field.normalizeRelations()
     }
   }
 
@@ -187,7 +187,7 @@ export class AbstractModel<M extends Model> {
     return get(this.model, field)
   }
 
-  getFieldValues(fields: string | string[]) {
+  getFieldsValue(fields: string | string[]) {
     if (isString(fields)) {
       return this.getFieldValue(fields)
     } else if (isArray(fields)) {
@@ -207,6 +207,10 @@ export class AbstractModel<M extends Model> {
 
   getField(field: string) {
     return this.fields[field];
+  }
+
+  getFieldValueStatus(field: string) {
+    return this.fields[field].getValueStatus()
   }
 
   reset() {

@@ -1,4 +1,4 @@
-import { deepSignal, effect, isFunction, shallow, signal, Signal } from "alien-deepsignals"
+import { deepSignal, effect, isFunction, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
 import { AbstractModelMethods, ActionOptions, ComponentOptions, FieldError, FieldErrors, Lifecycle, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
@@ -17,6 +17,12 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   disabled?: Decision;
   properties?: FieldBuilder[]
 
+
+  // value status
+  #updating = signal(false)
+  #pending = signal(false)
+  #updated = signal(false)
+
   isBlurred: Signal<boolean> = signal(false)
   isFocused: Signal<boolean> = signal(false)
   isInit: Signal<boolean> = signal(false)
@@ -33,7 +39,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   #removeValueOnHidden: boolean = true
   #recoverValueOnShown: boolean = false
   #abstractModel!: AbstractModelMethods;
-  #relations?: ReturnType<typeof defineRelation>
+  #relation?: ReturnType<typeof defineRelation>
   // @ts-ignore
   #appContext: {
     provides?: Record<string, any>
@@ -66,14 +72,15 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   set value(v: T) {
+    this.#batchDispatchEffectStart()
     this.#abstractModel.setFieldValue(this.path, v)
+    this.#batchDispatchEffectEnd()
   }
 
   #component?: any;
-  #injectFields: Record<string, string> = {}
   #validator: ValidatorOptions = {}
   #actions: ActionOptions<T> = {}
-  #effects: Array<(this: FieldBuilder<T, P>) => void> = []
+  // #effects: Array<(this: FieldBuilder<T, P>) => void> = []
   #provides: Record<string | symbol, any> = {}
   #events: Record<string, Function> = {}
 
@@ -93,8 +100,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this.#provides
   }
 
-  private deps: Record<string, FieldBuilder<T, P>> = {}
-  private effectFields: Set<FieldBuilder<T, P>> = new Set()
+  private effectFields: Set<FieldBuilder> = new Set()
   #boolContext: BoolContext = {}
 
   setBoolContext(boolContext: BoolContext) {
@@ -118,44 +124,45 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   }
 
-  // all fields are initialized, we can inject fields now
-  normalizeDeps() {
-    this.deps = Object.fromEntries(
-      Object.entries(this.#injectFields)
-        .map(([key, value]) => {
-          const targetField = this.#abstractModel.getField(value)
-          targetField.#appendEffectField(this as any)
-          return [key, this.#abstractModel.getField(value)]
-        })) as any
-
-    this.#normalizeEffects()
-  }
-
-  #appendEffectField(field: FieldBuilder<T, P>) {
+  appendEffectField(field: FieldBuilder) {
     this.effectFields.add(field)
   }
 
-  #normalizeEffects() {
-    this.#effects.forEach((effect) => {
-      effect.call(this as FieldBuilder<T, P>)
-    })
+  normalizeRelations() {
+    if (this.#relation) {
+      this.#relation.forEach(relation => {
+        relation.call(this)
+      })
+    }
   }
 
-  // @ts-ignore
-  #getDepsValue(deps?: string | string[] | Record<string, string>) {
-    let injectValues: any = undefined
-    if (Array.isArray(deps)) {
-      injectValues = deps.map((dep: string) => this.deps[dep].value)
-    } else if (typeof deps === 'object') {
-      injectValues = Object.fromEntries(Object.entries(deps).map(([key, dep]) => {
-        return [key, this.deps[dep as string].value]
-      })
-      )
-    } else if (typeof deps === 'string') {
-      injectValues = this.deps[deps].value
-    }
-    return injectValues
+  setValueWillPending(isPending: boolean) {
+    this.#pending.value = isPending
   }
+
+  setValueWillUpdating(isUpdating: boolean) {
+    this.#updating.value = isUpdating
+  }
+
+  setValueWillUpdated(isUpdated: boolean) {
+    this.#updated.value = isUpdated
+  }
+
+  // // @ts-ignore
+  // #getDepsValue(deps?: string | string[] | Record<string, string>) {
+  //   let injectValues: any = undefined
+  //   if (Array.isArray(deps)) {
+  //     injectValues = deps.map((dep: string) => this.deps[dep].value)
+  //   } else if (typeof deps === 'object') {
+  //     injectValues = Object.fromEntries(Object.entries(deps).map(([key, dep]) => {
+  //       return [key, this.deps[dep as string].value]
+  //     })
+  //     )
+  //   } else if (typeof deps === 'string') {
+  //     injectValues = this.deps[deps].value
+  //   }
+  //   return injectValues
+  // }
 
   get isRoot() {
     return this.parent === null
@@ -165,9 +172,43 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return isArray(this.properties) ? this.properties?.length === 0 : true
   }
 
+  getValueStatus() {
+    return {
+      updated: this.#updated.value,
+      updating: this.#updating.value,
+      pending: this.#pending.value,
+    }
+  }
+
+  getValueStatusMethods() {
+    return {
+      setValueWillPending: this.setValueWillPending.bind(this),
+      setValueWillUpdating: this.setValueWillUpdating.bind(this),
+      setValueWillUpdated: this.setValueWillUpdated.bind(this),
+    }
+  }
+
+  #batchDispatchEffectStart() {
+    this.effectFields.forEach(field => {
+      const { setValueWillUpdating, setValueWillPending, setValueWillUpdated } = field.getValueStatusMethods()
+      setValueWillUpdating(true)
+      setValueWillPending(true)
+      setValueWillUpdated(false)
+    })
+  }
+
+  #batchDispatchEffectEnd() {
+    this.effectFields.forEach(field => {
+      const { setValueWillUpdating, setValueWillPending, setValueWillUpdated } = field.getValueStatusMethods()
+      setValueWillUpdating(false)
+      setValueWillPending(false)
+      setValueWillUpdated(true)
+    })
+  }
+
   resetState() {
     this.isInit.value = true
-    // this.isUpdating = true
+    this.#updating.value = true
     this.isDisabled.value = false
     this.isHidden.value = false
     this.isBlurred.value = false
@@ -203,16 +244,9 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   reset(model?: T) {
-    // clean previous state and effect
     this.resetState()
     this.onBeforeInit?.()
-    // const injects: Function[] = (this.constructor as any)[Symbol.metadata][METADATA_INJECT] ?? []
-    // injects.forEach((inject) => {
-    //   inject.call(this)
-    // })
-    this.#relations?.forEach(r => {
-      r.call(this as any)
-    })
+    
     const { setDefaultValue } = this.#actions
     const filedValue: any = isFunction(setDefaultValue) ? setDefaultValue() : model;
     if (this.properties?.length && filedValue === undefined) {
@@ -283,24 +317,18 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     const { component: _component, ...options } = component
     this.#component = _component
     let { props = {}, ...rest } = options
-    props = shallow(props as P)
     Object.assign(this.#props, props)
     Object.assign(this, rest)
     return this
   }
 
-  relation(relations: ReturnType<typeof defineRelation>) {
-    this.#relations = relations
+  relation(relation: ReturnType<typeof defineRelation>) {
+    this.#relation = relation
     return this
   }
 
   provides(provides: Record<string | symbol, any>) {
     this.#provides = provides
-    return this
-  }
-
-  injectFields(fields: Record<string, string>) {
-    this.#injectFields = fields
     return this
   }
 
@@ -312,19 +340,13 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
-  effects(effects: Array<
-    (this: FieldBuilder<T, P>) => void
-  >) {
-    this.#effects = effects
-    return this
-  }
 
   props(ps: P) {
     Object.assign(this.#props, ps)
     return this
   }
 
-  setProp<K extends keyof P, V extends P[K]>(key: K, value: V){
+  setProp<K extends keyof P, V extends P[K]>(key: K, value: V) {
     // @ts-ignore
     this.#props[key] = value
   }

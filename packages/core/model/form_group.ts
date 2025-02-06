@@ -22,7 +22,7 @@ export class FormGroup {
       getFieldValue: form.getFieldValue.bind(form),
       peekFieldValue: form.peekFieldValue.bind(form),
       getField: form.getField.bind(form),
-      getFieldValues: form.getFieldValues.bind(form)
+      getFieldsValue: form.getFieldsValue.bind(form)
     }
     const graph = createGraph(config.graph, form.appContext)
     const { fields } = asyncBindingModel(methods, form.model, graph)
