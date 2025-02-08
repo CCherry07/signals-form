@@ -21,6 +21,13 @@ export const CustomDecisionCreator = {} as { [key: string]: (...ns: (string | No
 
 export type Node = Decision | LeafNode;
 
+export interface D<T extends string | Node> {
+  and: (...nodes: T[]) => Decision;
+  or: (...nodes: T[]) => Decision;
+  not: (node: T) => Decision;
+  use: (node: T) => Decision;
+}
+
 export const D = {
   and: createAndDecision,
   or: createOrDecision,
@@ -33,6 +40,10 @@ export const D = {
   use: (node: string | Node) => {
     return new Decision(OperatorEnum.USE, typeof node === 'string' ? new LeafNode(node) : node);
   },
+};
+
+export function createDecision<T extends string>(boolContext: Record<T, any>){
+  return D as D<keyof typeof boolContext>;
 }
 
 const registedOperators = () => Object.keys(Operator).concat(Object.keys(CustomOperator));

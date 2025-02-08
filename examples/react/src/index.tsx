@@ -10,8 +10,8 @@ import Select from './components/Select';
 import { createForm } from "@formula/react"
 import { App } from "./App"
 import { zodResolver } from "@formula/resolvers"
-import { deepSignal, DeepSignal, effect } from 'alien-deepsignals';
-import { D, defineField, defineRelation, get } from "@formula/core"
+import { deepSignal, DeepSignal } from 'alien-deepsignals';
+import { createDecision, defineField, defineRelation } from "@formula/core"
 
 const store = deepSignal({
   name: "bar",
@@ -67,10 +67,12 @@ const bools = {
   isTom: (model: Model) => model.userinfo.nickname === "tom",
 }
 
+const D = createDecision(bools)
+
 const email = defineField<string, any>()
   .component({
     component: Input,
-    hidden: D.use('isMe'),
+    hidden: D.use("isMe"), // TODO：1. D.use('isMe‘) ，2. D.use(bools.isMe) ，考虑使用哪一种
     id: "email",
     recoverValueOnShown: true
   })
