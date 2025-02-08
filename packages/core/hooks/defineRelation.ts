@@ -8,7 +8,7 @@ export const hasChanged = (value: any, oldValue: any): boolean =>
 
 export type RelationEntry<T extends FieldBuilder> = [
   deps: string | string[],
-  cb: (this: Field<T>, depValues: RelationEntry<T>[0] extends string[] ? Array<any> : any) => void
+  cb: (field: Field<T>, depValues: RelationEntry<T>[0] extends string[] ? Array<any> : any) => void
 ]
 export type RelationFn<T extends FieldBuilder> = (field: Field<T>) => void
 
@@ -19,7 +19,7 @@ export function createRelation<T extends FieldBuilder>(relation: Relation<T>) {
     const field = this
     if (isFunction(relation)) {
       return effect(() => {
-        relation.call(null, field)
+        relation(field)
       })
     }
     const [deps, cb] = relation;
@@ -33,7 +33,7 @@ export function createRelation<T extends FieldBuilder>(relation: Relation<T>) {
       if (!e.active || !e.dirty || field.getValueStatus().pending) return
       const newValue = e.run()
       if (!hasChanged(newValue, oldValue)) return
-      cb?.call(field, newValue)
+      cb?.(field, newValue)
       oldValue = newValue
     }
     effect(() => {

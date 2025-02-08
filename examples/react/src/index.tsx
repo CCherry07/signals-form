@@ -31,14 +31,14 @@ const nicknameRelation1 = defineRelation((field) => {
 const nicknameRelation = defineRelation([
   [
     'userinfo.email',
-    function (depValues) {
-      this.value = Math.floor(Math.random() * 1000)
+    function (field) {
+      field.value = Math.floor(Math.random() * 1000)
     }
   ],
   [
     ['userinfo.email', 'userinfo.phone'],
-    function (depValues) {
-      console.log(depValues);
+    function (field, depValues) {
+      console.log(field, depValues);
     }
   ],
   function (field) {
