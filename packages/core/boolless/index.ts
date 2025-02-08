@@ -42,7 +42,12 @@ export const D = {
   },
 };
 
-export function createDecision<T extends string>(boolContext: Record<T, any>){
+/**
+ * give typescript to get the key in bool context, no other function.
+ * @param boolContext
+ * @returns Decision Methods
+ */
+export function createDecision<T extends string>(boolContext: Record<T, unknown>){
   return D as D<keyof typeof boolContext>;
 }
 

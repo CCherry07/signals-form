@@ -67,12 +67,14 @@ const bools = {
   isTom: (model: Model) => model.userinfo.nickname === "tom",
 }
 
+// TODO：1. D.use('isMe‘) ，2. D.use(bools.isMe) ，考虑使用哪一种
+
 const D = createDecision(bools)
 
 const email = defineField<string, any>()
   .component({
     component: Input,
-    hidden: D.use("isMe"), // TODO：1. D.use('isMe‘) ，2. D.use(bools.isMe) ，考虑使用哪一种
+    hidden: D.use("isMe"),
     id: "email",
     recoverValueOnShown: true
   })
