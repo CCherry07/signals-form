@@ -41,10 +41,11 @@ const nicknameRelation = defineRelation([
       console.log(depValues);
     }
   ],
+  // TODO: 修复set 带来的 getter 副作用
   function (field) {
     const data = store.name
     console.log(data);
-    field.value = data;
+    // field.value = data;
   }
 ])
 
@@ -60,13 +61,14 @@ type Model = DeepSignal<{
 }>
 
 const bools = {
-  isNickname: (model: Model) => model.userinfo.nickname === "cherry"
+  isMe: (model: Model) => model.userinfo.nickname === "cherry",
+  isTom: (model: Model) => model.userinfo.nickname === "tom",
 }
 
 const email = defineField<string, any>()
   .component({
     component: Input,
-    hidden: D.use('isNickname'),
+    hidden: D.use('isMe'),
     id: "email",
     recoverValueOnShown: true
   })
@@ -76,9 +78,8 @@ const email = defineField<string, any>()
   })
   .events({
     onChange(value) {
-      console.log(value, 'onChange');
-      if (this.evaluateDecision(D.use('isA'))) {
-        this.setProp("label", "📮")
+      if (this.evaluateDecision(D.use('isTom'))) {
+        this.setProp("label", "🍺")
       }
       this.value = value
     }
