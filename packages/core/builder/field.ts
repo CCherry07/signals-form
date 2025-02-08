@@ -1,4 +1,4 @@
-import { deepSignal, effect, isFunction, signal, Signal } from "alien-deepsignals"
+import { deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
 import { AbstractModelMethods, ActionOptions, ComponentOptions, FieldError, FieldErrors, Lifecycle, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
@@ -356,11 +356,24 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
-  validator(options: ValidatorOptions) {
-    if (options.initiative) {
-      options.initiative = formatValidateItem(options.initiative)
+  validator(options: ValidatorOptions | object) {
+    if (!isObject(options)) {
+      throw new Error('validator options must be an object')
     }
-    this.#validator = options
+
+    if (!options.initiative && !options.passive) {
+      options = {
+        initiative: options
+      }
+    }
+
+    const { initiative, passive } = options as ValidatorOptions
+    const normalizeValidator = {
+      normalizeValidator: initiative ? formatValidateItem(initiative) : undefined,
+      passive
+    }
+
+    this.#validator = normalizeValidator
     return this
   }
 

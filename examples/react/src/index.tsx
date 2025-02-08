@@ -91,9 +91,7 @@ const email = defineField<string, any>()
       this.value = value
     }
   })
-  .validator({
-    initiative: z.string({ message: "必须是一个字符串" }).email({ message: "输入的字符串必须是一个合法的邮箱" }),
-  })
+  .validator(z.string({ message: "必须是一个字符串" }).email({ message: "输入的字符串必须是一个合法的邮箱" }))
   .lifecycle({
     onDisabled(state) {
       console.log(state, 'onDisabled');

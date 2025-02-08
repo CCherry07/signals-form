@@ -68,16 +68,20 @@ export interface FieldError {
 }
 export type FieldErrors = Record<string, FieldError>
 
-export interface Lifecycle<T, P extends Object> {
-  onBeforeInit?(this: FieldBuilder<T, P>): void
-  onInit?(this: FieldBuilder<T, P>): void
-  onDestroy?(this: FieldBuilder<T, P>): void
-  onDisabled?(this: FieldBuilder<T, P>, state: boolean): void
-  onHidden?(this: FieldBuilder<T, P>, state: boolean): void
-  onMounted?(this: FieldBuilder<T, P>): void
-  onUnmounted?(this: FieldBuilder<T, P>): void
-  onValidate?(this: FieldBuilder<T, P>): void
-}
+type PickKeys = "value" | "getProps" | "getAppContext" |
+  "getProvides" | "boolContext" | "isRoot" | "isLeaf" |
+  "evaluateDecision" | "setFieldErrors" | "cleanErrors" |
+  "setErrors" | "peek" | "setProp"
 
-type PickKeys = "value" | "getProps" | "getAppContext" | "getProvides" | "boolContext" | "isRoot" | "isLeaf" | "evaluateDecision" | "setFieldErrors" | "cleanErrors" | "setErrors" | "peek"
 export type Field<T extends FieldBuilder> = Pick<T, PickKeys>
+
+export interface Lifecycle<T, P extends Object> {
+  onBeforeInit?(this: Field<FieldBuilder<T, P>>): void
+  onInit?(this: Field<FieldBuilder<T, P>>): void
+  onDestroy?(this: Field<FieldBuilder<T, P>>): void
+  onDisabled?(this: Field<FieldBuilder<T, P>>, isDisabled: boolean): void
+  onHidden?(this: Field<FieldBuilder<T, P>>, isHidden: boolean): void
+  onMounted?(this: Field<FieldBuilder<T, P>>): void
+  onUnmounted?(this: Field<FieldBuilder<T, P>>): void
+  onValidate?(this: Field<FieldBuilder<T, P>>): void
+}
