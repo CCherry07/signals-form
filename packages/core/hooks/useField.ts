@@ -1,6 +1,6 @@
 import { FieldBuilder } from "../builder/field"
 
-export const useField = (field: FieldBuilder) => {
+export const usefield = (field: FieldBuilder) => {
   return field
 }
-export default useField
+export default usefield

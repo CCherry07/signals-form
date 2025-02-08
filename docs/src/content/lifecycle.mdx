@@ -1,12 +1,35 @@
 ## Lifecycle
 ```ts
-  onBeforeInit?(): void
-  onInit?(): void
-  onDestroy?(): void
-  onDisabled?(state: boolean): void
-  onHidden?(state: boolean): void
-  onMounted?(): void
-  onUnmounted?(): void
-  onValidate?(): void
+defineField()
+  .component({
+    id: 'email',
+    component: 'input',
+  })
+  .lifecycle({
+    onBeforeInit() {
+      console.log('onBeforeInit')
+    },
+    onInit() {
+      console.log('onInit')
+    },
+    onDestroy() {
+      console.log('onDestroy')
+    },
+    onDisabled(state) {
+      console.log('onDisabled', state)
+    },
+    onHidden(state) {
+      console.log('onHidden', state)
+    },
+    onMounted() {
+      console.log('onMounted')
+    },
+    onUnmounted() {
+      console.log('onUnmounted')
+    },
+    onValidate() {
+      console.log('onValidate')
+    }
+  })
+  .build()
 ```
-

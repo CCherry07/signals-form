@@ -4,61 +4,30 @@
 - **component**: 表示字段所渲染的组件，支持字符串或者组件构造器
 
 ```typescript
-@Component({
-  id: 'email',
-  component: 'input', // InputComponent
+defineField().component({
+    id: 'email',
+    component: 'input',
 })
-class Email extends Field {}
 ```
 
 ### properties
 - 表示字段的子字段，可以是字段的构造函数，亦可为字段的实例
 
 ```typescript
-@Component({
-  id: 'userinfo',
-  component: 'form',
-  properties: [
+
+defineField()
+  .component({
+    id: 'userinfo',
+    component: 'form',
+  })
+  .properties([
     Email,
-    new Password(),
+    Password,
     Nickname,
     Residence,
     Phone,
-    Donation,
-    Intro,
-    Gender,
-    Captcha,
-    Agreement
-  ],
-})
-```
-
-### dynProperties
-- 动态生成子字段，可给定一个函数,作为依赖收集的函数，返回值为当前字段的子字段
-```typescript
-@Component({
-  id: 'userinfo',
-  component: 'form',
-  dynProperties: () => match(true,[
-      [D.use('isA'), ()=> [
-            Email,
-            Password,
-            Nickname,
-            Residence,
-            Phone,
-            Donation,
-            Intro,
-            Gender,
-            Captcha,
-            Agreement
-          ]],
-      [D.use('isB'), ()=> [
-            Email,
-            Password,
-            Nickname,
-      ]]
-  ]),
-})
+    Donation
+  ])
 ```
 
 - 在react中，properties传递到字段的组件时，为children，是一个数组
@@ -109,12 +78,11 @@ const slots:Record<string,any> = useSlots();
 ```typescript
 import { D as d } from "form";
 
-@Component({
+defineField().component({
   id: 'email',
   component: 'input',
   hidden: d.and('isA','isB').or('isC')
 })
-class Email extends Field {}
 ```
 
 ### Disabled
@@ -122,10 +90,9 @@ class Email extends Field {}
 ```typescript
 import { D as d } from "form";
 
-@Component({
+defineField().component({
   id: 'email',
   component: 'input',
   disabled: d.and('isA','isB').or('isC')
 })
-class Email extends Field {}
 ```

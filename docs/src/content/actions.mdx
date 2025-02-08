@@ -12,13 +12,10 @@
 - 此函数的的参数为当前字段的value，返回值为提交时的值
 
 ```typescript
-@Actions({
-  setDefaultValue() {
-    // set default value logic
-  },
-
-  onSubmitValue(model: any) {
-    // submit value logic
-  }
-})
+const field = defineField()
+  .actions({
+    setDefaultValue: () => 'default value',
+    onSubmitValue: value => value + ' submitted',
+  })
+  .build()
 ```

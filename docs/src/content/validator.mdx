@@ -3,26 +3,24 @@
 - 校验器装饰器，可配置字段的校验模式及其规则
 
 ```typescript
-@Validator({
-  initiative: [
+defineField()
+  .validator({
+    initiative: [
       {
-        schema: z.string(),
-        updateOn: ['onChange','onInput']
-      }
+        schema: string().email(),
+        engine: 'zod',
+        fact: '$value',
+      },
     ],
-  signal: [
+    passive: [
       {
-        fact: {
-            value: "$value",
-            email: "$.userinfo.email"
-          },
-        schema: z.object({
-            value: z.string(),
-            email: z.string().email({ message: "E-mail is not a valid email address" }),
-        })
-      }
-  ]
-})
+        schema: string().min(5),
+        engine: 'zod',
+        fact: '$value',
+      },
+    ],
+  })
+  .build();
 ```
 
 
@@ -61,10 +59,10 @@ type Initiative = ValidateItem[];
 
 ```typescript
 {
-   fact: {
-       value: "$value",
-       email: "$.userinfo.email"
-   }
+  fact: {
+      value: "$value",
+      email: "$.userinfo.email"
+  }
 }
 ```
 

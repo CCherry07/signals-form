@@ -2,18 +2,17 @@
 
 - **Event装饰器，此装饰器能修饰此函数为字段组件的事件**
 
+
 ```typescript
-@Component({
-  id: "nickname",
-  component: "input",
-})
-class Nickname extends Field {
-  @Prop()
-  title = "Nickname";
-  
-  @Event()
-  onChange(data: string){
-    this.value = data;
-  }
-}
+defineField()
+  .component({
+    id: 'email',
+    component: 'input',
+  })
+  .events({
+    onChange(){
+      // do something
+    }
+  })
+  .build()
 ```

@@ -46,8 +46,9 @@ D.n_and('isA','isB') // !isA && !isB
 // isA = true ,isB = false,isC = true
 D.and('isA', 'isC')
     .or(
-        D.and('isB', 'isC')
-       ) // true
+        D.and('isB', 'isC'),
+        D.and('isA', 'isC')
+      ) // true
 ```
 
 1. `D.and('isA', 'isC')`: true
@@ -88,16 +89,17 @@ const { form, app } = createForm({
 ### 在成员函数中使用
 
 ```typescript
-@Component({
-  id: 'email',
-  component: 'input',
-})
-class Email extends Field {
-
+defineField()
+  .component({
+    id: 'email',
+    component: 'input',
+  })
+  .events({
     onChange(){
-       if( this.evaluateDecision(D.use('isA')) ) { // 或者使用模式匹配
-           
-       }
+      if(this.evaluateDecision(D.use('isA')) ) { // 或者使用模式匹配
+        // ...
+      }
     }
-}
+  })
+  .build()
 ```
