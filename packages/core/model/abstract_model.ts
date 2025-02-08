@@ -236,6 +236,7 @@ export class AbstractModel<M extends Model> {
   async submit<T>() {
     this.submitted.value = false;
     this.submiting.value = true;
+    
     if (Object.keys(this.errors).length > 0) {
       this.submiting.value = false;
       return {

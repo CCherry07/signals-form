@@ -4,7 +4,7 @@ import { batch, effect } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
 import { Resolver } from '@formula/core';
 interface Props {
-  field: FieldBuilder & Record<string, any>;
+  field: FieldBuilder
   model: any
   defaultValidatorEngine: string;
   resolveComponent: (component: string | FunctionComponent<any> | ComponentClass<any, any>) => string | FunctionComponent<any> | ComponentClass<any, any>
@@ -30,14 +30,15 @@ export function FieldControl(props: Props) {
       state: field.value,
       updateOn: key,
       defaultValidatorEngine: props.defaultValidatorEngine,
-      boolValues: field.boolContext,
+      boolContext: field.boolContext,
       model: props.model
     }, initiativeValidator as ValidateItem[], props.validatorResolvers)
       .then(errors => {
+        const { cleanErrors, setErrors } = field.getAbstractModel()
         if (Object.keys(errors).length === 0) {
-          field.abstractModel?.cleanErrors([String(field.path)])
+          cleanErrors([String(field.path)])
         } else {
-          field.abstractModel?.setErrors({
+          setErrors({
             [String(field.path)]: errors
           })
         }
@@ -48,7 +49,6 @@ export function FieldControl(props: Props) {
   const methods = useMemo(() => {
     const _events = field.getEvents()
     const onChange = async (...args: any[]) => {
-      field.isUpdating = true
       if (_events.onChange) {
         await _events.onChange(...args)
       } else {
@@ -103,13 +103,14 @@ export function FieldControl(props: Props) {
             state: field.value,
             updateOn: "signal",
             defaultValidatorEngine: props.defaultValidatorEngine,
-            boolValues: field.boolContext,
+            boolContext: field.boolContext,
             model: props.model
           }, passiveValidator as ValidateItem[], props.validatorResolvers).then(errors => {
+            const { cleanErrors, setErrors } = field.getAbstractModel()
             if (Object.keys(errors).length === 0) {
-              field.abstractModel?.cleanErrors([String(field.path)])
+              cleanErrors([String(field.path)])
             } else {
-              field.abstractModel?.setErrors({
+              setErrors({
                 [String(field.path)]: errors
               })
             }
@@ -126,9 +127,6 @@ export function FieldControl(props: Props) {
       effect(() => {
         setFiledState(normalizeProps(field))
       });
-      (field.$effects ?? []).forEach((fn: Function) => {
-        fn.call(field)
-      })
     });
     field.isMounted.value = true
     return () => {

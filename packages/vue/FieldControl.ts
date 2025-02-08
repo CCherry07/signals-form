@@ -22,7 +22,8 @@ export const FieldControl = defineComponent({
     validatorResolvers: Object as PropType<Record<string, Resolver>>
   },
   setup(props) {
-    const field = props.field! as FieldBuilder & Record<string, any>
+    const field = props.field! as FieldBuilder
+    const _events = field.getEvents()
     const {
       initiative: initiativeValidator = [],
       passive: passiveValidator = []
@@ -34,13 +35,14 @@ export const FieldControl = defineComponent({
         state: field.value,
         updateOn: key,
         defaultValidatorEngine: props.defaultValidatorEngine!,
-        boolValues: field.bools,
+        boolContext: field.boolContext,
         model: props.model!
       }, initiativeValidator as ValidateItem[], props.validatorResolvers!).then(errors => {
+        const { cleanErrors, setErrors } = field.getAbstractModel()
         if (Object.keys(errors).length === 0) {
-          field.abstractModel?.cleanErrors([String(field.path)])
+          cleanErrors([String(field.path)])
         } else {
-          field.abstractModel?.setErrors({
+          setErrors({
             [String(field.path)]: errors
           })
         }
@@ -49,9 +51,8 @@ export const FieldControl = defineComponent({
     }
 
     const onChange = (...args: any[]) => {
-      field.isUpdating = true
-      if (field.onChange) {
-        const maybePromise = field.onChange(...args)
+      if (_events.onChange) {
+        const maybePromise = _events.onChange(...args)
         if (isPromise(maybePromise)) {
           maybePromise.then(() => {
             // field.isUpdating = false
@@ -66,9 +67,8 @@ export const FieldControl = defineComponent({
     }
 
     const onBlur = (value: any) => {
-      field.isUpdating = true
-      if (field.onBlur) {
-        field.onBlur(value)
+      if (_events.onBlur) {
+        _events.onBlur(value)
       } else {
         field.value = value
       }
@@ -78,8 +78,8 @@ export const FieldControl = defineComponent({
     }
 
     const onFocus = () => {
-      if (field.onFocus) {
-        field.onFocus()
+      if (_events.onFocus) {
+        _events.onFocus()
       }
       field.isBlurred.value = false
       field.isFocused.value = true
@@ -109,13 +109,14 @@ export const FieldControl = defineComponent({
               state: field.value,
               updateOn: "signal",
               defaultValidatorEngine: props.defaultValidatorEngine!,
-              boolValues: field.bools,
+              boolContext: field.boolContext,
               model: props.model!.value
             }, passiveValidator as ValidateItem[], props.validatorResolvers!).then(errors => {
+              const { cleanErrors, setErrors } = field.getAbstractModel()
               if (Object.keys(errors).length === 0) {
-                field.abstractModel?.cleanErrors([String(field.path)])
+                cleanErrors([String(field.path)])
               } else {
-                field.abstractModel?.setErrors({
+                setErrors({
                   [String(field.path)]: errors
                 })
               }
@@ -124,17 +125,14 @@ export const FieldControl = defineComponent({
           }
         })
         effect(() => {
-          field.isHidden.value = field.hidden?.evaluate(field.bools) ?? false
+          field.isHidden.value = field.hidden?.evaluate(field.boolContext) ?? false
         })
         effect(() => {
-          field.isDisabled.value = field.disabled?.evaluate(field.bools) ?? false
+          field.isDisabled.value = field.disabled?.evaluate(field.boolContext) ?? false
         })
         effect(() => {
           filedState.value = normalizeProps(field)
         })
-        // field.$effects?.forEach(effect => {
-        //   effect.call(field)
-        // })
       })
       cleanups.push(stop)
     })

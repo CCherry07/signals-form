@@ -36,11 +36,11 @@ const getFactValue = (fact: string | Object | Array<string>, state: any, model: 
   return fact
 }
 
-export const validate = async <T>({ state, updateOn: _updateOn, model, boolValues, defaultValidatorEngine }: Context<T>, validates: ValidateItem[], validatorResolvers: ValidatorResolvers): Promise<FieldErrors> => {
+export const validate = async <T>({ state, updateOn: _updateOn, model, boolContext, defaultValidatorEngine }: Context<T>, validates: ValidateItem[], validatorResolvers: ValidatorResolvers): Promise<FieldErrors> => {
   const fieldErrors = {} as FieldErrors
   for (const item of validates) {
     const { schema, engine = defaultValidatorEngine, fact, updateOn, schemaOptions, factoryOptions, needValidate } = item
-    if (needValidate instanceof Decision && needValidate.not().evaluate(boolValues)) continue
+    if (needValidate instanceof Decision && needValidate.not().evaluate(boolContext)) continue
     if (typeof updateOn === "string" && updateOn !== _updateOn || isArray(updateOn) && updateOn.includes(_updateOn)) continue
     if (!isFunction(validatorResolvers[engine])) {
       throw new Error(`validator ${engine} is not registered`)

@@ -5,12 +5,12 @@
 
 ```typescript
 import { D as d } from "form";
-const boolValues = {
+const boolContext = {
     isA: true,
     isB: false,
     isC: false
 };
-const is = d.or('isA','isB').and('isC').evaluate(boolValues); // true
+const is = d.or('isA','isB').and('isC').evaluate(boolContext); // true
 ```
 
 ### 布尔运算符

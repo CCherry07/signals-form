@@ -25,7 +25,7 @@ const bools = {
   isTom: (context: Context) => context.userinfo.name === 'Tom',
 } as const
 
-const boolValues = setup(bools, context)
+const boolContext = setup(bools, context)
 
 describe("validate", () => {
   const rules: ValidateItem[] = [
@@ -52,7 +52,7 @@ describe("validate", () => {
       updateOn: "change",
       defaultValidatorEngine: "zod",
       model: context,
-      boolValues
+      boolContext
     }, rules, validatorResolvers)
     expect(result).toMatchInlineSnapshot(`{}`)
   })
@@ -69,7 +69,7 @@ describe("validate", () => {
       updateOn: "change",
       defaultValidatorEngine: "zod",
       model: context,
-      boolValues
+      boolContext
     }, rules, validatorResolvers)
 
     expect(result).toMatchInlineSnapshot(`
@@ -121,7 +121,7 @@ describe("validate", () => {
       updateOn: "change",
       defaultValidatorEngine: "zod",
       model: context,
-      boolValues
+      boolContext
     }, rules, validatorResolvers)
     expect(result).toMatchInlineSnapshot(`{}`)
   })
@@ -150,7 +150,7 @@ describe("validate", () => {
       updateOn: "change",
       defaultValidatorEngine: "zod",
       model: context,
-      boolValues
+      boolContext
     }, rules, validatorResolvers)
     expect(result).toMatchInlineSnapshot(`{}`)
   })

@@ -16,7 +16,7 @@ export interface Context<T> {
   updateOn: string
   defaultValidatorEngine: string
   model: Record<string, any>
-  boolValues: BoolContext
+  boolContext: BoolContext
 }
 
 export type ValidatorResolvers = Record<string, Resolver>
