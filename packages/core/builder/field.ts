@@ -17,7 +17,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   disabled?: Decision;
   #properties?: FieldBuilder[]
 
-
   // value status
   #updating = signal(false)
   #pending = signal(false)

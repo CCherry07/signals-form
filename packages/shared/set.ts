@@ -447,6 +447,14 @@ MapCache.prototype.set = mapCacheSet;
  * @param {*} value The value to assign.
  */
 function assignValue(object, key, value) {
+  var objValue = object[key];
+  if (!(hasOwnProperty.call(object, key) && eq(objValue, value)) ||
+    (value === undefined && !(key in object))) {
+    object[key] = value;
+  }
+}
+
+function assignValueSignal(object, key, value) {
   var objValue = peek(object, key);
   if (!(hasOwnProperty.call(object, key) && eq(objValue, value)) ||
     (value === undefined && !(key in object))) {
@@ -532,7 +540,6 @@ function baseSetSignal(object, path, value, customizer) {
     return object;
   }
   path = isKey(path, object) ? [path] : castPath(path);
-  // path = castPath(path);
   var index = -1,
     length = path.length,
     lastIndex = length - 1,
@@ -549,7 +556,7 @@ function baseSetSignal(object, path, value, customizer) {
           : (isIndex(path[index + 1]) ? [] : {});
       }
     }
-    assignValue(nested, key, newValue);
+    assignValueSignal(nested, key, newValue);
     if (index === lastIndex)
       nested = peek(nested, key);
     else {
