@@ -1,5 +1,5 @@
 import { deepSignal, peek, Signal, signal, effect, isString, isArray } from "alien-deepsignals";
-import { clonedeep, get, set } from "@formula/shared";
+import { clonedeep, get, set, setSignal } from "@formula/shared";
 import { createModel } from "./utils";
 
 import { type BoolContext, setup } from "../boolless"
@@ -174,8 +174,7 @@ export class AbstractModel<M extends Model> {
   }
 
   setFieldValue(field: string, value: any) {
-    // FIXME: in watch effect the set method in lodash has side effects of getter resulting in the failure to meet expectations
-    set(this.model, field, value)
+    setSignal(this.model, field, value)
   }
 
   // setFieldProps(field: string, props: any) {
