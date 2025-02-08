@@ -1,6 +1,6 @@
 import { deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
-import { AbstractModelMethods, ActionOptions, ComponentOptions, FieldError, FieldErrors, Lifecycle, ValidatorOptions } from "../types/field"
+import { AbstractModelMethods, ActionOptions, ComponentOptions, Field, FieldError, FieldErrors, Lifecycle, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
 import { isArray, isPromise, set } from "@formula/shared"
 import { defineRelation } from "../hooks/defineRelation"
@@ -388,7 +388,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     this.#props[key] = value
   }
 
-  events(events: Record<string, (this: FieldBuilder<T, P>, ...args: any[]) => void>) {
+  events(events: Record<string, (this: Field< FieldBuilder<T, P>>, ...args: any[]) => void>) {
     Object.entries(events).forEach(([key, value]) => {
       this.#events[key] = value.bind(this)
     })
