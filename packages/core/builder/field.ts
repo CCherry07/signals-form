@@ -11,11 +11,11 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   id!: string
   path!: string
   parentpath!: string
-  signalPath!: string
+  signalpath!: string
 
   hidden?: Decision;
   disabled?: Decision;
-  properties?: FieldBuilder[]
+  #properties?: FieldBuilder[]
 
 
   // value status
@@ -128,7 +128,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     this.effectFields.add(field)
   }
 
-  normalizeRelations() {
+  normalizeRelation() {
     if (this.#relation) {
       this.#relation.forEach(relation => {
         relation.call(this)
@@ -194,6 +194,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
       setValueWillUpdating(true)
       setValueWillPending(true)
       setValueWillUpdated(false)
+      field.#batchDispatchEffectStart()
     })
   }
 
@@ -227,7 +228,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
         if (this.isLeaf) {
           this.value = value
         } else {
-          this.properties?.forEach(filed => {
+          this.#properties?.forEach(filed => {
             filed.resetModel(value?.[filed.id])
           })
         }
@@ -236,7 +237,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
       if (this.isLeaf) {
         this.value = filedValue
       } else {
-        this.properties?.forEach(filed => {
+        this.#properties?.forEach(filed => {
           filed.resetModel(filedValue?.[filed.id])
         })
       }
@@ -246,10 +247,10 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   reset(model?: T) {
     this.resetState()
     this.onBeforeInit?.()
-    
+
     const { setDefaultValue } = this.#actions
     const filedValue: any = isFunction(setDefaultValue) ? setDefaultValue() : model;
-    if (this.properties?.length && filedValue === undefined) {
+    if (this.#properties?.length && filedValue === undefined) {
       return
     }
     if (isPromise(filedValue)) {
@@ -260,6 +261,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
       this.value = filedValue!
     }
   }
+
 
   evaluateDecision(decision: Decision) {
     return decision.evaluate(this.#boolContext)
@@ -292,9 +294,9 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     const { onSubmitValue } = this.#actions
     if (isFunction(onSubmitValue)) {
       return await onSubmitValue(this.peek())
-    } else if (this.properties) {
+    } else if (this.#properties) {
       const model: any = {} as T
-      await Promise.all(this.properties.map(async (field) => {
+      await Promise.all(this.#properties.map(async (field) => {
         return set(model, field.path.slice(fieldPathLength), await field.onSubmit())
       }))
       return model
@@ -313,13 +315,36 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
-  component(component: ComponentOptions<P>) {
+  component(component: ComponentOptions) {
     const { component: _component, ...options } = component
     this.#component = _component
-    let { props = {}, ...rest } = options
-    Object.assign(this.#props, props)
-    Object.assign(this, rest)
+    Object.assign(this, options)
     return this
+  }
+
+  properties(properties: FieldBuilder[]) {
+    this.#properties = properties
+    return this
+  }
+
+  getProperties() {
+    return this.#properties
+  }
+
+  normalizeProperties() {
+    if (this.#properties) {
+      this.#properties.forEach((field) => {
+        field.parent = this
+        field.parentpath = this.path ?? ""
+        field.path = this.path ? `${this.path}.${field.id}` : field.id;
+        field.signalpath = this.path ? `${this.path}.$${field.id}` : field.id;
+        field.setAbstractModel(this.#abstractModel)
+        field.normalizeProperties()
+        field.reset()
+        field.onInit?.()
+        this.#abstractModel.addField(field)
+      })
+    }
   }
 
   relation(relation: ReturnType<typeof defineRelation>) {

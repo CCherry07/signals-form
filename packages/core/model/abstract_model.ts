@@ -14,7 +14,7 @@ export class AbstractModel<M extends Model> {
   modelId: string;
   defaultValidatorEngine!: string;
   graph!: FieldBuilder[];
-  fields!: Record<string, FieldBuilder>;
+  fields: Record<string, FieldBuilder> = {};
   boolContext!: BoolContext;
   submitted: Signal<boolean>;
   submiting: Signal<boolean>;
@@ -39,19 +39,17 @@ export class AbstractModel<M extends Model> {
   }
 
   init(options: AbstractModelInitOptions<M>) {
-    const { defaultValidatorEngine, boolsConfig, graph, fields } = options;
+    const { defaultValidatorEngine, boolsConfig, graph } = options;
     this.errors = {};
     this.modelId = 'default'
     this.defaultValidatorEngine = defaultValidatorEngine
     // @ts-ignore
     this.boolContext = Object.freeze(setup(boolsConfig, this.model))
-
-    Object.values(fields!)!.forEach((field) => {
+    Object.values(this.fields!)!.forEach((field) => {
       field.setBoolContext(this.boolContext)
       field.setAppContext(this.appContext)
     })
     this.graph = graph!
-    this.fields = fields!
     this.normalizeFieldsRelation()
     // handle field effectFields
     effect(() => {
@@ -61,7 +59,7 @@ export class AbstractModel<M extends Model> {
 
   normalizeFieldsRelation() {
     for (let field of Object.values(this.fields)) {
-      field.normalizeRelations()
+      field.normalizeRelation()
     }
   }
 
@@ -176,6 +174,7 @@ export class AbstractModel<M extends Model> {
   }
 
   setFieldValue(field: string, value: any) {
+    // FIXME: in watch effect the set method in lodash has side effects of getter resulting in the failure to meet expectations
     set(this.model, field, value)
   }
 
@@ -207,6 +206,10 @@ export class AbstractModel<M extends Model> {
 
   getField(field: string) {
     return this.fields[field];
+  }
+
+  addField(field: FieldBuilder) {
+    this.fields[field.path] = field
   }
 
   getFieldValueStatus(field: string) {

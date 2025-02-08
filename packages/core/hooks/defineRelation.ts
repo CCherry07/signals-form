@@ -6,20 +6,20 @@ import { Effect, isArray, isFunction, effect } from "alien-deepsignals"
 export const hasChanged = (value: any, oldValue: any): boolean =>
   !Object.is(value, oldValue)
 
-export type RelationEntry = [
+export type RelationEntry<T extends FieldBuilder> = [
   deps: string | string[],
-  cb: (this: FieldBuilder, depValues: any) => void
+  cb: (this: Field<T>, depValues: RelationEntry<T>[0] extends string[] ? Array<any> : any) => void
 ]
-export type RelationFn = (field: Field) => void
+export type RelationFn<T extends FieldBuilder> = (field: Field<T>) => void
 
-export type Relation = RelationFn | RelationEntry
+export type Relation<T extends FieldBuilder> = RelationFn<T> | RelationEntry<T>
 
-export function createRelation(relation: Relation) {
-  return function (this: FieldBuilder) {
-    let field = this
+export function createRelation<T extends FieldBuilder>(relation: Relation<T>) {
+  return function (this: T) {
+    const field = this
     if (isFunction(relation)) {
       return effect(() => {
-        relation.bind(null, field)
+        relation.call(null, field)
       })
     }
     const [deps, cb] = relation;
@@ -39,6 +39,7 @@ export function createRelation(relation: Relation) {
     effect(() => {
       if (!field.getValueStatus().pending) {
         e.notify()
+        field.getValueStatusMethods().setValueWillPending(false)
       }
     })
     e.run()
@@ -46,10 +47,10 @@ export function createRelation(relation: Relation) {
   }
 }
 
-export function defineRelation(relation: Relation[] | RelationFn) {
+export function defineRelation<T extends FieldBuilder>(relation: Relation<T>[] | RelationFn<T>) {
   if (isArray(relation)) {
-    return (relation as Relation[]).map(createRelation)
+    return (relation).map(createRelation<T>)
   } else {
-    return [createRelation(relation)]
+    return [createRelation<T>(relation)]
   }
 }

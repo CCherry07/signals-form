@@ -28,7 +28,7 @@ export interface SubscribeProps<M> {
 export type AbstractModelMethods = Pick<AbstractModel<DeepSignal<Model>>,
   'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors'
   | 'cleanErrors' | 'onSubscribe' | "peekFieldValue"
-  | "getField" | 'getFieldsValue' | "getFieldValueStatus"
+  | "getField" | 'getFieldsValue' | "getFieldValueStatus" | 'addField'
 >
 
 export interface AbstractModelInitOptions<M extends Model> {
@@ -42,8 +42,7 @@ export interface AbstractModelConstructor {
   provides?: Record<string, any>
 }
 
-
-export interface ComponentOptions<P extends Record<string, any>> {
+export interface ComponentOptions {
   id: string;
   component?: any;
   wrapper?: any;
@@ -51,12 +50,10 @@ export interface ComponentOptions<P extends Record<string, any>> {
   disabled?: Decision;
   removeValueOnHidden?: boolean
   recoverValueOnShown?: boolean
-  props: P;
-  properties?: FieldBuilder[]
 }
 
 export interface ActionOptions<T> {
-  setDefaultValue?: (data?: any) => any;
+  setDefaultValue?: () => T;
   onSubmitValue?: (model: T) => any;
 }
 
@@ -82,5 +79,5 @@ export interface Lifecycle<T, P extends Object> {
   onValidate?(this: FieldBuilder<T, P>): void
 }
 
-type PickKeys = "value" | "getProps" | "getAppContext" | "getProvides" | "boolContext" | "isRoot" | "isLeaf" | "evaluateDecision" | "setFieldErrors" | "cleanErrors" | "setErrors"
-export type Field = Pick<FieldBuilder, PickKeys>
+type PickKeys = "value" | "getProps" | "getAppContext" | "getProvides" | "boolContext" | "isRoot" | "isLeaf" | "evaluateDecision" | "setFieldErrors" | "cleanErrors" | "setErrors" | "peek"
+export type Field<T extends FieldBuilder> = Pick<T, PickKeys>

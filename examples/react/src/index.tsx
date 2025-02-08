@@ -10,8 +10,8 @@ import Select from './components/Select';
 import { createForm } from "@formula/react"
 import { App } from "./App"
 import { zodResolver } from "@formula/resolvers"
-import { deepSignal, DeepSignal } from 'alien-deepsignals';
-import { D, defineField, defineRelation } from "@formula/core"
+import { deepSignal, DeepSignal, effect } from 'alien-deepsignals';
+import { D, defineField, defineRelation, get } from "@formula/core"
 
 const store = deepSignal({
   name: "bar",
@@ -32,7 +32,7 @@ const nicknameRelation = defineRelation([
   [
     'userinfo.email',
     function (depValues) {
-      console.log(depValues);
+      this.value = Math.floor(Math.random() * 1000)
     }
   ],
   [
@@ -43,13 +43,10 @@ const nicknameRelation = defineRelation([
   ],
   function (field) {
     const data = store.name
-    field.value = data
+    console.log(data);
+    field.value = data;
   }
 ])
-
-setTimeout(() => {
-  store.name = "Tom"
-}, 1000);
 
 type Model = DeepSignal<{
   userinfo: {
@@ -66,20 +63,23 @@ const bools = {
   isNickname: (model: Model) => model.userinfo.nickname === "cherry"
 }
 
-const email = defineField<string, { placeholder: string, label: string }>()
+const email = defineField<string, any>()
   .component({
     component: Input,
     hidden: D.use('isNickname'),
     id: "email",
-    props: {
-      placeholder: "请输入邮箱",
-      label: "邮箱"
-    },
     recoverValueOnShown: true
+  })
+  .props({
+    placeholder: "请输入邮箱",
+    label: "邮箱"
   })
   .events({
     onChange(value) {
       console.log(value, 'onChange');
+      if (this.evaluateDecision(D.use('isA'))) {
+        this.setProp("label", "📮")
+      }
       this.value = value
     }
   })
@@ -88,7 +88,7 @@ const email = defineField<string, { placeholder: string, label: string }>()
   })
   .lifecycle({
     onDisabled(state) {
-
+      console.log(state, 'onDisabled');
     },
     onMounted() {
       this.setProp("label", "📮")
@@ -102,9 +102,10 @@ const nickname = defineField()
   .component({
     component: Input,
     id: "nickname",
-    props: {
-      label: "昵称",
-    }
+  })
+  .props({
+    placeholder: "请输入昵称",
+    label: "昵称"
   })
   .relation(nicknameRelation)
   .build()
@@ -113,71 +114,67 @@ const password = defineField()
   .component({
     component: InputType,
     id: "password",
-    props: {
-      type: "password",
-      placeholder: "请输入密码",
-      label: "密码"
-    }
-  }).build()
+  }).props({
+    type: "password",
+    placeholder: "请输入密码",
+    label: "密码"
+  })
+  .build()
 
 const phone = defineField()
   .component({
     component: InputNumber,
     id: "phone",
-    props: {
-      placeholder: "请输入手机号",
-      label: "手机号"
-    }
-  }).build()
+  }).props({
+    placeholder: "请输入手机号",
+    label: "手机号"
+  })
+  .build()
 
 const donation = defineField().component({
   component: InputNumber,
   id: "donation",
-  props: {
-    placeholder: "请输入捐款金额",
-    label: "捐款金额"
-  }
+}).props({
+  placeholder: "请输入捐款金额",
+  label: "捐款金额"
 }).build()
 
 const residence = defineField().component({
   component: Cascader,
   id: "residence",
-  props: {
-    placeholder: "请选择地区",
-    label: "地区"
-  }
+}).props({
+  placeholder: "请选择地区",
+  label: "地区"
 }).build()
 
 const select = defineField()
   .component({
     component: Select,
     id: "select",
-    props: {
-      placeholder: "请选择",
-      label: "选择",
-      options: []
-    }
+  }).props({
+    placeholder: "请选择",
+    label: "选择",
+    options: []
   }).build()
 
 const userinfo = defineField()
   .component({
     component: Form,
     id: "userinfo",
-    props: {
-      label: "用户信息",
-      style: {
-        width: "400px"
-      }
-    },
-    properties: [
-      email,
-      nickname,
-      password,
-      phone,
-      donation,
-      residence,
-      select
-    ]
+  }).properties([
+    email,
+    nickname,
+    password,
+    phone,
+    donation,
+    residence,
+    select
+  ])
+  .props({
+    label: "用户信息",
+    style: {
+      width: "400px"
+    }
   }).build()
 
 const { app, form } = createForm({

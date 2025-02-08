@@ -140,8 +140,9 @@ export function FieldControl(props: Props) {
   }, [])
 
   function getChildren(): ReactNode[] {
-    if (field.properties) {
-      return (field.properties).map((child) => {
+    const properties = field.getProperties()
+    if (properties) {
+      return properties.map((child) => {
         return createElement(FieldControl, {
           key: child.path,
           field: child,

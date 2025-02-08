@@ -1,6 +1,6 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
-import { isPromise, Resolver, validate, FieldBuilder } from "@formula/core"
+import { isPromise, Resolver, validate, FieldBuilder, ValidateItem } from "@formula/core"
 import { effect } from "alien-deepsignals";
 import { effectScope } from "alien-signals";
 
@@ -25,7 +25,7 @@ export const FieldControl = defineComponent({
     const field = props.field! as FieldBuilder & Record<string, any>
     const {
       initiative: initiativeValidator = [],
-      signal: signalValidator = []
+      passive: passiveValidator = []
     } = field!.getValidator() ?? {}
     const filedState = shallowRef(normalizeProps(field))
 
@@ -36,7 +36,7 @@ export const FieldControl = defineComponent({
         defaultValidatorEngine: props.defaultValidatorEngine!,
         boolValues: field.bools,
         model: props.model!
-      }, initiativeValidator, props.validatorResolvers!).then(errors => {
+      }, initiativeValidator as ValidateItem[], props.validatorResolvers!).then(errors => {
         if (Object.keys(errors).length === 0) {
           field.abstractModel?.cleanErrors([String(field.path)])
         } else {
@@ -104,14 +104,14 @@ export const FieldControl = defineComponent({
     onBeforeMount(() => {
       const stop = effectScope(() => {
         effect(() => {
-          if (signalValidator) {
+          if (passiveValidator) {
             validate({
               state: field.value,
               updateOn: "signal",
               defaultValidatorEngine: props.defaultValidatorEngine!,
               boolValues: field.bools,
               model: props.model!.value
-            }, signalValidator, props.validatorResolvers!).then(errors => {
+            }, passiveValidator as ValidateItem[], props.validatorResolvers!).then(errors => {
               if (Object.keys(errors).length === 0) {
                 field.abstractModel?.cleanErrors([String(field.path)])
               } else {
@@ -145,17 +145,19 @@ export const FieldControl = defineComponent({
 
     function getChildren(): Slots {
       const slots = {} as Record<string, () => any>
-      if (field.properties) {
-        (field.properties).forEach((child) => {
-          slots[child.id] = () => { 
+      const properties = field.getProperties()
+      if (properties) {
+        properties.forEach((child) => {
+          slots[child.id] = () => {
             return h(FieldControl, {
-            key: child.path,
-            field: child,
-            model: props.model,
-            resolveComponent: props.resolveComponent,
-            validatorResolvers: props.validatorResolvers,
-            defaultValidatorEngine: props.defaultValidatorEngine
-          })}
+              key: child.path,
+              field: child,
+              model: props.model,
+              resolveComponent: props.resolveComponent,
+              validatorResolvers: props.validatorResolvers,
+              defaultValidatorEngine: props.defaultValidatorEngine
+            })
+          }
         })
       }
       return slots

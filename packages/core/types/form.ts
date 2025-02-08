@@ -29,14 +29,13 @@ export interface SubscribeProps<M> {
 export type AbstractModelMethods = Pick<AbstractModel<DeepSignal<Model>>,
     'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors'
     | 'cleanErrors' | 'onSubscribe' | "peekFieldValue"
-    | "getField" | "getFieldsValue"
+    | "getField" | "getFieldsValue" | "addField"
     >
 
 export interface AbstractModelInitOptions<M extends Model> {
   defaultValidatorEngine: string;
   boolsConfig: BoolsConfig<M>
   graph: FieldBuilder[]
-  fields: Record<string, FieldBuilder>
 }
 
 export interface AbstractModelConstructor {

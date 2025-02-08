@@ -1,7 +1,7 @@
 import type { FormConfig, AbstractModelMethods } from "../types/form";
 
 import { AbstractModel } from "./abstract_model"
-import { asyncBindingModel, createGraph } from "./utils";
+import { createGraph } from "./utils";
 
 export class FormGroup {
   forms: Map<string, AbstractModel<any>>;
@@ -22,14 +22,13 @@ export class FormGroup {
       getFieldValue: form.getFieldValue.bind(form),
       peekFieldValue: form.peekFieldValue.bind(form),
       getField: form.getField.bind(form),
+      addField: form.addField.bind(form),
       getFieldsValue: form.getFieldsValue.bind(form)
     }
-    const graph = createGraph(config.graph, form.appContext)
-    const { fields } = asyncBindingModel(methods, form.model, graph)
+    const graph = createGraph(config.graph, methods, form.appContext)
     form.init({
       ...config,
       graph,
-      fields
     })
     return form;
   }
