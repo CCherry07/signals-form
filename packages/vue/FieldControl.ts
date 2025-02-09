@@ -160,8 +160,9 @@ export const FieldControl = defineComponent({
       field.isDestroyed.value = true
     })
 
+    const component = props.resolveComponent!(field.getComponent())
+
     return () => {
-      const component = props.resolveComponent!(field.getComponent())
       return h('div', { hidden: filedState.value.isHidden, "data-field-id": field.id }, h(component, {
         ...filedState.value,
         ...events,

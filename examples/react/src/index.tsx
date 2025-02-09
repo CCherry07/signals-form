@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import Login from './demos/login';
 import Edit from "./demos/edit";
 import Validator from "./demos/validator";
+import Boolless from './demos/boolless';
 function createElement(node: ReactNode){
   const el = document.createElement('div')
   el.style.marginBottom = '20px';
@@ -13,3 +14,4 @@ function createElement(node: ReactNode){
 createElement(<Login />);
 createElement(<Edit />);
 createElement(<Validator />);
+createElement(<Boolless />);
