@@ -10,9 +10,10 @@ interface Props {
   onBlur: Function
   onFocus: Function
   type: "Group" | "Search" | "TextArea" | "Password" | "OTP";
+  required: boolean
 }
 export default function (props: Props) {
-  const { onChange, value, errors, label, isDisabled, type } = props
+  const { onChange, value, errors, label, isDisabled, type, required } = props
   const Node = useMemo(() => {
     switch (type) {
       case "Group":
@@ -30,7 +31,7 @@ export default function (props: Props) {
     }
   }, [type])
   return <div>
-    <Form.Item label={label}>
+    <Form.Item label={label} required={required}>
       <Node disabled={isDisabled} value={value}
         onChange={(e) => {
           // @ts-ignore

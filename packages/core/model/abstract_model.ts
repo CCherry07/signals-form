@@ -39,7 +39,7 @@ export class AbstractModel<M extends Model> {
   }
 
   init(options: AbstractModelInitOptions<M>) {
-    const { defaultValidatorEngine, boolsConfig, graph } = options;
+    const { defaultValidatorEngine, boolsConfig = {}, graph } = options;
     this.errors = {};
     this.modelId = 'default'
     this.defaultValidatorEngine = defaultValidatorEngine
@@ -227,6 +227,7 @@ export class AbstractModel<M extends Model> {
     this.submitted.value = false;
     this.submiting.value = true;
     
+    //TODO revalidate ?
     if (Object.keys(this.errors).length > 0) {
       this.submiting.value = false;
       return {
@@ -236,7 +237,6 @@ export class AbstractModel<M extends Model> {
     }
     const model = {} as T
     await Promise.all(Object.values(this.graph).map(async (field) => {
-      // @ts-ignore
       return set(model, field.path, await field.onSubmit())
     }))
     this.submitted.value = true;

@@ -3,9 +3,9 @@ import React from "react";
 import { FieldError } from "./Error";
 
 export default function (props: any) {
-  const { label, value, onChange, options, } = props;
+  const { label, value, onChange, options, required } = props;
   return (
-    <Form.Item label={label}>
+    <Form.Item label={label} required={required}>
       <Select
         value={value}
         onChange={onChange}

@@ -139,7 +139,7 @@ export function FieldControl(props: Props) {
     }
   }, [])
 
-  function getChildren(): ReactNode[] {
+  function getChildren(): ReactNode[] | undefined {
     const properties = field.getProperties()
     if (properties) {
       return properties.map((child) => {
@@ -153,7 +153,6 @@ export function FieldControl(props: Props) {
         })
       })
     }
-    return []
   }
 
   return createElement("div", {

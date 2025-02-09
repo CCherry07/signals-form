@@ -8,8 +8,8 @@ import { FieldErrors } from "./field";
 export interface FormConfig {
   graph: FieldBuilder[];
   defaultValidatorEngine: string;
-  boolsConfig: Record<string, (...args: any[]) => boolean>;
   id: string;
+  boolsConfig?: Record<string, (...args: any[]) => boolean>;
   resolvers?: {
     validator?: Record<string, Resolver>
   }
@@ -34,8 +34,8 @@ export type AbstractModelMethods = Pick<AbstractModel<DeepSignal<Model>>,
 
 export interface AbstractModelInitOptions<M extends Model> {
   defaultValidatorEngine: string;
-  boolsConfig: BoolsConfig<M>
   graph: FieldBuilder[]
+  boolsConfig?: BoolsConfig<M>
 }
 
 export interface AbstractModelConstructor {
