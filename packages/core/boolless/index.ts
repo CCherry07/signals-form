@@ -17,15 +17,15 @@ export const Operator = {
 }
 
 export const CustomOperator = {} as { [key: string]: (...bools: boolean[]) => boolean }
-export const CustomDecisionCreator = {} as { [key: string]: (...ns: (string | Node)[]) => Decision }
+export const CustomDecisionCreator = {} as { [key: string]: (...ns: (string | Node)[]) => Decision<string> }
 
-export type Node = Decision | LeafNode;
+export type Node = Decision<string> | LeafNode;
 
-export interface D<T extends string | Node> {
-  and: (...nodes: T[]) => Decision;
-  or: (...nodes: T[]) => Decision;
-  not: (node: T) => Decision;
-  use: (node: T) => Decision;
+export interface D<T extends string> {
+  and: (...nodes: T[]) => Decision<T>;
+  or: (...nodes: T[]) => Decision<T>;
+  not: (node: T) => Decision<T>;
+  use: (node: T) => Decision<T>;
 }
 
 export const D = {
@@ -53,7 +53,7 @@ export function createDecision<T extends string>(boolContext: Record<T, unknown>
 
 const registedOperators = () => Object.keys(Operator).concat(Object.keys(CustomOperator));
 
-export class Decision {
+export class Decision <T extends string = string> {
   private operator: OperatorEnum;
   private nodes: Node[];
   constructor(operator: OperatorEnum, ...nodes: Node[]) {
@@ -82,15 +82,15 @@ export class Decision {
     }
   }
 
-  and(...nodes: (string | Node)[]): Decision {
+  and(...nodes: T[]): Decision<T> {
     return createAndDecision(this, ...nodes);
   }
 
-  or(...nodes: (string | Node)[]): Decision {
+  or(...nodes: T[]): Decision<T> {
     return createOrDecision(this, ...nodes);
   }
 
-  not(): Decision {
+  not(): Decision<T> {
     return new Decision(OperatorEnum.NOT, this);
   }
 }
@@ -100,7 +100,7 @@ export function registerCustomOperator(operatorDSL: string,
     operator: (left: boolean, right: boolean) => boolean
   }) {
   CustomOperator[operatorDSL] = operator;
-  function DecisionCreator(this: Decision, ...ns: (string | Node)[]) {
+  function DecisionCreator<T extends string>(this: Decision<T>, ...ns: (string | Node)[]) {
     if (this instanceof Decision) {
       return new Decision(operatorDSL as OperatorEnum, ...[this, ...ns].map(n => typeof n === 'string' ? new LeafNode(n) : n));
     }
