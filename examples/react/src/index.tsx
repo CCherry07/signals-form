@@ -85,7 +85,7 @@ const email = defineField<string, any>()
   .events({
     onChange(value) {
       console.log(value, 'onChange');
-      if (this.evaluateDecision(D.use('isMe'))) {
+      if (this.execDecision(D.use('isMe'))) {
         this.setProp("label", "🍺")
       }
       this.value = value
@@ -100,6 +100,9 @@ const email = defineField<string, any>()
       this.setProp("label", "📮")
     },
     onDestroy() {
+    },
+    onValidate(type, errors) {
+      console.log(type, errors);
     },
   })
   .build()

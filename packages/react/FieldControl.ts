@@ -43,6 +43,7 @@ export function FieldControl(props: Props) {
           })
         }
         field.errors.value = errors
+        field.onValidate?.('initiative', errors)
       })
   }, [])
 
@@ -95,13 +96,12 @@ export function FieldControl(props: Props) {
     }
   }, [])
   useEffect(() => {
-    field.onMounted?.()
     const stopScope = effectScope(() => {
       effect(() => {
         if (passiveValidator) {
           validate({
             state: field.value,
-            updateOn: "signal",
+            updateOn: 'passive',
             defaultValidatorEngine: props.defaultValidatorEngine,
             boolContext: field.boolContext,
             model: props.model
@@ -115,6 +115,7 @@ export function FieldControl(props: Props) {
               })
             }
             field.errors.value = errors
+            field.onValidate?.('passive', errors)
           })
         }
       })
@@ -128,6 +129,7 @@ export function FieldControl(props: Props) {
         setFiledState(normalizeProps(field))
       });
     });
+    field.onMounted?.()
     field.isMounted.value = true
     return () => {
       stopScope()

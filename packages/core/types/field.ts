@@ -62,6 +62,8 @@ export interface ValidatorOptions {
   initiative?: ValidateItem[] | ValidateItem | Object;
 }
 
+export type ValidateType = "passive" | "initiative"
+
 export interface FieldError {
   message: string
   type: string
@@ -70,18 +72,19 @@ export type FieldErrors = Record<string, FieldError>
 
 type PickKeys = "value" | "getProps" | "getAppContext" |
   "getProvides" | "boolContext" | "isRoot" | "isLeaf" |
-  "evaluateDecision" | "setFieldErrors" | "cleanErrors" |
+  "execDecision" | "setFieldErrors" | "cleanErrors" |
   "setErrors" | "peek" | "setProp"
 
 export type Field<T extends FieldBuilder> = Pick<T, PickKeys>
 
 export interface Lifecycle<T, P extends Object> {
-  onBeforeInit?(this: Field<FieldBuilder<T, P>>): void
-  onInit?(this: Field<FieldBuilder<T, P>>): void
   onDestroy?(this: Field<FieldBuilder<T, P>>): void
   onDisabled?(this: Field<FieldBuilder<T, P>>, isDisabled: boolean): void
+  onValidate?(this: Field<FieldBuilder<T, P>>, type: ValidateType, errors: FieldErrors): void
+  
+  onBeforeInit?(this: Field<FieldBuilder<T, P>>): void
+  onInit?(this: Field<FieldBuilder<T, P>>): void
   onHidden?(this: Field<FieldBuilder<T, P>>, isHidden: boolean): void
   onMounted?(this: Field<FieldBuilder<T, P>>): void
   onUnmounted?(this: Field<FieldBuilder<T, P>>): void
-  onValidate?(this: Field<FieldBuilder<T, P>>): void
 }

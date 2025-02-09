@@ -1,6 +1,6 @@
 import { deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
-import { AbstractModelMethods, ActionOptions, ComponentOptions, Field, FieldError, FieldErrors, Lifecycle, ValidatorOptions } from "../types/field"
+import { AbstractModelMethods, ActionOptions, ComponentOptions, Field, FieldError, FieldErrors, Lifecycle, ValidateType, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
 import { isArray, isPromise, set } from "@formula/shared"
 import { defineRelation } from "../hooks/defineRelation"
@@ -110,14 +110,15 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this.#boolContext
   }
 
+  onDisabled?(isDisabled: boolean): void
+  onHidden?(isHidden: boolean): void
+  onValidate?(type: ValidateType,error: FieldErrors): void
+
   onBeforeInit?(): void
   onInit?(): void
   onDestroy?(): void
-  onDisabled?(state: boolean): void
-  onHidden?(state: boolean): void
   onMounted?(): void
   onUnmounted?(): void
-  onValidate?(): void
 
   constructor() {
 
@@ -261,8 +262,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     }
   }
 
-
-  evaluateDecision(decision: Decision) {
+  execDecision(decision: Decision) {
     return decision.evaluate(this.#boolContext)
   }
 
@@ -369,7 +369,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
     const { initiative, passive } = options as ValidatorOptions
     const normalizeValidator = {
-      normalizeValidator: initiative ? formatValidateItem(initiative) : undefined,
+      initiative: initiative ? formatValidateItem(initiative) : undefined,
       passive
     }
 
