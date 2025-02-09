@@ -262,7 +262,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     }
   }
 
-  protected execDecision(decision: Decision) {
+  execDecision(decision: Decision) {
     return decision.evaluate(this.#boolContext)
   }
 
@@ -383,7 +383,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
-  protected setProp<K extends keyof P, V extends P[K]>(key: K, value: V) {
+  setProp<K extends keyof P, V extends P[K]>(key: K, value: V) {
     // @ts-ignore
     this.#props[key] = value
   }

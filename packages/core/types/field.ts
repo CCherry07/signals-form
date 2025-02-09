@@ -75,10 +75,10 @@ type ReadonlyPickKeys = "getProps" | "getAppContext" |
   "execDecision" | "setFieldErrors" | "cleanErrors" |
   "setErrors" | "peek" | "setProp" | "isHidden" |
   "isDisabled" | "isBlurred" | "isFocused" | "isMounted" |
-  "isDestroyed" | "isInitialized" | "isUpdating"
+  "isDestroyed" | "isInitialized"
 
 type PickKeys = "value" | "errors"
-// @ts-ignore
+
 export type Field<T extends FieldBuilder> = Readonly< Pick<T, ReadonlyPickKeys>> & Pick<T, PickKeys>
 
 export interface Lifecycle<T, P extends Object> {

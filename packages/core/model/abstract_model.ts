@@ -139,17 +139,7 @@ export class AbstractModel<M extends Model> {
   }
 
   mergeModel(model: M) {
-    Object.values(this.fields).forEach((field) => {
-      if (field.isLeaf) { // leaf node
-        const value = get(model, field.path)
-        if (typeof value === "undefined") {
-          return;
-        }
-        if (value !== field.value) {
-          field.value = value
-        }
-      }
-    })
+    Object.assign(this.model, model) // lodash merage
   }
 
   setFieldErrors(field: string, errors: FieldErrors) {
