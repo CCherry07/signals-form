@@ -32,7 +32,7 @@ const nicknameRelation = defineRelation([
   [
     'userinfo.email',
     function (field) {
-      field.value = Math.floor(Math.random() * 1000)
+      // field.value = Math.floor(Math.random() * 1000)
     }
   ],
   [
@@ -71,7 +71,7 @@ const bools = {
 
 const D = createDecision(bools)
 
-const email = defineField<string, any>()
+const email = defineField()
   .component({
     component: Input,
     hidden: D.use("isMe"),
@@ -85,7 +85,7 @@ const email = defineField<string, any>()
   .events({
     onChange(value) {
       console.log(value, 'onChange');
-      if (this.execDecision(D.use('isMe'))) {
+      if (this.execDecision(D.use('isTom'))) {
         this.setProp("label", "🍺")
       }
       this.value = value
@@ -118,9 +118,8 @@ const nickname = defineField()
   })
   .relation(nicknameRelation)
   .lifecycle({
-    // onMounted() {
-    //   this.value = "tom"
-    // },
+    onMounted() {
+    },
   })
   .build()
 
@@ -139,7 +138,8 @@ const phone = defineField()
   .component({
     component: InputNumber,
     id: "phone",
-  }).props({
+  })
+  .props({
     placeholder: "请输入手机号",
     label: "手机号"
   })

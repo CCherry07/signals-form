@@ -49,14 +49,14 @@ export function FieldControl(props: Props) {
 
   const methods = useMemo(() => {
     const _events = field.getEvents()
-    const onChange = async (...args: any[]) => {
+    const onChange = (async function(this: FieldBuilder,...args: any[]) {
       if (_events.onChange) {
         await _events.onChange(...args)
       } else {
-        field.value = args[0]
+        this.value = args[0]
       }
       triggerValidate("onChange")
-    }
+    }).bind(field)
 
     const onBlur = (value: any) => {
       _events?.onBlur?.(value)

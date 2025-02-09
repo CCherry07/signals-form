@@ -1,6 +1,6 @@
 import { deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
-import { AbstractModelMethods, ActionOptions, ComponentOptions, Field, FieldError, FieldErrors, Lifecycle, ValidateType, ValidatorOptions } from "../types/field"
+import { AbstractModelMethods, ActionOptions, BaseFieldProps, ComponentOptions, Field, FieldError, FieldErrors, Lifecycle, ValidateType, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
 import { isArray, isPromise, set } from "@formula/shared"
 import { defineRelation } from "../hooks/defineRelation"
@@ -24,7 +24,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   isBlurred: Signal<boolean> = signal(false)
   isFocused: Signal<boolean> = signal(false)
-  isInit: Signal<boolean> = signal(false)
+  isInitialized: Signal<boolean> = signal(false)
   isDestroyed: Signal<boolean> = signal(false)
   isHidden: Signal<boolean> = signal(false)
   isDisabled: Signal<boolean> = signal(false)
@@ -70,7 +70,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this.#abstractModel?.peekFieldValue?.(this.parentpath, this.id)
   }
 
-  set value(v: T) {
+  protected set value(v: T) {
     this.#batchDispatchEffectStart()
     this.#abstractModel.setFieldValue(this.path, v)
     this.#batchDispatchEffectEnd()
@@ -112,7 +112,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   onDisabled?(isDisabled: boolean): void
   onHidden?(isHidden: boolean): void
-  onValidate?(type: ValidateType,error: FieldErrors): void
+  onValidate?(type: ValidateType, error: FieldErrors): void
 
   onBeforeInit?(): void
   onInit?(): void
@@ -208,7 +208,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   resetState() {
-    this.isInit.value = true
+    this.isInitialized.value = true
     this.#updating.value = true
     this.isDisabled.value = false
     this.isHidden.value = false
@@ -262,7 +262,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     }
   }
 
-  execDecision(decision: Decision) {
+  protected execDecision(decision: Decision) {
     return decision.evaluate(this.#boolContext)
   }
 
@@ -383,14 +383,14 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
-  setProp<K extends keyof P, V extends P[K]>(key: K, value: V) {
+  protected setProp<K extends keyof P, V extends P[K]>(key: K, value: V) {
     // @ts-ignore
     this.#props[key] = value
   }
 
-  events(events: Record<string, (this: Field< FieldBuilder<T, P>>, ...args: any[]) => void>) {
+  events(events: Record<string, (this: Field<FieldBuilder<T, P>>, ...args: any[]) => void>) {
     Object.entries(events).forEach(([key, value]) => {
-      this.#events[key] = value.bind(this)
+      this.#events[key] = value.bind(this as Field<FieldBuilder<T, P>>)
     })
     return this
   }
@@ -405,10 +405,10 @@ export class FieldBuilder<T = any, P extends Object = Object> {
       isFocused: this.isFocused.value,
       isMounted: this.isMounted.value,
       isDestroyed: this.isDestroyed.value,
-      isInit: this.isInit.value,
+      isInitialized: this.isInitialized.value,
       isDisabled: this.isDisabled.value,
-      isUpdating: this.isInit.value,
-    }
+      isUpdating: this.isInitialized.value,
+    } as Readonly<BaseFieldProps<T> & P>
   }
 
   getEvents() {

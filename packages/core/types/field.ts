@@ -70,21 +70,38 @@ export interface FieldError {
 }
 export type FieldErrors = Record<string, FieldError>
 
-type PickKeys = "value" | "getProps" | "getAppContext" |
+type ReadonlyPickKeys = "getProps" | "getAppContext" |
   "getProvides" | "boolContext" | "isRoot" | "isLeaf" |
   "execDecision" | "setFieldErrors" | "cleanErrors" |
-  "setErrors" | "peek" | "setProp"
+  "setErrors" | "peek" | "setProp" | "isHidden" |
+  "isDisabled" | "isBlurred" | "isFocused" | "isMounted" |
+  "isDestroyed" | "isInitialized" | "isUpdating"
 
-export type Field<T extends FieldBuilder> = Pick<T, PickKeys>
+type PickKeys = "value" | "errors"
+// @ts-ignore
+export type Field<T extends FieldBuilder> = Readonly< Pick<T, ReadonlyPickKeys>> & Pick<T, PickKeys>
 
 export interface Lifecycle<T, P extends Object> {
   onDestroy?(this: Field<FieldBuilder<T, P>>): void
   onDisabled?(this: Field<FieldBuilder<T, P>>, isDisabled: boolean): void
   onValidate?(this: Field<FieldBuilder<T, P>>, type: ValidateType, errors: FieldErrors): void
-  
+
   onBeforeInit?(this: Field<FieldBuilder<T, P>>): void
   onInit?(this: Field<FieldBuilder<T, P>>): void
   onHidden?(this: Field<FieldBuilder<T, P>>, isHidden: boolean): void
   onMounted?(this: Field<FieldBuilder<T, P>>): void
   onUnmounted?(this: Field<FieldBuilder<T, P>>): void
+}
+
+export interface BaseFieldProps<T> {
+  errors: FieldErrors
+  value: T,
+  isHidden: boolean,
+  isDisabled: boolean,
+  isBlurred: boolean,
+  isFocused: boolean,
+  isMounted: boolean,
+  isDestroyed: boolean,
+  isInitialized: boolean,
+  isUpdating: boolean,
 }
