@@ -51,9 +51,11 @@ const password = defineField<string, Props>()
     component: Input,
   })
   .props({ label: "密码", type: "Password", prefix: "🔒", required: true })
-  .validator(z.string({ message: "密码必须包含大小写字母、数字和特殊字符" })
-    .min(6, "密码长度必须在6-16").max(16, "密码长度必须在6-16")
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,16}$/, { message: "密码必须包含大小写字母、数字和特殊字符" }))
+  .validator(
+    z.string({ message: "密码必须包含大小写字母、数字和特殊字符" })
+      .min(6, "密码长度必须在6-16").max(16, "密码长度必须在6-16")
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,16}$/, { message: "密码必须包含大小写字母、数字和特殊字符" })
+  )
   .events({
     onChange: function (value) {
       const res = match(this.execDecision(D.and("is18", "isTom")),
