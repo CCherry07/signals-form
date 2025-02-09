@@ -3,6 +3,7 @@ import { FieldBuilder, validate, ValidateItem } from "@formula/core"
 import { batch, effect } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
 import { Resolver } from '@formula/core';
+import { Field } from '@formula/core/types/field';
 interface Props {
   field: FieldBuilder
   model: any
@@ -49,7 +50,7 @@ export function FieldControl(props: Props) {
 
   const methods = useMemo(() => {
     const _events = field.getEvents()
-    const onChange = (async function(this: FieldBuilder,...args: any[]) {
+    const onChange = (async function(this: Field<FieldBuilder>,...args: any[]) {
       if (_events.onChange) {
         await _events.onChange(...args)
       } else {
@@ -59,7 +60,7 @@ export function FieldControl(props: Props) {
     }).bind(field)
 
     const onBlur = (value: any) => {
-      _events?.onBlur?.(value)
+      _events.onBlur?.(value)
       batch(() => {
         field.isFocused.value = false
         field.isBlurred.value = true
@@ -118,12 +119,6 @@ export function FieldControl(props: Props) {
             field.onValidate?.('passive', errors)
           })
         }
-      })
-      effect(() => {
-        field.isHidden.value = field.hidden?.evaluate(field.boolContext) ?? false
-      })
-      effect(() => {
-        field.isDisabled.value = field.disabled?.evaluate(field.boolContext) ?? false
       })
       effect(() => {
         setFiledState(normalizeProps(field))

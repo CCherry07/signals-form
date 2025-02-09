@@ -1,5 +1,6 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
+import type { Field } from "@formula/core/types/field";
 import { isPromise, Resolver, validate, FieldBuilder, ValidateItem } from "@formula/core"
 import { effect } from "alien-deepsignals";
 import { effectScope } from "alien-signals";
@@ -50,7 +51,7 @@ export const FieldControl = defineComponent({
       })
     }
 
-    const onChange = (...args: any[]) => {
+    const onChange = (function (this: Field<FieldBuilder>, ...args: any[]) {
       if (_events.onChange) {
         const maybePromise = _events.onChange(...args)
         if (isPromise(maybePromise)) {
@@ -61,16 +62,14 @@ export const FieldControl = defineComponent({
           // field.isUpdating = false
         }
       } else {
-        field.value = args[0]
+        this.value = args[0]
       }
       triggerValidate("onChange")
-    }
+    }).bind(field)
 
-    const onBlur = (value: any) => {
+    const onBlur = function (value: any) {
       if (_events.onBlur) {
         _events.onBlur(value)
-      } else {
-        field.value = value
       }
       field.isFocused.value = false
       field.isBlurred.value = true
@@ -123,12 +122,6 @@ export const FieldControl = defineComponent({
               field.errors.value = errors
             })
           }
-        })
-        effect(() => {
-          field.isHidden.value = field.hidden?.evaluate(field.boolContext) ?? false
-        })
-        effect(() => {
-          field.isDisabled.value = field.disabled?.evaluate(field.boolContext) ?? false
         })
         effect(() => {
           filedState.value = normalizeProps(field)

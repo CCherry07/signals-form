@@ -1,4 +1,4 @@
-import { deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
+import { computed, deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
 import { AbstractModelMethods, ActionOptions, BaseFieldProps, ComponentOptions, Field, FieldError, FieldErrors, Lifecycle, ValidateType, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
@@ -26,9 +26,9 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   isFocused: Signal<boolean> = signal(false)
   isInitialized: Signal<boolean> = signal(false)
   isDestroyed: Signal<boolean> = signal(false)
-  isHidden: Signal<boolean> = signal(false)
-  isDisabled: Signal<boolean> = signal(false)
-  isValid: Signal<boolean> = signal(true)
+  isHidden = computed(() => this.hidden ? this.execDecision(this.hidden) : false)
+  isDisabled = computed(() => this.disabled ? this.execDecision(this.disabled) : false)
+  isValid = computed(() => !Object.keys(this.errors.value).length)
   errors: Signal<FieldErrors> = signal({})
   isMounted: Signal<boolean> = signal(false)
 
@@ -210,12 +210,9 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   resetState() {
     this.isInitialized.value = true
     this.#updating.value = true
-    this.isDisabled.value = false
-    this.isHidden.value = false
     this.isBlurred.value = false
     this.isFocused.value = false
     this.isDestroyed.value = false
-    this.isValid.value = true
     this.errors.value = {}
     this.#$value = undefined as unknown as T
   }
@@ -429,11 +426,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   build() {
     const stop = effectScope(() => {
-      // validate
-      effect(() => {
-        this.isValid.value = Object.keys(this.errors.value).length === 0
-      })
-
       // disabled
       effect(() => {
         this.onDisabled?.(this.isDisabled.value)
