@@ -53,7 +53,7 @@ export interface ComponentOptions {
 }
 
 export interface ActionOptions<T> {
-  setDefaultValue?: () => T;
+  setDefaultValue?: () => T | Promise<T>;
   onSubmitValue?: (model: T) => any;
 }
 
