@@ -33,6 +33,7 @@ export function App(props: Props) {
       <Button style={{ width: "400px" }} type="primary" onClick={async () => {
         const model = await props.form.submit()
         alert(JSON.stringify(model, null, 2))
+        console.log(model);
       }}>登录</Button>
     </Spin>
   </div>

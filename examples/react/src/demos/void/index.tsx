@@ -8,6 +8,7 @@ import Form from "../../components/Form";
 import { App } from "./app"
 import React from "react";
 import { Flex } from "./flex";
+import { Divider } from "./divider";
 
 interface Props {
   label: string
@@ -67,6 +68,12 @@ const password = defineField<string, Props>()
   )
   .build()
 
+const divider = defineField()
+  .component({
+    id: "divider",
+    type: "Void",
+    component: Divider
+  })
 
 const useraccount = defineField<{ username: string, password: string }, any>()
   .component({
@@ -76,6 +83,7 @@ const useraccount = defineField<{ username: string, password: string }, any>()
   })
   .properties([
     username,
+    divider,
     password
   ])
   .props({
