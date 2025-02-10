@@ -341,8 +341,9 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   component(component: ComponentOptions) {
-    const { component: _component, ...options } = component
+    const { component: _component, type, ...options } = component
     this.#component = _component
+    this.#type = type || "Field"
     Object.assign(this, options)
     return this
   }

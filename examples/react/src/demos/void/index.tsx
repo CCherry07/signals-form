@@ -45,9 +45,9 @@ const lastName = defineField<string, Props>()
 const username = defineField<string, Props>()
   .component({
     id: "usernameLayout",
+    type: "Void",
     component: Flex,
   })
-  .type("Void")
   .properties([
     firstName,
     lastName
@@ -71,13 +71,13 @@ const password = defineField<string, Props>()
 const useraccount = defineField<{ username: string, password: string }, any>()
   .component({
     id: "layout",
+    type: "Void",
     component: Form,
   })
   .properties([
     username,
     password
   ])
-  .type("Void")
   .props({
     style: {
       width: "400px"

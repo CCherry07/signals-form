@@ -44,6 +44,7 @@ export interface AbstractModelConstructor {
 
 export interface ComponentOptions {
   id: string;
+  type?: FieldBuilderType
   component?: any;
   wrapper?: any;
   hidden?: Decision;
