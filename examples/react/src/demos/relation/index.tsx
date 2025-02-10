@@ -60,19 +60,23 @@ const infoRelaition = defineRelation([
   [
     ["account.username", "account.age"],
     (field, [username, age]) => {
-      if (field.value.length < 2 && username && age) {
+      if (username && age) {
         field.value = [`${username} is ${age} years old`]
+      } else {
+        field.value = []
       }
     }
   ],
   [
     ["account.username", "account.address", "account.age"],
     (field, [username, address, age]) => {
-      if (username && address && age ) {
-        field.value= [
+      if (username && address && age) {
+        field.value = [
           field.value[0],
           `${username} is ${age} years old, and he lives in ${address}`
         ]
+      } else if (!address) {
+        field.value = [field.value[0]]
       }
     }
   ],
@@ -141,14 +145,19 @@ const address = defineField<string, Props>()
   .validator(z.string({ message: "地址为必填项" }).min(2, "地址长度必须在2-10").max(10, "地址长度必须在2-10"))
   .build()
 
-const info = defineField<any, any>().component({
-  id: "info",
-  component: Info,
-}).actions({
-  setDefaultValue() {
-    return ["请填写信息"]
-  },
-}).relation(infoRelaition).build()
+const info = defineField<any, any>()
+  .component({
+    id: "info",
+    component: Info,
+  })
+  .props({
+    label: "信息"
+  })
+  .actions({
+    setDefaultValue() {
+      return []
+    },
+  }).relation(infoRelaition).build()
 
 const useraccount = defineField<Model['account'], any>()
   .component({

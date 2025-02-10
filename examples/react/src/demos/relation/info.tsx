@@ -1,11 +1,14 @@
 import React from "react"
-import { Space, Typography } from 'antd';
+import { Form, Space, Typography } from 'antd';
 export function Info({
-  value
-}: { value: string[] }) {
-  return <Space direction="vertical">
-    {
-      value.map((v, i) => <Typography.Text key={i}>{v}</Typography.Text>)
-    }
-  </Space>
+  value,
+  label
+}: { value: string[], label: string }) {
+  return <Form.Item label={label}>
+    <Space direction="vertical">
+      {
+        value.length ? value.map((v, i) => <Typography.Text key={i}>{v}</Typography.Text>) : "暂无"
+      }
+    </Space>
+  </Form.Item>
 }
