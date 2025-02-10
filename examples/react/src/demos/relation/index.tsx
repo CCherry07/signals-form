@@ -131,6 +131,8 @@ const age = defineField<number, Props>()
     prefix: "🎂",
     required: true
   })
+  .validator(z.number({ message: "年龄必须是数字" }).min(1, "年龄必须大于0").max(100, "年龄必须小于100"))
+  .build()
 
 const address = defineField<string, Props>()
   .component({
