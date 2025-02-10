@@ -77,7 +77,8 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   peek(): T {
-    return this.#abstractModel?.peekFieldValue?.(this.parentpath, this.id)
+    const parentpath = this.#getValidParentFieldPath()
+    return this.#abstractModel?.peekFieldValue?.(parentpath, this.id)
   }
 
   protected set value(v: T) {
@@ -309,18 +310,22 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   async onSubmit(): Promise<T> {
-    const fieldPathLength = this.path.length + 1
     const { onSubmitValue } = this.#actions
-    if (isFunction(onSubmitValue)) {
-      return await onSubmitValue(this.peek())
-    } else if (this.#properties) {
+    if (this.#properties) {
       const model: any = {} as T
       await Promise.all(this.#properties.map(async (field) => {
-        return set(model, field.path.slice(fieldPathLength), await field.onSubmit())
+        if (field.isVoidField) {
+          Object.assign(model, await field.onSubmit())
+          return
+        }
+        return set(model, field.id, await field.onSubmit())
       }))
-      return model
+      return onSubmitValue ? onSubmitValue(model) : model
+    }
+    if (this.isField) {
+      return onSubmitValue ? onSubmitValue(this.value) : this.value
     } else {
-      return this.peek()
+      return undefined as unknown as T
     }
   }
 

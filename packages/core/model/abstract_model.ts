@@ -186,7 +186,7 @@ export class AbstractModel<M extends Model> {
   }
 
   peekFieldValue(parentpath: string, id: string) {
-    return peek(get(this.model, parentpath), id as any)
+    return peek(parentpath ? get(this.model, parentpath) : this.model, id as any)
   }
 
   getFieldError(field: string) {
@@ -226,7 +226,7 @@ export class AbstractModel<M extends Model> {
   async submit<T>() {
     this.submitted.value = false;
     this.submiting.value = true;
-    
+
     //TODO revalidate ?
     if (Object.keys(this.errors).length > 0) {
       this.submiting.value = false;
@@ -237,6 +237,10 @@ export class AbstractModel<M extends Model> {
     }
     const model = {} as T
     await Promise.all(Object.values(this.graph).map(async (field) => {
+      if (field.isVoidField) {
+        Object.assign(model as Record<string, any>, await field.onSubmit())
+        return
+      }
       return set(model, field.path, await field.onSubmit())
     }))
     this.submitted.value = true;
