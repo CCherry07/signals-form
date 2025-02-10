@@ -9,11 +9,12 @@ interface Props {
   label: string
   isDisabled: boolean
   required: boolean
+  prefix: React.ReactNode
 }
 export default function (props: Props) {
-  const { onChange, value, errors, label, required, isDisabled } = props;
+  const { onChange, value, errors, label, required, isDisabled, prefix } = props;
   return <Form.Item label={label} required={required}>
-    <InputNumber style={{ width: "100%" }} disabled={isDisabled} value={value} onChange={onChange} />
+    <InputNumber prefix={prefix} style={{ width: "100%" }} disabled={isDisabled} value={value} onChange={onChange} />
     <FieldError errors={errors} />
   </Form.Item>
 }
