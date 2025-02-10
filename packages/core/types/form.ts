@@ -17,7 +17,6 @@ export interface FormConfig {
 
 export type Model = Record<string, any>;
 
-
 export interface SubscribeProps<M> {
   boolContext: BoolContext;
   submitted: Signal<boolean>;

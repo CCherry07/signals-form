@@ -1,10 +1,18 @@
 import { computed, deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
-import { AbstractModelMethods, ActionOptions, BaseFieldProps, ComponentOptions, Field, FieldError, FieldErrors, Lifecycle, ValidateType, ValidatorOptions } from "../types/field"
+import { AbstractModelMethods, ActionOptions, BaseFieldProps, ComponentOptions, Field, FieldBuilderType, FieldError, FieldErrors, Lifecycle, ValidateType, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
 import { isArray, isPromise, set } from "@formula/shared"
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
+
+function getParentField(field: FieldBuilder): FieldBuilder | null {
+  if (field.parent?.isVoidField) {
+    return getParentField(field.parent)
+  } else {
+    return field.parent
+  }
+}
 
 export class FieldBuilder<T = any, P extends Object = Object> {
 
@@ -12,6 +20,8 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   path!: string
   parentpath!: string
   signalpath!: string
+
+  #type: FieldBuilderType = "Field"
 
   hidden?: Decision;
   disabled?: Decision;
@@ -172,6 +182,14 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return isArray(this.properties) ? this.properties?.length === 0 : true
   }
 
+  get isVoidField() {
+    return this.#type === "Void"
+  }
+
+  get isField() {
+    return this.#type === "Field"
+  }
+
   getValueStatus() {
     return {
       updated: this.#updated.value,
@@ -301,6 +319,12 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     }
   }
 
+
+  type(type: FieldBuilderType) {
+    this.#type = type
+    return this
+  }
+
   lifecycle(hooks: Lifecycle<T, P>) {
     Object.assign(this, hooks)
     return this
@@ -327,18 +351,37 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this.#properties
   }
 
+  #getValidParentFieldPath() {
+    if (this.parent?.isVoidField) {
+      const parent = getParentField(this)
+      if (parent) {
+        return parent.path
+      } else {
+        return ""
+      }
+    } else {
+      return this.parentpath
+    }
+  }
+
   normalizeProperties() {
     if (this.#properties) {
+      let parentpath = this.parentpath
+      if (this.isVoidField) {
+        parentpath = this.#getValidParentFieldPath()
+      }
       this.#properties.forEach((field) => {
         field.parent = this
-        field.parentpath = this.path ?? ""
-        field.path = this.path ? `${this.path}.${field.id}` : field.id;
-        field.signalpath = this.path ? `${this.path}.$${field.id}` : field.id;
+        field.parentpath = this.path
+        field.path = this.isVoidField ? `${parentpath}.${field.id}` : `${this.path}.${field.id}`;
         field.setAbstractModel(this.#abstractModel)
+        field.setAppContext(this.#appContext)
         field.normalizeProperties()
         field.reset()
         field.onInit?.()
-        this.#abstractModel.addField(field)
+        if (field.isField) {
+          this.#abstractModel.addField(field)
+        }
       })
     }
   }

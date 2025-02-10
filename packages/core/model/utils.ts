@@ -26,7 +26,6 @@ export function createGraph(graph: FieldBuilder[],mothods: any, appContext: any)
   return graph.map(field => {
     field.path = field.id
     field.parentpath = "."
-    field.signalpath = "$" + field.id
     field.setAbstractModel(mothods)
     field.setAppContext(appContext)
     field.normalizeProperties()

@@ -68,7 +68,10 @@ export interface FieldError {
   message: string
   type: string
 }
+
 export type FieldErrors = Record<string, FieldError>
+
+export type FieldBuilderType = "Field" | "Void"
 
 type ReadonlyPickKeys = "getProps" | "getAppContext" |
   "getProvides" | "boolContext" | "isRoot" | "isLeaf" |
@@ -79,7 +82,7 @@ type ReadonlyPickKeys = "getProps" | "getAppContext" |
 
 type PickKeys = "value" | "errors"
 
-export type Field<T extends FieldBuilder> = Readonly< Pick<T, ReadonlyPickKeys>> & Pick<T, PickKeys>
+export type Field<T extends FieldBuilder> = Readonly<Pick<T, ReadonlyPickKeys>> & Pick<T, PickKeys>
 
 export interface Lifecycle<T, P extends Object> {
   onDestroy?(this: Field<FieldBuilder<T, P>>): void
