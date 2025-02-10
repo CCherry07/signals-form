@@ -6,6 +6,7 @@ import Edit from "./demos/edit";
 import Validator from "./demos/validator";
 import Boolless from './demos/boolless';
 import Relation from './demos/relation';
+import Void from './demos/void';
 function createElement(node: ReactNode){
   const el = document.createElement('div')
   el.style.marginBottom = '20px';
@@ -19,3 +20,4 @@ createElement(<Edit />);
 createElement(<Validator />);
 createElement(<Boolless />);
 createElement(<Relation />);
+createElement(<Void />);

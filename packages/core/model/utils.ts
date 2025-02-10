@@ -22,10 +22,12 @@ export async function createModel(graph: FieldBuilder[], model?: Model) {
   }, Promise.resolve({}))
 }
 
-export function createGraph(graph: FieldBuilder[],mothods: any, appContext: any): FieldBuilder[] {
+export function createGraph(graph: FieldBuilder[], mothods: any, appContext: any): FieldBuilder[] {
   return graph.map(field => {
-    field.path = field.id
-    field.parentpath = "."
+    if (!field.isVoidField) {
+      field.path = field.id
+      field.parentpath = ""
+    }
     field.setAbstractModel(mothods)
     field.setAppContext(appContext)
     field.normalizeProperties()

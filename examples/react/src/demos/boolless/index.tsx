@@ -77,7 +77,7 @@ const age = defineField<number, Props>()
     hidden: D.use('isJerry')
   }).props({
     label: "年龄",
-  })
+  }).build()
 
 const useraccount = defineField<Model['account'], any>()
   .component({

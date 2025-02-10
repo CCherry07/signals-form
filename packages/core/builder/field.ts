@@ -36,8 +36,8 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   isFocused: Signal<boolean> = signal(false)
   isInitialized: Signal<boolean> = signal(false)
   isDestroyed: Signal<boolean> = signal(false)
-  isHidden = computed(() => this.hidden ? this.execDecision(this.hidden) : false)
-  isDisabled = computed(() => this.disabled ? this.execDecision(this.disabled) : false)
+  isHidden = computed(() => this.hidden && this.boolContext ? this.execDecision(this.hidden) : false)
+  isDisabled = computed(() => this.disabled && this.boolContext ? this.execDecision(this.disabled) : false)
   isValid = computed(() => !Object.keys(this.errors.value).length)
   errors: Signal<FieldErrors> = signal({})
   isMounted: Signal<boolean> = signal(false)
@@ -110,7 +110,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   private effectFields: Set<FieldBuilder> = new Set()
-  #boolContext: BoolContext = {}
+  #boolContext?: BoolContext
 
   setBoolContext(boolContext: BoolContext) {
     this.#boolContext = boolContext
@@ -144,6 +144,8 @@ export class FieldBuilder<T = any, P extends Object = Object> {
         relation.call(this)
       })
     }
+    this.isHidden.update()
+    this.isDisabled.update()
   }
 
   setValueWillPending(isPending: boolean) {
@@ -278,6 +280,9 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   execDecision(decision: Decision) {
+    if (!this.#boolContext) {
+      throw new Error('boolContext is not defined')
+    }
     return decision.evaluate(this.#boolContext)
   }
 
@@ -373,7 +378,15 @@ export class FieldBuilder<T = any, P extends Object = Object> {
       this.#properties.forEach((field) => {
         field.parent = this
         field.parentpath = this.path
-        field.path = this.isVoidField ? `${parentpath}.${field.id}` : `${this.path}.${field.id}`;
+        if (this.isVoidField) {
+          if (parentpath) {
+            field.path = `${parentpath}.${field.id}`
+          } else {
+            field.path = field.id
+          }
+        } else {
+          field.path = `${this.path}.${field.id}`
+        }
         field.setAbstractModel(this.#abstractModel)
         field.setAppContext(this.#appContext)
         field.normalizeProperties()
