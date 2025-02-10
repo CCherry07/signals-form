@@ -8,7 +8,7 @@ import Form from "../../components/Form";
 import { App } from "./app"
 import React from "react";
 import { Flex } from "./flex";
-import { Divider } from "./divider";
+import { Divider } from "antd";
 
 interface Props {
   label: string
