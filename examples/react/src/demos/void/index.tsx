@@ -8,6 +8,7 @@ import Form from "../../components/Form";
 import { App } from "./app"
 import React from "react";
 import { Flex } from "./flex";
+
 interface Props {
   label: string
   type?: "Group" | "Search" | "TextArea" | "Password" | "OTP";
@@ -65,7 +66,6 @@ const password = defineField<string, Props>()
       .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,16}$/, { message: "密码必须包含大小写字母、数字和特殊字符" })
   )
   .build()
-
 
 
 const useraccount = defineField<{ username: string, password: string }, any>()

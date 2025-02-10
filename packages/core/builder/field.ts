@@ -372,10 +372,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   normalizeProperties() {
     if (this.#properties) {
-      let parentpath = this.parentpath
-      if (this.isVoidField) {
-        parentpath = this.#getValidParentFieldPath()
-      }
+      const parentpath = this.#getValidParentFieldPath()
       this.#properties.forEach((field) => {
         field.parent = this
         field.parentpath = this.path
