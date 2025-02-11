@@ -146,8 +146,12 @@ export class FieldBuilder<T = any, P extends Object = Object> {
         relation.call(this)
       })
     }
+  }
+
+  normalizeField(){
     this.isHidden.update()
     this.isDisabled.update()
+    this.normalizeRelation()
   }
 
   setValueWillPending(isPending: boolean) {

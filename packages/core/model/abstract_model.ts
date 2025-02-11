@@ -46,22 +46,22 @@ export class AbstractModel<M extends Model> {
     this.modelId = 'default'
     this.defaultValidatorEngine = defaultValidatorEngine
     // @ts-ignore
-    this.boolContext = Object.freeze(setup(boolsConfig, this.model))
+    this.boolContext = setup(boolsConfig, this.model)
     Object.values(this.fields!)!.forEach((field) => {
       field.setBoolContext(this.boolContext)
       field.setAppContext(this.appContext)
     })
     this.graph = graph!
-    this.normalizeFieldsRelation()
+    this.normalizeFields()
     // handle field effectFields
     effect(() => {
       // this.isUpdating.value = Object.values(this.fields ?? {}).some((field) => field.isUpdating) ?? false
     })
   }
 
-  normalizeFieldsRelation() {
+  normalizeFields() {
     for (let field of Object.values(this.fields)) {
-      field.normalizeRelation()
+      field.normalizeField()
     }
   }
 
