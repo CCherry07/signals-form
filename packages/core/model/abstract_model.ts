@@ -225,7 +225,7 @@ export class AbstractModel<M extends Model> {
 
   }
 
-  async validate(fieldpath: string, type: "passive" | "initiative") {
+  async validate(fieldpath: string, type?: "passive" | "initiative") {
     const filed = this.getField(fieldpath)
     const validator = filed.getValidator()
     if (!validator) return
@@ -239,6 +239,19 @@ export class AbstractModel<M extends Model> {
       defaultValidatorEngine: this.defaultValidatorEngine,
       boolContext: this.boolContext,
       model: this.model
+    }
+
+    if (!type) {
+      fieldErrors.initiative = await validate(
+        context,
+        initiative as ValidateItem[],
+        this.validatorResolvers
+      )
+      fieldErrors.passive = await validate(
+        context,
+        passive as ValidateItem[],
+        this.validatorResolvers
+      )
     }
 
     if (type === "initiative" && initiative) {
@@ -291,10 +304,6 @@ export class AbstractModel<M extends Model> {
       errors: this.errors
     };
   }
-
-  // static forRoot(options: Record<string, any>) {
-  //   console.log(this.prototype);
-  // }
 
   provides(data: Record<string, any>) {
     this.appContext = {

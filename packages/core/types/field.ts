@@ -46,9 +46,9 @@ export interface ComponentOptions {
   recoverValueOnShown?: boolean
 }
 
-export interface ActionOptions<T> {
-  setDefaultValue?: () => T | Promise<T>;
-  onSubmitValue?: (model: T) => any;
+export interface ActionOptions<T, P extends Object> {
+  setDefaultValue?: (this: Field<FieldBuilder<T, P>>) => T | Promise<T>;
+  onSubmitValue?: (this: Field<FieldBuilder<T, P>>, model: T) => any;
 }
 
 export interface ValidatorOptions {

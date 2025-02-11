@@ -102,10 +102,20 @@ const password = defineField<string, Props>()
     component: Input,
   })
   .props({ label: "密码", type: "Password", prefix: "🔒", required: true })
+  .actions({
+    onSubmitValue(model) {
+        // const username = this
+    },
+  })
   .validator(
-    z.string({ message: "密码必须包含大小写字母、数字和特殊字符" })
-      .min(6, "密码长度必须在6-16").max(16, "密码长度必须在6-16")
-      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,16}$/, { message: "密码必须包含大小写字母、数字和特殊字符" })
+    {
+      initiative: {
+        schema: z.string({ message: "密码必须包含大小写字母、数字和特殊字符" })
+          .min(6, "密码长度必须在6-16").max(16, "密码长度必须在6-16")
+          .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,16}$/, { message: "密码必须包含大小写字母、数字和特殊字符" }),
+        updateOn: ["onxxClick"]
+      }
+    }
   )
   .events({
     onChange: function (value) {
@@ -115,9 +125,8 @@ const password = defineField<string, Props>()
           [false, () => "Tom is not 18"]
         ]
       )
-      console.log(res)
       this.value = value
-    }
+    },
   })
 
 

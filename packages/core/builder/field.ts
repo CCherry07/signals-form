@@ -90,7 +90,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   #component?: any;
   #validator: ValidatorOptions = {}
-  #actions: ActionOptions<T> = {}
+  #actions: ActionOptions<T,P> = {}
   // #effects: Array<(this: FieldBuilder<T, P>) => void> = []
   #provides: Record<string | symbol, any> = {}
   #events: Record<string, Function> = {}
@@ -192,22 +192,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   setValueWillUpdated(isUpdated: boolean) {
     this.#updated.value = isUpdated
   }
-
-  // // @ts-ignore
-  // #getDepsValue(deps?: string | string[] | Record<string, string>) {
-  //   let injectValues: any = undefined
-  //   if (Array.isArray(deps)) {
-  //     injectValues = deps.map((dep: string) => this.deps[dep].value)
-  //   } else if (typeof deps === 'object') {
-  //     injectValues = Object.fromEntries(Object.entries(deps).map(([key, dep]) => {
-  //       return [key, this.deps[dep as string].value]
-  //     })
-  //     )
-  //   } else if (typeof deps === 'string') {
-  //     injectValues = this.deps[deps].value
-  //   }
-  //   return injectValues
-  // }
 
   get isRoot() {
     return this.parent === null
@@ -369,7 +353,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
-  actions(actions: ActionOptions<T>) {
+  actions(actions: ActionOptions<T,P>) {
     this.#actions = actions
     return this
   }
@@ -460,6 +444,11 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
     this.#validator = normalizeValidator
     return this
+  }
+
+
+  validate(type?: "passive" | "initiative") {
+    return this.#abstractModel.validate(this.path, type)
   }
 
   props(ps: P) {
