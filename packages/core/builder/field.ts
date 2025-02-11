@@ -288,25 +288,18 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   setFieldErrors(errors: FieldErrors) {
+    this.setErrors(errors)
     this.#abstractModel.setFieldErrors(this.path, errors)
   }
 
-  cleanErrors(paths?: string[]) {
-    if (paths === undefined) {
-      this.errors.value = {};
-      this.#abstractModel.cleanErrors([this.path])
-      return;
-    }
-    paths.forEach(p => {
-      delete this.errors.value[p]
-    })
+  cleanErrors() {
+    this.errors.value = {}
+    this.#abstractModel.cleanErrors([this.path])
+    return;
   }
 
   setErrors(errors: Record<string, FieldError>) {
-    this.errors.value = {
-      ...this.errors.value,
-      ...errors
-    }
+    this.errors.value = errors
   }
 
   async onSubmit(): Promise<T> {
@@ -432,7 +425,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     this.#validator = normalizeValidator
     return this
   }
-
 
   props(ps: P) {
     Object.assign(this.#props, ps)

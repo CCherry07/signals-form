@@ -7,6 +7,8 @@ import type { Resolver } from "../resolvers/type";
 import type { AbstractModelConstructor, AbstractModelInitOptions, Model, SubscribeProps } from "../types/form";
 import { FieldBuilder } from "../builder/field";
 import { FieldErrors } from "../types/field";
+import { validate } from "../validator";
+import { ValidateItem } from "../validator/types";
 
 export class AbstractModel<M extends Model> {
   id: string;
@@ -144,7 +146,7 @@ export class AbstractModel<M extends Model> {
 
   setFieldErrors(field: string, errors: FieldErrors) {
     this.errors[field] = errors;
-    this.fields[field].setErrors(errors);
+    this.fields[field].errors.value = errors;
   }
 
   setErrors(errors: Record<string, FieldErrors>) {
@@ -221,6 +223,45 @@ export class AbstractModel<M extends Model> {
 
   onValidate() {
 
+  }
+
+  async validate(fieldpath: string, type: "passive" | "initiative") {
+    const filed = this.getField(fieldpath)
+    const validator = filed.getValidator()
+    if (!validator) return
+    const { initiative, passive } = validator
+    const fieldErrors = {} as {
+      initiative?: FieldErrors
+      passive?: FieldErrors
+    }
+    const context = {
+      state: filed.value,
+      defaultValidatorEngine: this.defaultValidatorEngine,
+      boolContext: this.boolContext,
+      model: this.model
+    }
+
+    if (type === "initiative" && initiative) {
+      fieldErrors.initiative = await validate(
+        context,
+        initiative as ValidateItem[],
+        this.validatorResolvers
+      )
+    }
+    if (type === "passive" && passive) {
+      fieldErrors.passive = await validate(
+        context,
+        passive as ValidateItem[],
+        this.validatorResolvers
+      )
+    }
+
+    this.setFieldErrors(fieldpath, {
+      ...fieldErrors.initiative,
+      ...fieldErrors.passive
+    })
+
+    return fieldErrors
   }
 
   async submit<T>() {

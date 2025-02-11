@@ -13,10 +13,10 @@ export interface ValidateItem {
 
 export interface Context<T> {
   state: T
-  updateOn: string
   defaultValidatorEngine: string
   model: Record<string, any>
-  boolContext: BoolContext
+  updateOn?: string
+  boolContext?: BoolContext
 }
 
 export type ValidatorResolvers = Record<string, Resolver>

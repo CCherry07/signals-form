@@ -36,12 +36,32 @@ const getFactValue = (fact: string | Object | Array<string>, state: any, model: 
   return fact
 }
 
-export const validate = async <T>({ state, updateOn: _updateOn, model, boolContext, defaultValidatorEngine }: Context<T>, validates: ValidateItem[], validatorResolvers: ValidatorResolvers): Promise<FieldErrors> => {
+export const validate = async <T>(
+  {
+    state,
+    updateOn: _updateOn,
+    model,
+    boolContext,
+    defaultValidatorEngine
+  }: Context<T>,
+  validates: ValidateItem[],
+  validatorResolvers: ValidatorResolvers
+): Promise<FieldErrors> => {
   const fieldErrors = {} as FieldErrors
   for (const item of validates) {
     const { schema, engine = defaultValidatorEngine, fact, updateOn, schemaOptions, factoryOptions, needValidate } = item
+    if (!boolContext) {
+      return {
+
+      }
+    }
     if (needValidate instanceof Decision && needValidate.not().evaluate(boolContext)) continue
-    if (typeof updateOn === "string" && updateOn !== _updateOn || isArray(updateOn) && updateOn.includes(_updateOn)) continue
+
+    if (
+      _updateOn &&
+      (isString(updateOn) && updateOn !== _updateOn || isArray(updateOn) && updateOn.length && updateOn.includes(_updateOn))
+    ) continue
+
     if (!isFunction(validatorResolvers[engine])) {
       throw new Error(`validator ${engine} is not registered`)
     }
@@ -55,7 +75,7 @@ export const validate = async <T>({ state, updateOn: _updateOn, model, boolConte
 }
 
 
-export const formatValidateItem = (items: ValidateItem [] | ValidateItem | Object): ValidateItem[] => {
+export const formatValidateItem = (items: ValidateItem[] | ValidateItem | Object): ValidateItem[] => {
   if (isArray(items)) {
     return items.map(i => i?.schema ? i : { schema: i })
   } else if ((items as ValidateItem)?.schema) {

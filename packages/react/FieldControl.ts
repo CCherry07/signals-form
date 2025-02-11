@@ -35,22 +35,14 @@ export function FieldControl(props: Props) {
       model: props.model
     }, initiativeValidator as ValidateItem[], props.validatorResolvers)
       .then(errors => {
-        const { cleanErrors, setErrors } = field.getAbstractModel()
-        if (Object.keys(errors).length === 0) {
-          cleanErrors([String(field.path)])
-        } else {
-          setErrors({
-            [String(field.path)]: errors
-          })
-        }
-        field.errors.value = errors
+        field.setFieldErrors(errors)
         field.onValidate?.('initiative', errors)
       })
   }, [])
 
   const methods = useMemo(() => {
     const _events = field.getEvents()
-    const onChange = (async function(this: Field<FieldBuilder>,...args: any[]) {
+    const onChange = (async function (this: Field<FieldBuilder>, ...args: any[]) {
       if (_events.onChange) {
         await _events.onChange(...args)
       } else {
@@ -107,15 +99,7 @@ export function FieldControl(props: Props) {
             boolContext: field.boolContext,
             model: props.model
           }, passiveValidator as ValidateItem[], props.validatorResolvers).then(errors => {
-            const { cleanErrors, setErrors } = field.getAbstractModel()
-            if (Object.keys(errors).length === 0) {
-              cleanErrors([String(field.path)])
-            } else {
-              setErrors({
-                [String(field.path)]: errors
-              })
-            }
-            field.errors.value = errors
+            field.setFieldErrors(errors)
             field.onValidate?.('passive', errors)
           })
         }
