@@ -90,7 +90,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   #component?: any;
   #validator: ValidatorOptions = {}
-  #actions: ActionOptions<T,P> = {}
+  #actions: ActionOptions<T, P> = {}
   // #effects: Array<(this: FieldBuilder<T, P>) => void> = []
   #provides: Record<string | symbol, any> = {}
   #events: Record<string, Function> = {}
@@ -170,12 +170,12 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   normalizeRelation() {
     if (this.#relation) {
       this.#relation.forEach(relation => {
-        relation.call(this)
+        relation.call(this as any)
       })
     }
   }
 
-  normalizeField(){
+  normalizeField() {
     this.isHidden.update()
     this.isDisabled.update()
     this.normalizeRelation()
@@ -256,7 +256,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   resetModel(model?: T | Promise<T>) {
     const { setDefaultValue } = this.#actions
-    const filedValue: any = isFunction(setDefaultValue) ? setDefaultValue() : model;
+    const filedValue: any = isFunction(setDefaultValue) ? setDefaultValue.call(this) : model;
     if (isPromise(filedValue)) {
       filedValue.then((value) => {
         if (this.isLeaf) {
@@ -283,7 +283,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     this.onBeforeInit?.()
 
     const { setDefaultValue } = this.#actions
-    const filedValue: any = isFunction(setDefaultValue) ? setDefaultValue() : model;
+    const filedValue: any = isFunction(setDefaultValue) ? setDefaultValue.call(this) : model;
     if (this.#properties?.length && filedValue === undefined) {
       return
     }
@@ -333,10 +333,10 @@ export class FieldBuilder<T = any, P extends Object = Object> {
         }
         return set(model, field.id, await field.onSubmit())
       }))
-      return onSubmitValue ? onSubmitValue(model) : model
+      return onSubmitValue ? onSubmitValue.call(this, model) : model
     }
     if (this.isField) {
-      return onSubmitValue ? onSubmitValue(this.value) : this.value
+      return onSubmitValue ? onSubmitValue.call(this, this.value) : this.value
     } else {
       return undefined as unknown as T
     }
@@ -353,7 +353,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
-  actions(actions: ActionOptions<T,P>) {
+  actions(actions: ActionOptions<T, P>) {
     this.#actions = actions
     return this
   }
@@ -377,7 +377,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   #getValidParentFieldPath() {
     if (this.parent?.isVoidField) {
-      const parent = getParentField(this)
+      const parent = getParentField(this as FieldBuilder)
       if (parent) {
         return parent.path
       } else {
@@ -392,7 +392,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     if (this.#properties) {
       const parentpath = this.#getValidParentFieldPath()
       this.#properties.forEach((field) => {
-        field.parent = this
+        field.parent = this as FieldBuilder
         field.parentpath = this.path
         if (this.isVoidField) {
           if (parentpath) {

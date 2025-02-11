@@ -104,7 +104,7 @@ const password = defineField<string, Props>()
   .props({ label: "密码", type: "Password", prefix: "🔒", required: true })
   .actions({
     onSubmitValue(model) {
-        // const username = this
+      // const username = this
     },
   })
   .validator(

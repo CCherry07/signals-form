@@ -177,11 +177,11 @@ export class AbstractModel<M extends Model> {
     return get(this.model, field)
   }
 
-  getFieldsValue(fields: string | string[]) {
+  getFieldsValue<T>(fields: string | string[]): T {
     if (isString(fields)) {
       return this.getFieldValue(fields)
     } else if (isArray(fields)) {
-      return fields.map((key) => this.getFieldValue(key))
+      return fields.map((key) => this.getFieldValue(key)) as T
     } else {
       throw new Error("not found")
     }

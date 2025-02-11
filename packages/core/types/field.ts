@@ -47,8 +47,8 @@ export interface ComponentOptions {
 }
 
 export interface ActionOptions<T, P extends Object> {
-  setDefaultValue?: (this: Field<FieldBuilder<T, P>>) => T | Promise<T>;
-  onSubmitValue?: (this: Field<FieldBuilder<T, P>>, model: T) => any;
+  setDefaultValue?: (this: FieldBuilder<T, P>) => T | Promise<T>;
+  onSubmitValue?: (this: FieldBuilder<T, P>, model: T) => any;
 }
 
 export interface ValidatorOptions {
@@ -76,7 +76,7 @@ type ReadonlyPickKeys = "getProps" | "getAppContext" |
 
 type PickKeys = "value" | "errors"
 
-export type Field<T extends FieldBuilder> = Readonly<Pick<T, ReadonlyPickKeys>> & Pick<T, PickKeys>
+export type Field<T extends FieldBuilder<any, any>> = Readonly<Pick<T, ReadonlyPickKeys>> & Pick<T, PickKeys>
 
 export interface Lifecycle<T, P extends Object> {
   onDestroy?(this: Field<FieldBuilder<T, P>>): void
