@@ -19,7 +19,7 @@ const nickname = defineField().component({
   id: "nickname",
 }).props({
   label: "昵称"
-}).build()
+})
 
 const useinfo =
   defineField()
@@ -29,7 +29,7 @@ const useinfo =
     })
     .properties([
       nickname
-    ]).build()
+    ])
 
 const { form, app } = createForm({
   defaultValidatorEngine: "zod",

@@ -27,12 +27,12 @@ import Input from './components/Input';
 const email = defineField().component({
   id: 'email',
   component: 'input',
-}).build()
+})
 
 const nickname = defineField().component({
   id: 'nickname',
   component: 'input',
-}).build()
+})
 
 const userinfo = defineField()
   .component({
@@ -43,7 +43,7 @@ const userinfo = defineField()
     email,
     nickname,
   ])
-  .build();
+;
 
 const { form, app } = createForm({
   graph: [

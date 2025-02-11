@@ -28,7 +28,7 @@ const firstName = defineField<string, Props>()
     required: true
   })
   .validator(z.string({ message: "该字段为必填项" }))
-  .build()
+
 
 
 const lastName = defineField<string, Props>()
@@ -42,7 +42,7 @@ const lastName = defineField<string, Props>()
     required: true
   })
   .validator(z.string({ message: "该字段为必填项" }))
-  .build()
+
 
 const username = defineField<string, Props>()
   .component({
@@ -66,7 +66,7 @@ const password = defineField<string, Props>()
       .min(6, "密码长度必须在6-16").max(16, "密码长度必须在6-16")
       .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,16}$/, { message: "密码必须包含大小写字母、数字和特殊字符" })
   )
-  .build()
+
 
 const divider = defineField()
   .component({
@@ -91,7 +91,7 @@ const useraccount = defineField<{ username: string, password: string }, any>()
       width: "400px"
     }
   })
-  .build()
+
 
 const { app, form } = createForm({
   id: "void",

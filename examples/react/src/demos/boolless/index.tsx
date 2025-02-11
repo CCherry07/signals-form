@@ -43,7 +43,7 @@ const username = defineField<string, Props>()
     required: true
   })
   .validator(z.string({ message: "用户名为必填项" }).min(2, "用户名长度必须在2-10").max(10, "用户名长度必须在2-10").regex(/^[a-zA-Z]+$/, { message: "用户名必须是英文" }))
-  .build()
+
 
 const password = defineField<string, Props>()
   .component({
@@ -68,7 +68,7 @@ const password = defineField<string, Props>()
       this.value = value
     }
   })
-  .build()
+
 
 const age = defineField<number, Props>()
   .component({
@@ -77,7 +77,7 @@ const age = defineField<number, Props>()
     hidden: D.use('isJerry')
   }).props({
     label: "年龄",
-  }).build()
+  })
 
 const useraccount = defineField<Model['account'], any>()
   .component({
@@ -94,7 +94,7 @@ const useraccount = defineField<Model['account'], any>()
       width: "400px"
     }
   })
-  .build()
+
 
 const { app, form } = createForm({
   id: "boolless",

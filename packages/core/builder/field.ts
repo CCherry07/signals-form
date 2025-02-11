@@ -133,7 +133,34 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   onUnmounted?(): void
 
   constructor() {
+    const stop = effectScope(() => {
+      // disabled
+      effect(() => {
+        this.onDisabled?.(this.isDisabled.value)
+      })
 
+      // recover value when hidden and shown
+      effect(() => {
+        const { isHidden } = this;
+        if (isHidden.value && !this.#removeValueOnHidden) {
+          this.onHidden?.(this.isHidden.peek())
+          return
+        }
+        if (this.#recoverValueOnShown) {
+          if (isHidden.value === false && this.#$value !== this.peek()) {
+            this.value = this.#$value;
+            this.onHidden?.(this.isHidden.peek())
+          } else {
+            this.#$value = this.peek();
+          }
+        }
+        if (isHidden.value) {
+          this.value = undefined as unknown as T;
+          this.onHidden?.(this.isHidden.peek())
+        }
+      })
+    })
+    this.#cleanups.push(stop)
   }
 
   appendEffectField(field: FieldBuilder) {
@@ -482,37 +509,5 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   getEvents() {
     return this.#events
-  }
-
-  build() {
-    const stop = effectScope(() => {
-      // disabled
-      effect(() => {
-        this.onDisabled?.(this.isDisabled.value)
-      })
-
-      // recover value when hidden and shown
-      effect(() => {
-        const { isHidden } = this;
-        if (isHidden.value && !this.#removeValueOnHidden) {
-          this.onHidden?.(this.isHidden.peek())
-          return
-        }
-        if (this.#recoverValueOnShown) {
-          if (isHidden.value === false && this.#$value !== this.peek()) {
-            this.value = this.#$value;
-            this.onHidden?.(this.isHidden.peek())
-          } else {
-            this.#$value = this.peek();
-          }
-        }
-        if (isHidden.value) {
-          this.value = undefined as unknown as T;
-          this.onHidden?.(this.isHidden.peek())
-        }
-      })
-    })
-    this.#cleanups.push(stop)
-    return this
   }
 }

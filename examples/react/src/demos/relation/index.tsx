@@ -94,7 +94,7 @@ const username = defineField<string, Props>()
   })
   .relation(nameRelaition)
   .validator(z.string({ message: "用户名为必填项" }).min(2, "用户名长度必须在2-10").max(10, "用户名长度必须在2-10").regex(/^[a-zA-Z]+$/, { message: "用户名必须是英文" }))
-  .build()
+
 
 const password = defineField<string, Props>()
   .component({
@@ -119,7 +119,7 @@ const password = defineField<string, Props>()
       this.value = value
     }
   })
-  .build()
+
 
 const age = defineField<number, Props>()
   .component({
@@ -132,7 +132,7 @@ const age = defineField<number, Props>()
     required: true
   })
   .validator(z.number({ message: "年龄必须是数字" }).min(1, "年龄必须大于0").max(100, "年龄必须小于100"))
-  .build()
+
 
 const address = defineField<string, Props>()
   .component({
@@ -145,7 +145,7 @@ const address = defineField<string, Props>()
     required: true
   })
   .validator(z.string({ message: "地址为必填项" }).min(2, "地址长度必须在2-10").max(10, "地址长度必须在2-10"))
-  .build()
+
 
 const info = defineField<any, any>()
   .component({
@@ -159,7 +159,7 @@ const info = defineField<any, any>()
     setDefaultValue() {
       return []
     },
-  }).relation(infoRelaition).build()
+  }).relation(infoRelaition)
 
 const useraccount = defineField<Model['account'], any>()
   .component({
@@ -178,7 +178,7 @@ const useraccount = defineField<Model['account'], any>()
       width: "400px"
     }
   })
-  .build()
+
 
 
 const { app, form } = createForm({

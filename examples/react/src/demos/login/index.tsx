@@ -25,7 +25,7 @@ const username = defineField<string, Props>()
     required: true
   })
   .validator(z.string({ message: "该字段为必填项" }))
-  .build()
+
 
 const password = defineField<string, Props>()
   .component({
@@ -33,7 +33,19 @@ const password = defineField<string, Props>()
     component: Input,
   })
   .props({ label: "密码", type: "Password", prefix: "🔒", required: true })
-  .build()
+
+
+const age = defineField({
+  component:{
+    id: "age",
+    component: Input,
+  },
+  events:{
+    onChange: function (value) {
+      this.value = value
+    }
+  }
+})
 
 
 const useraccount = defineField<{ username: string, password: string }, any>()
@@ -50,7 +62,7 @@ const useraccount = defineField<{ username: string, password: string }, any>()
       width: "400px"
     }
   })
-  .build()
+
 
 const { app, form } = createForm({
   id: "login",

@@ -22,7 +22,7 @@ const email = defineField()
     required: true
   })
   .validator(z.string({ message: "必须是一个字符串" }).email({ message: "输入的字符串必须是一个合法的邮箱" }))
-  .build()
+
 
 const nickname = defineField()
   .component({
@@ -35,7 +35,7 @@ const nickname = defineField()
     required: true
   })
   .validator(z.string({ message: "必须是一个字符串" }).min(2, { message: "昵称长度必须大于2" }))
-  .build()
+
 
 const password = defineField()
   .component({
@@ -48,7 +48,7 @@ const password = defineField()
     required: true
   })
   .validator(z.string({ message: "必须是一个字符串" }).min(6, { message: "密码长度必须大于6" }))
-  .build()
+
 
 const phone = defineField()
   .component({
@@ -61,7 +61,7 @@ const phone = defineField()
     required: true
   })
   .validator(z.string({ message: "必须是一个字符串" }).min(11, { message: "手机号长度必须大于11" }))
-  .build()
+
 
 const donation = defineField()
   .component({
@@ -74,7 +74,7 @@ const donation = defineField()
     required: true
   })
   .validator(z.number({ message: "必须是一个数字" }).min(1, { message: "捐款金额必须大于1" }))
-  .build()
+
 
 const residence = defineField()
   .component({
@@ -115,7 +115,7 @@ const residence = defineField()
     ]
   })
   .validator(z.array(z.string()).min(2, { message: "地区长度必须大于2" }))
-  .build()
+
 
 const paymentType = defineField()
   .component({
@@ -142,7 +142,7 @@ const paymentType = defineField()
     ]
   })
   .validator(z.string().min(1, { message: "支付类型长度必须大于1" }))
-  .build()
+
 
 const userinfo = defineField()
   .component({
@@ -162,7 +162,7 @@ const userinfo = defineField()
     style: {
       width: "400px"
     }
-  }).build()
+  })
 
 const { app, form } = createForm({
   graph: [

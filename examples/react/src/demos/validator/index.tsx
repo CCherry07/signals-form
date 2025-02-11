@@ -27,7 +27,7 @@ const username = defineField<string, Props>()
     required: true
   })
   .validator(z.string({ message: "用户名为必填项" }).min(2, "用户名长度必须在2-10").max(10, "用户名长度必须在2-10").regex(/^[a-zA-Z]+$/, { message: "用户名必须是英文" }))
-  .build()
+
 
 const password = defineField<string, Props>()
   .component({
@@ -38,7 +38,7 @@ const password = defineField<string, Props>()
   .validator(z.string({ message: "密码必须包含大小写字母、数字和特殊字符" })
     .min(6, "密码长度必须在6-16").max(16, "密码长度必须在6-16")
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,16}$/, { message: "密码必须包含大小写字母、数字和特殊字符" }))
-  .build()
+
 
 const useraccount = defineField<{ username: string, password: string }, any>()
   .component({
@@ -54,7 +54,7 @@ const useraccount = defineField<{ username: string, password: string }, any>()
       width: "400px"
     }
   })
-  .build()
+
 
 const { app, form } = createForm({
   id: "login",

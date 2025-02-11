@@ -32,7 +32,7 @@ const username = defineField<string, Props>()
       return model + "123"
     },
   })
-  .build()
+
 
 const password = defineField<string, Props>()
   .component({
@@ -40,7 +40,7 @@ const password = defineField<string, Props>()
     component: Input,
   })
   .props({ label: "密码", type: "Password", prefix: "🔒", required: true })
-  .build()
+
 
 
 const useraccount = defineField<{ username: string, password: string }, any>()
@@ -57,7 +57,7 @@ const useraccount = defineField<{ username: string, password: string }, any>()
       width: "400px"
     }
   })
-  .build()
+
 
 const { app, form } = createForm({
   id: "actions",

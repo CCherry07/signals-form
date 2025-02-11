@@ -13,7 +13,7 @@ const graph = Array.from({ length: 2000 }).map((_, i) => {
   .props({
     label: `input${i}`,
   })
-  .build()
+
 })
 
 const { app, form } = createForm({
