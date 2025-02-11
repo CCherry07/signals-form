@@ -102,11 +102,6 @@ const password = defineField<string, Props>()
     component: Input,
   })
   .props({ label: "密码", type: "Password", prefix: "🔒", required: true })
-  .actions({
-    onSubmitValue(model) {
-      // const username = this
-    },
-  })
   .validator(
     {
       initiative: {
@@ -135,10 +130,21 @@ const age = defineField<number, Props>()
     id: "age",
     component: InputNumber,
     hidden: D.use('isJerry')
-  }).props({
+  })
+  .props({
     label: "年龄",
     prefix: "🎂",
     required: true
+  })
+  .actions({
+    onSubmitValue(model) {
+      const username = this.getAbstractModel().getFieldsValue("account.username")
+      console.log(password.value);
+      if (username === "tom") {
+        return model
+      }
+      return 18
+    },
   })
   .validator(z.number({ message: "年龄必须是数字" }).min(1, "年龄必须大于0").max(100, "年龄必须小于100"))
 
