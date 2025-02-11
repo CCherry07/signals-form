@@ -1,6 +1,6 @@
 import { isFunction } from "@formula/shared"
 import { FieldBuilder } from "../builder/field"
-import type { Model } from "../types/form"
+import type { AbstractModelMethods, Model } from "../types/form"
 
 export async function createModel(graph: FieldBuilder[], model?: Model) {
   return Object.entries(graph).reduce(async (_parent, [, field]) => {
@@ -22,7 +22,7 @@ export async function createModel(graph: FieldBuilder[], model?: Model) {
   }, Promise.resolve({}))
 }
 
-export function createGraph(graph: FieldBuilder[], mothods: any, appContext: any): FieldBuilder[] {
+export function createGraph(graph: FieldBuilder[], mothods:AbstractModelMethods , appContext: any): FieldBuilder[] {
   return graph.map(field => {
     if (!field.isVoidField) {
       field.path = field.id
@@ -33,6 +33,7 @@ export function createGraph(graph: FieldBuilder[], mothods: any, appContext: any
     field.normalizeProperties()
     field.reset()
     field.onInit?.()
+    mothods.addField(field)
     return field
   })
 }

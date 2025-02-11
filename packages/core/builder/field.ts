@@ -289,7 +289,11 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   setFieldErrors(errors: FieldErrors) {
     this.setErrors(errors)
-    this.#abstractModel.setFieldErrors(this.path, errors)
+    if (Object.keys(errors).length === 0) {
+      this.cleanErrors()
+    } else {
+      this.#abstractModel.setFieldErrors(this.path, errors)
+    }
   }
 
   cleanErrors() {
