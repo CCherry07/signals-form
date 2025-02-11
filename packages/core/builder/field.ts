@@ -1,10 +1,11 @@
 import { computed, deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
-import { AbstractModelMethods, ActionOptions, BaseFieldProps, ComponentOptions, Field, FieldBuilderType, FieldError, FieldErrors, Lifecycle, ValidateType, ValidatorOptions } from "../types/field"
+import { ActionOptions, BaseFieldProps, ComponentOptions, Field, FieldBuilderType, FieldError, FieldErrors, Lifecycle, ValidateType, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
 import { isArray, isPromise, set } from "@formula/shared"
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
+import { AbstractModelMethods } from "../types/form"
 
 function getParentField(field: FieldBuilder): FieldBuilder | null {
   if (field.parent?.isVoidField) {

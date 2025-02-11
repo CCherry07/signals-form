@@ -1,7 +1,6 @@
 import { BoolsConfig, BoolContext, Decision } from "../boolless";
-import { AbstractModel } from "../model/abstract_model";
 import { Resolver } from "../resolvers/type";
-import { DeepSignal, Signal } from "alien-deepsignals";
+import { Signal } from "alien-deepsignals";
 import { FieldBuilder } from "../builder/field";
 import { ValidateItem } from "../validator/types";
 
@@ -24,12 +23,6 @@ export interface SubscribeProps<M> {
   model: M;
   isUpdating: Signal<boolean>
 }
-
-export type AbstractModelMethods = Pick<AbstractModel<DeepSignal<Model>>,
-  'getFieldValue' | 'setFieldValue' | 'setFieldErrors' | 'setErrors'
-  | 'cleanErrors' | 'onSubscribe' | "peekFieldValue" 
-  | "getField" | 'getFieldsValue' | "getFieldValueStatus" | 'addField'
->
 
 export interface AbstractModelInitOptions<M extends Model> {
   defaultValidatorEngine: string;
