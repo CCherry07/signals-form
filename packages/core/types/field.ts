@@ -100,5 +100,4 @@ export interface BaseFieldProps<T> {
   isMounted: boolean,
   isDestroyed: boolean,
   isInitialized: boolean,
-  isUpdating: boolean,
 }

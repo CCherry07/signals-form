@@ -27,7 +27,7 @@ export function FieldControl(props: Props) {
   const {
     initiative: initiativeValidator = [],
     passive: passiveValidator = []
-  } = field.getValidator() ?? {}
+  } = useMemo(() => field.getValidator() ?? {}, [])
 
   const triggerValidate = useCallback((key: string) => {
     validate({
@@ -144,6 +144,7 @@ export function FieldControl(props: Props) {
     hidden: filedState.isHidden,
   },
     createElement(component, {
+      key: field.path,
       ...filedState,
       ...methods,
     }, getChildren())

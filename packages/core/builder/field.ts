@@ -471,16 +471,9 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   getProps() {
     return {
       ...this.#props,
+      ...this.getStatus(),
       value: this.value,
       errors: this.errors.value,
-      isHidden: this.isHidden.value,
-      isBlurred: this.isBlurred.value,
-      isFocused: this.isFocused.value,
-      isMounted: this.isMounted.value,
-      isDestroyed: this.isDestroyed.value,
-      isInitialized: this.isInitialized.value,
-      isDisabled: this.isDisabled.value,
-      isUpdating: this.isInitialized.value,
     } as Readonly<BaseFieldProps<T> & P>
   }
 
