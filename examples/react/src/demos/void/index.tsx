@@ -1,5 +1,5 @@
 import { createForm } from "@formula/react"
-import { defineField } from "@formula/core";
+import { defineField, defineRelation } from "@formula/core";
 import Input from "../../components/Input";
 import { z } from "zod";
 import { ReactNode } from "react";
@@ -28,8 +28,6 @@ const firstName = defineField<string, Props>()
     required: true
   })
   .validator(z.string({ message: "该字段为必填项" }))
-
-
 
 const lastName = defineField<string, Props>()
   .component({
@@ -67,10 +65,22 @@ const password = defineField<string, Props>()
       .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,16}$/, { message: "密码必须包含大小写字母、数字和特殊字符" })
   )
 
+const age = defineField<number, Props>()
+  .component({
+    id: "age",
+  }).relation(defineRelation([
+    [
+      ["firstName"],
+      (field, [name]) => {
+        if (name === "tom") {
+          field.value = 18
+        }
+      }
+    ]
+  ]))
 
 const divider = defineField()
   .component({
-    id: "divider",
     type: "Void",
     component: Divider
   })
@@ -84,14 +94,14 @@ const useraccount = defineField<{ username: string, password: string }, any>()
   .properties([
     username,
     divider,
-    password
+    password,
+    age,
   ])
   .props({
     style: {
       width: "400px"
     }
   })
-
 
 const { app, form } = createForm({
   id: "void",

@@ -36,7 +36,7 @@ export interface AbstractModelConstructor {
 }
 
 export interface ComponentOptions {
-  id: string;
+  id?: string;
   type?: FieldBuilderType
   component?: any;
   wrapper?: any;

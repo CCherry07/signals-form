@@ -49,7 +49,7 @@ export const createForm = (config: FormConfig) => {
     return component
   }
 
-  const app = createElement('div', {}, form.graph.map((field: FieldBuilder) => {
+  const app = createElement('div', { "data-form-id": form.id }, form.graph.map((field: FieldBuilder) => {
     return createElement(FieldControl, {
       key: field.path,
       field,

@@ -20,6 +20,9 @@ function normalizeEvents(field: FieldBuilder) {
 }
 export function FieldControl(props: Props) {
   const { field, resolveComponent } = props;
+  if (!field.getComponent()) {
+    return null
+  }
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
   const {
     initiative: initiativeValidator = [],
@@ -134,11 +137,13 @@ export function FieldControl(props: Props) {
     }
   }
 
+  const component = useMemo(() => resolveComponent(field.getComponent()), [field.getComponent()])
+
   return createElement("div", {
     "data-field-id": field.id,
     hidden: filedState.isHidden,
   },
-    createElement(resolveComponent(field.getComponent()), {
+    createElement(component, {
       ...filedState,
       ...methods,
     }, getChildren())
