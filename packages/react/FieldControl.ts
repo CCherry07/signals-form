@@ -1,15 +1,11 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { FieldBuilder, validate, ValidateItem } from "@formula/core"
+import { FieldBuilder } from "@formula/core"
 import { batch, effect } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
-import { Resolver } from '@formula/core';
 import { Field } from '@formula/core/types/field';
 interface Props {
   field: FieldBuilder
-  model: any
-  defaultValidatorEngine: string;
   resolveComponent: (component: string | FunctionComponent<any> | ComponentClass<any, any>) => string | FunctionComponent<any> | ComponentClass<any, any>
-  validatorResolvers: Record<string, Resolver>
 };
 
 function normalizeProps(field: FieldBuilder) {
@@ -24,19 +20,11 @@ export function FieldControl(props: Props) {
     return null
   }
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
-  const {
-    initiative: initiativeValidator = [],
-    passive: passiveValidator = []
-  } = useMemo(() => field.getValidator() ?? {}, [])
-
   const triggerValidate = useCallback((key: string) => {
-    validate({
+    field.validate({
       state: field.value,
       updateOn: key,
-      defaultValidatorEngine: props.defaultValidatorEngine,
-      boolContext: field.boolContext,
-      model: props.model
-    }, initiativeValidator as ValidateItem[], props.validatorResolvers)
+    })
       .then(errors => {
         field.setFieldErrors(errors)
         field.onValidate?.('initiative', errors)
@@ -94,18 +82,13 @@ export function FieldControl(props: Props) {
   useEffect(() => {
     const stopScope = effectScope(() => {
       effect(() => {
-        if (passiveValidator) {
-          validate({
-            state: field.value,
-            updateOn: 'passive',
-            defaultValidatorEngine: props.defaultValidatorEngine,
-            boolContext: field.boolContext,
-            model: props.model
-          }, passiveValidator as ValidateItem[], props.validatorResolvers).then(errors => {
-            field.setFieldErrors(errors)
-            field.onValidate?.('passive', errors)
-          })
-        }
+        field.validate({
+          state: field.value,
+          updateOn: 'passive',
+        }).then(errors => {
+          field.setFieldErrors(errors)
+          field.onValidate?.('passive', errors)
+        })
       })
       effect(() => {
         setFiledState(normalizeProps(field))
@@ -128,9 +111,6 @@ export function FieldControl(props: Props) {
         return createElement(FieldControl, {
           key: child.path,
           field: child,
-          model: props.model,
-          defaultValidatorEngine: props.defaultValidatorEngine,
-          validatorResolvers: props.validatorResolvers,
           resolveComponent
         })
       })

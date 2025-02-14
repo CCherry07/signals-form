@@ -8,7 +8,7 @@ import type { AbstractModelConstructor, AbstractModelInitOptions, Model, Subscri
 import { FieldBuilder } from "../builder/field";
 import { FieldErrors } from "../types/field";
 import { validate } from "../validator";
-import { ValidateItem } from "../validator/types";
+import { Context, ValidateItem } from "../validator/types";
 
 export class AbstractModel<M extends Model> {
   id: string;
@@ -225,7 +225,20 @@ export class AbstractModel<M extends Model> {
 
   }
 
-  async validate(fieldpath: string, type?: "passive" | "initiative") {
+  async validate<T>(context: Pick<Context<T>, 'state' | 'updateOn'>, validateItems: ValidateItem[]) {
+    return await validate(
+      {
+        ...context,
+        model: this.model,
+        defaultValidatorEngine: this.defaultValidatorEngine,
+        boolContext: this.boolContext
+      },
+      validateItems,
+      this.validatorResolvers
+    )
+  }
+
+  async validateAll(fieldpath: string, type?: "passive" | "initiative") {
     const filed = this.getField(fieldpath)
     const validator = filed.getValidator()
     if (!validator) return
@@ -236,37 +249,18 @@ export class AbstractModel<M extends Model> {
     }
     const context = {
       state: filed.value,
-      defaultValidatorEngine: this.defaultValidatorEngine,
-      boolContext: this.boolContext,
-      model: this.model
     }
 
     if (!type) {
-      fieldErrors.initiative = await validate(
-        context,
-        initiative as ValidateItem[],
-        this.validatorResolvers
-      )
-      fieldErrors.passive = await validate(
-        context,
-        passive as ValidateItem[],
-        this.validatorResolvers
-      )
+      fieldErrors.initiative = await this.validate(context, initiative as ValidateItem[])
+      fieldErrors.passive = await this.validate(context, passive as ValidateItem[])
     }
 
     if (type === "initiative" && initiative) {
-      fieldErrors.initiative = await validate(
-        context,
-        initiative as ValidateItem[],
-        this.validatorResolvers
-      )
+      fieldErrors.initiative = await this.validate(context, initiative as ValidateItem[])
     }
     if (type === "passive" && passive) {
-      fieldErrors.passive = await validate(
-        context,
-        passive as ValidateItem[],
-        this.validatorResolvers
-      )
+      fieldErrors.passive = await this.validate(context, passive as ValidateItem[])
     }
 
     this.setFieldErrors(fieldpath, {

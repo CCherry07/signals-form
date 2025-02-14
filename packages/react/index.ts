@@ -53,9 +53,6 @@ export const createForm = (config: FormConfig) => {
     return createElement(FieldControl, {
       key: field.path,
       field,
-      model: form.model,
-      defaultValidatorEngine,
-      validatorResolvers: form.validatorResolvers,
       resolveComponent
     })
   }))
@@ -89,9 +86,6 @@ export const createGroupForm = (options: Options) => {
       return createElement(FieldControl, {
         key: field.path,
         field,
-        model: form.model,
-        defaultValidatorEngine: config.defaultValidatorEngine,
-        validatorResolvers: form.validatorResolvers,
         resolveComponent
       })
     }))

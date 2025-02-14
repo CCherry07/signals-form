@@ -6,6 +6,7 @@ import { isArray, isPromise, set } from "@formula/shared"
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
 import { AbstractModelMethods } from "../types/form"
+import { Context, ValidateItem } from "../validator/types"
 
 function getParentField(field: FieldBuilder): FieldBuilder | null {
   if (field.parent?.isVoidField) {
@@ -33,6 +34,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   #pending = signal(false)
   #updated = signal(false)
 
+  isValidating: Signal<boolean> = signal(false)
   isBlurred: Signal<boolean> = signal(false)
   isFocused: Signal<boolean> = signal(false)
   isInitialized: Signal<boolean> = signal(false)
@@ -89,7 +91,10 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   #component?: any;
-  #validator: ValidatorOptions = {}
+  #validator: {
+    initiative?: ValidateItem[];
+    passive?: ValidateItem[];
+  } = {}
   #actions: ActionOptions<T, P> = {}
   // #effects: Array<(this: FieldBuilder<T, P>) => void> = []
   #provides: Record<string | symbol, any> = {}
@@ -438,8 +443,8 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
     const { initiative, passive } = options as ValidatorOptions
     const normalizeValidator = {
-      initiative: initiative ? formatValidateItem(initiative) : undefined,
-      passive
+      initiative: initiative ? formatValidateItem(initiative) : [],
+      passive: passive ? formatValidateItem(passive) : [],
     }
 
     this.#validator = normalizeValidator
@@ -447,8 +452,17 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
 
-  validate(type?: "passive" | "initiative") {
-    return this.#abstractModel.validate(this.path, type)
+  async validate<T>(context: Pick<Context<T>, 'state' | 'updateOn'>) {
+    this.isValidating.value = true
+    return new Promise<FieldErrors>((resolve, reject) => {
+      if (context.updateOn !== 'passive') {
+        this.#abstractModel.validate(context, this.#validator.initiative ?? []).then(resolve, reject)
+      } else {
+        this.#abstractModel.validate(context, this.#validator.passive ?? []).then(resolve, reject)
+      }
+    }).finally(() => {
+      this.isValidating.value = false
+    })
   }
 
   props(ps: P) {
