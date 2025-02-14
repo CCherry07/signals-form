@@ -18,6 +18,7 @@ export function createRXForm(config: FormConfig) {
     getFieldsValue: form.getFieldsValue.bind(form),
     getFieldValueStatus: form.getFieldValueStatus.bind(form),
     validate: form.validate.bind(form),
+    execDecision: form.execDecision.bind(form),
   }
   const graph = createGraph(config.graph!, methods, form.appContext)
   form.init({

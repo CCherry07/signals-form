@@ -36,9 +36,11 @@ export const validate = async <T>(
     if (!isFunction(validatorResolvers[engine])) {
       throw new Error(`validator ${engine} is not registered`)
     }
+
     const validator = validatorResolvers[engine](schema, schemaOptions, factoryOptions)
     const factValue = fact ? fact(value, model, execDecision) : value
     const { errors } = await validator(factValue)
+    // 分离错误
     Object.assign(fieldErrors, errors)
   }
   return fieldErrors

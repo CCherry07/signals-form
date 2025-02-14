@@ -1,7 +1,7 @@
 import { computed, deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
 import { ActionOptions, ComponentOptions, Field, FieldBuilderType, FieldErrors, Lifecycle, ValidateMode, ValidateType, ValidatorOptions } from "../types/field"
-import { BoolContext, Decision } from "../boolless"
+import { Decision } from "../boolless"
 import { isArray, isEmpty, isPromise, set } from "@formula/shared"
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
@@ -39,8 +39,8 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   isFocused: Signal<boolean> = signal(false)
   isInitialized: Signal<boolean> = signal(false)
   isDestroyed: Signal<boolean> = signal(false)
-  isHidden = computed(() => this.hidden && this.boolContext ? this.execDecision(this.hidden) : false)
-  isDisabled = computed(() => this.disabled && this.boolContext ? this.execDecision(this.disabled) : false)
+  isHidden = computed(() => this.hidden ? this.execDecision(this.hidden) : false)
+  isDisabled = computed(() => this.disabled ? this.execDecision(this.disabled) : false)
   isValid = computed(() => !Object.keys(this.errors.value).length)
   errors: Signal<FieldErrors> = signal({})
   isMounted: Signal<boolean> = signal(false)
@@ -117,15 +117,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   private effectFields: Set<FieldBuilder> = new Set()
-  #boolContext?: BoolContext
-
-  setBoolContext(boolContext: BoolContext) {
-    this.#boolContext = boolContext
-  }
-
-  get boolContext() {
-    return this.#boolContext
-  }
 
   onDisabled?(isDisabled: boolean): void
   onHidden?(isHidden: boolean): void
@@ -303,10 +294,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   execDecision(decision: Decision) {
-    if (!this.#boolContext) {
-      throw new Error('boolContext is not defined')
-    }
-    return decision.evaluate(this.#boolContext)
+    return this.#abstractModel.execDecision(decision)
   }
 
   setFieldErrors(errors: FieldErrors) {

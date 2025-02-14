@@ -48,7 +48,6 @@ export class AbstractModel<M extends Model> {
     // @ts-ignore
     this.boolContext = setup(boolsConfig, this.model)
     Object.values(this.fields!)!.forEach((field) => {
-      field.setBoolContext(this.boolContext)
       field.setAppContext(this.appContext)
     })
     this.graph = graph!
@@ -221,10 +220,6 @@ export class AbstractModel<M extends Model> {
     })
   }
 
-  onValidate() {
-
-  }
-
   async validate<T>(context: Pick<Context<T>, 'value' | 'updateOn'>, validateItems: ValidateItem<any>[]) {
     return await validate(
       {
@@ -238,45 +233,6 @@ export class AbstractModel<M extends Model> {
     )
   }
 
-  // async validateAll(type?: "passive" | "initiative") {
-  //   this.errors = {};
-  //   const filed = this.fields
-  //   Object.values(this.fields).forEach(field => field.validate({
-  //     value: field.value,
-  //   }).then(errors=>{
-  //     console.log("errors",errors);
-  //   }))
-  //   // const validator = filed.getValidator()
-  //   // if (!validator) return
-  //   // const { initiative, passive } = validator
-  //   // const fieldErrors = {} as {
-  //   //   initiative?: FieldErrors
-  //   //   passive?: FieldErrors
-  //   // }
-  //   // const context = {
-  //   //   value: filed.value,
-  //   // }
-
-  //   // if (!type) {
-  //   //   fieldErrors.initiative = await this.validate(context, initiative as ValidateItem[])
-  //   //   fieldErrors.passive = await this.validate(context, passive as ValidateItem[])
-  //   // }
-
-  //   // if (type === "initiative" && initiative) {
-  //   //   fieldErrors.initiative = await this.validate(context, initiative as ValidateItem[])
-  //   // }
-  //   // if (type === "passive" && passive) {
-  //   //   fieldErrors.passive = await this.validate(context, passive as ValidateItem[])
-  //   // }
-
-  //   // this.setFieldErrors(fieldpath, {
-  //   //   ...fieldErrors.initiative,
-  //   //   ...fieldErrors.passive
-  //   // })
-
-  //   return {}
-  // }
-
   execDecision(decision: Decision) {
     return decision.evaluate(this.boolContext)
   }
@@ -284,10 +240,6 @@ export class AbstractModel<M extends Model> {
   async submit<T>() {
     this.submitted.value = false;
     this.submiting.value = true;
-
-    // this.validateAll()
-
-    //TODO revalidate ?
     if (Object.keys(this.errors).length > 0) {
       this.submiting.value = false;
       return {

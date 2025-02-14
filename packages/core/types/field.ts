@@ -76,7 +76,7 @@ export type ValidateMode = "initiative" | "passive"
 export type FieldBuilderType = "Field" | "Void"
 
 type ReadonlyPickKeys = "getProps" | "getAppContext" |
-  "getProvides" | "boolContext" | "isRoot" | "isLeaf" |
+  "getProvides" | "isRoot" | "isLeaf" |
   "execDecision" | "setFieldErrors" | "cleanErrors" |
   "setErrors" | "peek" | "setProp" | "isHidden" |
   "isDisabled" | "isBlurred" | "isFocused" | "isMounted" |

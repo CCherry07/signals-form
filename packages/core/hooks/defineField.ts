@@ -8,6 +8,7 @@ interface FieldOptions<T, P extends Record<string, any>> {
   events?: Parameters<FieldBuilder<T, P>['events']>[0];
   lifecycle?: Parameters<FieldBuilder<T, P>['lifecycle']>[0];
   relation?: Parameters<FieldBuilder<T, P>['relation']>[0];
+  initialValue?: Parameters<FieldBuilder<T, P>['initialValue']>[0];
 }
 
 export const defineField = <T, P extends Record<string, any>>(
@@ -15,9 +16,12 @@ export const defineField = <T, P extends Record<string, any>>(
 ) => {
   const builder = new FieldBuilder<T, P>();
   if (options) {
-    const { component, props, actions, validator, events, lifecycle, relation } = options;
+    const { component, props, actions, validator, events, lifecycle, relation, initialValue } = options;
     if (component) {
       builder.component(component);
+    }
+    if (initialValue) {
+      builder.initialValue(initialValue);
     }
     if (props) {
       builder.props(props);
