@@ -1,8 +1,8 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
 import type { Field } from "@formula/core/types/field";
-import { isPromise, Resolver, validate, FieldBuilder, ValidateItem } from "@formula/core"
-import { effect } from "alien-deepsignals";
+import { FieldBuilder } from "@formula/core"
+import { batch, effect } from "alien-deepsignals";
 import { effectScope } from "alien-signals";
 
 function normalizeProps(field: FieldBuilder) {
@@ -17,50 +17,24 @@ export const FieldControl = defineComponent({
   inheritAttrs: false,
   props: {
     field: Object as PropType<FieldBuilder>,
-    model: Object as PropType<Record<string, any>>,
     resolveComponent: Function as PropType<(component: string | Component | DefineComponent) => Component | DefineComponent>,
-    defaultValidatorEngine: String as PropType<string>,
-    validatorResolvers: Object as PropType<Record<string, Resolver>>
   },
   setup(props) {
     const field = props.field! as FieldBuilder
     const _events = field.getEvents()
-    const {
-      initiative: initiativeValidator = [],
-      passive: passiveValidator = []
-    } = field!.getValidator() ?? {}
     const filedState = shallowRef(normalizeProps(field))
-
+    const isHidden = shallowRef(field.isHidden.value)
+    const isDisabled = shallowRef(field.isDisabled.value)
     const triggerValidate = (key: string) => {
-      validate({
-        state: field.value,
+      field.validate({
+        value: field.value,
         updateOn: key,
-        defaultValidatorEngine: props.defaultValidatorEngine!,
-        boolContext: field.boolContext,
-        model: props.model!
-      }, initiativeValidator as ValidateItem[], props.validatorResolvers!).then(errors => {
-        const { cleanErrors, setErrors } = field.getAbstractModel()
-        if (Object.keys(errors).length === 0) {
-          cleanErrors([String(field.path)])
-        } else {
-          setErrors({
-            [String(field.path)]: errors
-          })
-        }
-        field.errors.value = errors
       })
     }
 
-    const onChange = (function (this: Field<FieldBuilder>, ...args: any[]) {
+    const onChange = (async function (this: Field<FieldBuilder>, ...args: any[]) {
       if (_events.onChange) {
-        const maybePromise = _events.onChange(...args)
-        if (isPromise(maybePromise)) {
-          maybePromise.then(() => {
-            // field.isUpdating = false
-          })
-        } else {
-          // field.isUpdating = false
-        }
+        await _events.onChange(...args)
       } else {
         this.value = args[0]
       }
@@ -71,8 +45,10 @@ export const FieldControl = defineComponent({
       if (_events.onBlur) {
         _events.onBlur(value)
       }
-      field.isFocused.value = false
-      field.isBlurred.value = true
+      batch(() => {
+        field.isFocused.value = false
+        field.isBlurred.value = true
+      })
       triggerValidate("onBlur")
     }
 
@@ -80,9 +56,10 @@ export const FieldControl = defineComponent({
       if (_events.onFocus) {
         _events.onFocus()
       }
-      field.isBlurred.value = false
-      field.isFocused.value = true
-      triggerValidate("onFocus")
+      batch(() => {
+        field.isBlurred.value = false
+        field.isFocused.value = true
+      })
     }
     const events = {
       onChange,
@@ -103,28 +80,13 @@ export const FieldControl = defineComponent({
     onBeforeMount(() => {
       const stop = effectScope(() => {
         effect(() => {
-          if (passiveValidator) {
-            validate({
-              state: field.value,
-              updateOn: "signal",
-              defaultValidatorEngine: props.defaultValidatorEngine!,
-              boolContext: field.boolContext,
-              model: props.model!.value
-            }, passiveValidator as ValidateItem[], props.validatorResolvers!).then(errors => {
-              const { cleanErrors, setErrors } = field.getAbstractModel()
-              if (Object.keys(errors).length === 0) {
-                cleanErrors([String(field.path)])
-              } else {
-                setErrors({
-                  [String(field.path)]: errors
-                })
-              }
-              field.errors.value = errors
-            })
-          }
+          filedState.value = normalizeProps(field)
         })
         effect(() => {
-          filedState.value = normalizeProps(field)
+          isHidden.value = field.isHidden.value
+        })
+        effect(() => {
+          isDisabled.value = field.isDisabled.value
         })
       })
       cleanups.push(stop)
@@ -143,10 +105,7 @@ export const FieldControl = defineComponent({
             return h(FieldControl, {
               key: child.path,
               field: child,
-              model: props.model,
               resolveComponent: props.resolveComponent,
-              validatorResolvers: props.validatorResolvers,
-              defaultValidatorEngine: props.defaultValidatorEngine
             })
           }
         })
@@ -163,7 +122,8 @@ export const FieldControl = defineComponent({
     const component = props.resolveComponent!(field.getComponent())
 
     return () => {
-      return h('div', { hidden: filedState.value.isHidden, "data-field-id": field.id }, h(component, {
+      return h('div', { hidden: isHidden.value, "data-field-id": field.id }, h(component, {
+        disabled: isDisabled.value,
         ...filedState.value,
         ...events,
       }, {

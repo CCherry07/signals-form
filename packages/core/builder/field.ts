@@ -7,7 +7,7 @@ import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
 import { AbstractModelMethods } from "../types/form"
 import { Context, ValidateItem } from "../validator/types"
-
+let index = 0
 function getParentField(field: FieldBuilder): FieldBuilder | null {
   if (field.parent?.isVoidField) {
     return getParentField(field.parent)
@@ -348,7 +348,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     }
   }
 
-
   type(type: FieldBuilderType) {
     this.#type = type
     return this
@@ -364,12 +363,28 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
-  component(options: ComponentOptions) {
+  component(options: ComponentOptions<T>) {
     const { component, id, type, ...otherOptions } = options
     this.#component = component
     this.#type = type || "Field"
-    this.id = id ?? 'sadada'
+    this.id = id || `void_${index++}`
     Object.assign(this, otherOptions)
+    return this
+  }
+
+  initialValue(initialValue: () => T | T | Promise<T>) {
+    if (isFunction(initialValue)) {
+      const value = initialValue()
+      if (isPromise(value)) {
+        value.then((v) => {
+          this.value = v
+        })
+      } else {
+        this.value = value
+      }
+    } else {
+      this.value = initialValue
+    }
     return this
   }
 

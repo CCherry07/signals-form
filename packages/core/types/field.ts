@@ -35,7 +35,7 @@ export interface AbstractModelConstructor {
   provides?: Record<string, any>
 }
 
-export interface ComponentOptions {
+export interface ComponentOptions<T> {
   id?: string;
   type?: FieldBuilderType
   component?: any;
@@ -44,6 +44,7 @@ export interface ComponentOptions {
   disabled?: Decision;
   removeValueOnHidden?: boolean
   recoverValueOnShown?: boolean
+  initialValue?: () => T | T | Promise<T>
 }
 
 export interface ActionOptions<T, P extends Object> {

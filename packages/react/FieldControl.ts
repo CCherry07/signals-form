@@ -19,10 +19,14 @@ export function FieldControl(props: Props) {
   if (!field.getComponent()) {
     return null
   }
+  
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
+  const [isHidden, setIsHidden] = useState(() => field.isHidden.value)
+  const [isDisabled, setIsDisabled] = useState(() => field.isDisabled.value)
+
   const triggerValidate = useCallback((key: string) => {
     return field.validate({
-      state: field.value,
+      value: field.value,
       updateOn: key,
     })
   }, [])
@@ -79,6 +83,12 @@ export function FieldControl(props: Props) {
       effect(() => {
         setFiledState(normalizeProps(field))
       });
+      effect(() => {
+        setIsHidden(field.isHidden.value)
+      })
+      effect(() => {
+        setIsDisabled(field.isDisabled.value)
+      })
     });
     field.onMounted?.()
     field.isMounted.value = true
@@ -107,10 +117,11 @@ export function FieldControl(props: Props) {
 
   return createElement("div", {
     "data-field-id": field.id,
-    hidden: filedState.isHidden,
+    hidden: isHidden,
   },
     createElement(component, {
       key: field.path,
+      disabled: isDisabled,
       ...filedState,
       ...methods,
     }, getChildren())

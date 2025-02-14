@@ -129,7 +129,7 @@ const age = defineField<number, Props>()
   .component({
     id: "age",
     component: InputNumber,
-    hidden: D.use('isJerry')
+    hidden: D.use('isJerry'),
   })
   .props({
     label: "年龄",
@@ -143,6 +143,9 @@ const age = defineField<number, Props>()
       if (username === "tom") {
         return model
       }
+      return 18
+    },
+    setDefaultValue() {
       return 18
     },
   })

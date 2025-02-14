@@ -41,13 +41,10 @@ export const createForm = (config: FormConfig) => {
     }
     return component
   }
-  const app = h('div', null, form.graph.map((field) => {
+  const app = h('div', { "data-form-id": form.id }, form.graph.map((field) => {
     return h(FieldControl, {
       key: field.path,
       field: field,
-      model: form.model,
-      validatorResolvers: form.validatorResolvers,
-      defaultValidatorEngine: config.defaultValidatorEngine,
       resolveComponent
     })
   }))
@@ -74,13 +71,10 @@ export const createGroupForm = () => {
         setupValidator.call(form, validator, resolver)
       })
     }
-    const app = h('div', null, form.graph.map((field) => {
+    const app = h('div', { "data-form-id": form.id }, form.graph.map((field) => {
       return h(FieldControl, {
         key: field.path,
         field: field,
-        model: form.model,
-        validatorResolvers: form.validatorResolvers,
-        defaultValidatorEngine: config.defaultValidatorEngine,
         resolveComponent
       })
     }))

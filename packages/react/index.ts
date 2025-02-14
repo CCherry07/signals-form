@@ -82,7 +82,7 @@ export const createGroupForm = (options: Options) => {
         setupValidator.call(form, validator, resolver)
       })
     }
-    const app = createElement('div', {}, form.graph.map((field: FieldBuilder) => {
+    const app = createElement('div', { "data-form-id": form.id }, form.graph.map((field: FieldBuilder) => {
       return createElement(FieldControl, {
         key: field.path,
         field,
