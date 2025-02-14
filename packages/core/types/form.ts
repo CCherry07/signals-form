@@ -45,8 +45,8 @@ export interface Lifecycle <M extends Model>{
   onBeforeInit?(this: AbstractModel<M>): void
   onInit?(this: AbstractModel<M>): void
   onDestroy?(this: AbstractModel<M>): void
-  onDisabled?(this: AbstractModel<M>, state: boolean): void
-  onHidden?(this: AbstractModel<M>, state: boolean): void
+  onDisabled?(this: AbstractModel<M>, value: boolean): void
+  onHidden?(this: AbstractModel<M>, value: boolean): void
   onMounted?(this: AbstractModel<M>): void
   onUnmounted?(this: AbstractModel<M>): void
   onValidate?(this: AbstractModel<M>): void

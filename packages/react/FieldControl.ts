@@ -21,14 +21,10 @@ export function FieldControl(props: Props) {
   }
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
   const triggerValidate = useCallback((key: string) => {
-    field.validate({
+    return field.validate({
       state: field.value,
       updateOn: key,
     })
-      .then(errors => {
-        field.setFieldErrors(errors)
-        field.onValidate?.('initiative', errors)
-      })
   }, [])
 
   const methods = useMemo(() => {
@@ -59,7 +55,6 @@ export function FieldControl(props: Props) {
         field.isBlurred.value = false
         field.isFocused.value = true
       })
-      triggerValidate("onFocus")
     }
     const events = {} as Record<string, Function>
     Object.entries(normalizeEvents(field)).forEach(([key, event]) => {
@@ -81,15 +76,6 @@ export function FieldControl(props: Props) {
   }, [])
   useEffect(() => {
     const stopScope = effectScope(() => {
-      effect(() => {
-        field.validate({
-          state: field.value,
-          updateOn: 'passive',
-        }).then(errors => {
-          field.setFieldErrors(errors)
-          field.onValidate?.('passive', errors)
-        })
-      })
       effect(() => {
         setFiledState(normalizeProps(field))
       });

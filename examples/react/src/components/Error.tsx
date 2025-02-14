@@ -6,9 +6,10 @@ export function FieldError({
 }: {
   errors: FieldErrors
 }) {
+  const { initiative, passive } = errors
   return <div>
     <div style={{ color: "red" }}>
-      {Object.entries(errors).map(([key, value]) => {
+      {Object.entries({...initiative,...passive}).map(([key, value]) => {
         return <div key={key} color='red'> {value.message}</div>
       })}
     </div>

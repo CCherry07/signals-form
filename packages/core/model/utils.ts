@@ -8,7 +8,7 @@ export async function createModel(graph: FieldBuilder[], model?: Model) {
     const { setDefaultValue } = field.getActions()
     let filedValue = undefined
     if (isFunction(setDefaultValue)) {
-      filedValue = await setDefaultValue()
+      filedValue = await setDefaultValue.call(field)
     } else {
       filedValue = model?.[field.id]
     }
@@ -22,12 +22,10 @@ export async function createModel(graph: FieldBuilder[], model?: Model) {
   }, Promise.resolve({}))
 }
 
-export function createGraph(graph: FieldBuilder[], mothods:AbstractModelMethods , appContext: any): FieldBuilder[] {
+export function createGraph(graph: FieldBuilder[], mothods: AbstractModelMethods, appContext: any): FieldBuilder[] {
   return graph.map(field => {
-    if (!field.isVoidField) {
-      field.path = field.id
-      field.parentpath = ""
-    }
+    field.path = field.id
+    field.parentpath = ""
     field.setAbstractModel(mothods)
     field.setAppContext(appContext)
     field.normalizeProperties()

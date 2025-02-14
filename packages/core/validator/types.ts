@@ -1,10 +1,10 @@
-import type { BoolContext, Decision } from "../boolless"
+import type { Decision } from "../boolless"
 import type { FactoryOptions, Resolver } from "../resolvers/type"
 
-export interface ValidateItem {
+export interface ValidateItem <T>{
   schema: any
   engine?: string
-  fact?: string | object
+  fact?: (value: T, model: Record<string, any>, execDecision: (decision: Decision) => boolean) => any
   updateOn?: string | string[]
   needValidate?: Decision
   factoryOptions?: FactoryOptions
@@ -12,11 +12,11 @@ export interface ValidateItem {
 }
 
 export interface Context<T> {
-  state: T
+  value: T
   defaultValidatorEngine: string
+  execDecision: (decision: Decision) => boolean
   model: Record<string, any>
   updateOn?: string
-  boolContext?: BoolContext
 }
 
 export type ValidatorResolvers = Record<string, Resolver>

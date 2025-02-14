@@ -1,8 +1,8 @@
 import { computed, deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
-import { ActionOptions, BaseFieldProps, ComponentOptions, Field, FieldBuilderType, FieldError, FieldErrors, Lifecycle, ValidateType, ValidatorOptions } from "../types/field"
+import { ActionOptions, ComponentOptions, Field, FieldBuilderType, FieldErrors, Lifecycle, ValidateMode, ValidateType, ValidatorOptions } from "../types/field"
 import { BoolContext, Decision } from "../boolless"
-import { isArray, isPromise, set } from "@formula/shared"
+import { isArray, isEmpty, isPromise, set } from "@formula/shared"
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
 import { AbstractModelMethods } from "../types/form"
@@ -92,8 +92,8 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   #component?: any;
   #validator: {
-    initiative?: ValidateItem[];
-    passive?: ValidateItem[];
+    initiative?: ValidateItem<T>[];
+    passive?: ValidateItem<T>[];
   } = {}
   #actions: ActionOptions<T, P> = {}
   // #effects: Array<(this: FieldBuilder<T, P>) => void> = []
@@ -184,6 +184,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     this.isHidden.update()
     this.isDisabled.update()
     this.normalizeRelation()
+    this.validatePassive({ value: this.value })
   }
 
   setValueWillPending(isPending: boolean) {
@@ -310,11 +311,11 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   setFieldErrors(errors: FieldErrors) {
     this.setErrors(errors)
-    if (Object.keys(errors).length === 0) {
+    if (isEmpty(errors.initiative) && isEmpty(errors.passive)) {
       this.cleanErrors()
-    } else {
-      this.#abstractModel.setFieldErrors(this.path, errors)
+      return;
     }
+    this.#abstractModel.setFieldErrors(this.path, errors)
   }
 
   cleanErrors() {
@@ -323,7 +324,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return;
   }
 
-  setErrors(errors: Record<string, FieldError>) {
+  setErrors(errors: FieldErrors) {
     this.errors.value = errors
   }
 
@@ -363,11 +364,12 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
-  component(component: ComponentOptions) {
-    const { component: _component, type, ...options } = component
-    this.#component = _component
+  component(options: ComponentOptions) {
+    const { component, id, type, ...otherOptions } = options
+    this.#component = component
     this.#type = type || "Field"
-    Object.assign(this, options)
+    this.id = id ?? 'sadada'
+    Object.assign(this, otherOptions)
     return this
   }
 
@@ -430,7 +432,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
-  validator(options: ValidatorOptions | object) {
+  validator(options: ValidatorOptions<T> | object) {
     if (!isObject(options)) {
       throw new Error('validator options must be an object')
     }
@@ -441,7 +443,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
       }
     }
 
-    const { initiative, passive } = options as ValidatorOptions
+    const { initiative, passive } = options as ValidatorOptions<T>
     const normalizeValidator = {
       initiative: initiative ? formatValidateItem(initiative) : [],
       passive: passive ? formatValidateItem(passive) : [],
@@ -451,15 +453,30 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
+  async validatePassive(context: Pick<Context<T>, 'value' | 'updateOn'>) {
+    return this.validate(context, "passive")
+  }
 
-  async validate<T>(context: Pick<Context<T>, 'state' | 'updateOn'>) {
+  async validateInitiative(context: Pick<Context<T>, 'value' | 'updateOn'>) {
+    return this.validate(context, "initiative")
+  }
+
+  async validate<T>(context: Pick<Context<T>, 'value' | 'updateOn'>, mode: ValidateMode = "initiative") {
+    if (this.isVoidField) return
     this.isValidating.value = true
     return new Promise<FieldErrors>((resolve, reject) => {
-      if (context.updateOn !== 'passive') {
+      if (mode !== 'passive') {
         this.#abstractModel.validate(context, this.#validator.initiative ?? []).then(resolve, reject)
       } else {
         this.#abstractModel.validate(context, this.#validator.passive ?? []).then(resolve, reject)
       }
+    }).then(errors => {
+      this.setFieldErrors({
+        ...this.errors.value,
+        [mode]: errors
+      })
+      this.onValidate?.(mode, errors)
+      return errors
     }).finally(() => {
       this.isValidating.value = false
     })
@@ -485,10 +502,9 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   getProps() {
     return {
       ...this.#props,
-      ...this.getStatus(),
       value: this.value,
       errors: this.errors.value,
-    } as Readonly<BaseFieldProps<T> & P>
+    }
   }
 
   getStatus() {
@@ -500,6 +516,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
       isDestroyed: this.isDestroyed.value,
       isInitialized: this.isInitialized.value,
       isDisabled: this.isDisabled.value,
+      isValidating: this.isValidating.value,
     }
   }
 

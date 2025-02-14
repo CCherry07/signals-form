@@ -1,7 +1,7 @@
 import React from "react";
 import { ReactNode } from "react";
 import { createForm } from "@formula/react"
-import { defineField } from "@formula/core";
+import { D, defineField } from "@formula/core";
 import { z } from "zod";
 import { zodResolver } from "@formula/resolvers";
 
@@ -39,6 +39,29 @@ const password = defineField<string, Props>()
     .min(6, "密码长度必须在6-16").max(16, "密码长度必须在6-16")
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,16}$/, { message: "密码必须包含大小写字母、数字和特殊字符" }))
 
+// const age = defineField<number, Props>()
+//   .component({
+//     id: "age",
+//     component: Input,
+//   })
+//   .props({ label: "年龄", type: "Search", prefix: "🔢", required: true })
+//   .validator({
+//     initiative: [{
+//       schema: z.number({ message: "年龄必须是数字" }).min(18, "年龄必须大于18"),
+//     }],
+//     passive: [{
+//       fact(value, model, execDecision) {
+//         if (execDecision(D.use('isAdult'))) {
+          
+//         }
+//         if (value < 18) {
+//           return "年龄必须大于18"
+//         }
+//       },
+//       needValidate: D.use('isAdult'),
+//       schema: "年龄必须大于18",
+//     }]
+//   })
 
 const useraccount = defineField<{ username: string, password: string }, any>()
   .component({

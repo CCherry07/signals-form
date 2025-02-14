@@ -2,7 +2,7 @@ import { deepSignal, peek, Signal, signal, effect, isString, isArray } from "ali
 import { clonedeep, get, set, setSignal } from "@formula/shared";
 import { createModel } from "./utils";
 
-import { type BoolContext, setup } from "../boolless"
+import { type BoolContext, Decision, setup } from "../boolless"
 import type { Resolver } from "../resolvers/type";
 import type { AbstractModelConstructor, AbstractModelInitOptions, Model, SubscribeProps } from "../types/form";
 import { FieldBuilder } from "../builder/field";
@@ -225,55 +225,67 @@ export class AbstractModel<M extends Model> {
 
   }
 
-  async validate<T>(context: Pick<Context<T>, 'state' | 'updateOn'>, validateItems: ValidateItem[]) {
+  async validate<T>(context: Pick<Context<T>, 'value' | 'updateOn'>, validateItems: ValidateItem<any>[]) {
     return await validate(
       {
         ...context,
         model: this.model,
         defaultValidatorEngine: this.defaultValidatorEngine,
-        boolContext: this.boolContext
+        execDecision: this.execDecision.bind(this)
       },
       validateItems,
       this.validatorResolvers
     )
   }
 
-  async validateAll(fieldpath: string, type?: "passive" | "initiative") {
-    const filed = this.getField(fieldpath)
-    const validator = filed.getValidator()
-    if (!validator) return
-    const { initiative, passive } = validator
-    const fieldErrors = {} as {
-      initiative?: FieldErrors
-      passive?: FieldErrors
-    }
-    const context = {
-      state: filed.value,
-    }
+  // async validateAll(type?: "passive" | "initiative") {
+  //   this.errors = {};
+  //   const filed = this.fields
+  //   Object.values(this.fields).forEach(field => field.validate({
+  //     value: field.value,
+  //   }).then(errors=>{
+  //     console.log("errors",errors);
+  //   }))
+  //   // const validator = filed.getValidator()
+  //   // if (!validator) return
+  //   // const { initiative, passive } = validator
+  //   // const fieldErrors = {} as {
+  //   //   initiative?: FieldErrors
+  //   //   passive?: FieldErrors
+  //   // }
+  //   // const context = {
+  //   //   value: filed.value,
+  //   // }
 
-    if (!type) {
-      fieldErrors.initiative = await this.validate(context, initiative as ValidateItem[])
-      fieldErrors.passive = await this.validate(context, passive as ValidateItem[])
-    }
+  //   // if (!type) {
+  //   //   fieldErrors.initiative = await this.validate(context, initiative as ValidateItem[])
+  //   //   fieldErrors.passive = await this.validate(context, passive as ValidateItem[])
+  //   // }
 
-    if (type === "initiative" && initiative) {
-      fieldErrors.initiative = await this.validate(context, initiative as ValidateItem[])
-    }
-    if (type === "passive" && passive) {
-      fieldErrors.passive = await this.validate(context, passive as ValidateItem[])
-    }
+  //   // if (type === "initiative" && initiative) {
+  //   //   fieldErrors.initiative = await this.validate(context, initiative as ValidateItem[])
+  //   // }
+  //   // if (type === "passive" && passive) {
+  //   //   fieldErrors.passive = await this.validate(context, passive as ValidateItem[])
+  //   // }
 
-    this.setFieldErrors(fieldpath, {
-      ...fieldErrors.initiative,
-      ...fieldErrors.passive
-    })
+  //   // this.setFieldErrors(fieldpath, {
+  //   //   ...fieldErrors.initiative,
+  //   //   ...fieldErrors.passive
+  //   // })
 
-    return fieldErrors
+  //   return {}
+  // }
+
+  execDecision(decision: Decision) {
+    return decision.evaluate(this.boolContext)
   }
 
   async submit<T>() {
     this.submitted.value = false;
     this.submiting.value = true;
+
+    // this.validateAll()
 
     //TODO revalidate ?
     if (Object.keys(this.errors).length > 0) {

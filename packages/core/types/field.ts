@@ -51,9 +51,9 @@ export interface ActionOptions<T, P extends Object> {
   onSubmitValue?: (this: FieldBuilder<T, P>, model: T) => any;
 }
 
-export interface ValidatorOptions {
-  passive?: ValidateItem[] | ValidateItem;
-  initiative?: ValidateItem[] | ValidateItem | Object;
+export interface ValidatorOptions<T> {
+  passive?: Omit<ValidateItem<T>, 'updateOn'>[] | Omit<ValidateItem<T>, 'updateOn'>;
+  initiative?: ValidateItem<T>[] | ValidateItem<T> | Object;
 }
 
 export type ValidateType = "passive" | "initiative"
@@ -63,7 +63,14 @@ export interface FieldError {
   type: string
 }
 
-export type FieldErrors = Record<string, FieldError>
+export type FieldErrors = {
+  /** event driven verification */
+  initiative?: Record<string, FieldError>,
+  /** status drive verification */
+  passive?: Record<string, FieldError>,
+}
+
+export type ValidateMode = "initiative" | "passive"
 
 export type FieldBuilderType = "Field" | "Void"
 
