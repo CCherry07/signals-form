@@ -1,5 +1,5 @@
-import { validate, type ValidateItem } from "@formula/core"
-import { zodResolver } from "@formula/resolvers"
+import { validate, type ValidateItem } from "@signals-form/core"
+import { zodResolver } from "@signals-form/resolvers"
 import { z } from "zod"
 import { describe, it, expect } from "vitest"
 import { D, setup } from "../../packages/core/boolless"

@@ -1,7 +1,7 @@
 import { ComponentClass, createElement, FunctionComponent } from 'react';
 import { FieldControl } from "./FieldControl";
-import { createRXForm, FieldBuilder, setupValidator, createGroupForm as createRXGroupForm } from "@formula/core"
-import type { Resolver, FormConfig as CoreFormConfig } from '@formula/core'
+import { createRXForm, FieldBuilder, setupValidator, createGroupForm as createRXGroupForm } from "@signals-form/core"
+import type { Resolver, FormConfig as CoreFormConfig } from '@signals-form/core'
 export interface FormConfig extends CoreFormConfig {
   components?: Record<string, string | FunctionComponent<any> | ComponentClass<any, any>>;
   resolvers?: {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ReactNode } from "react";
 import { Button, Spin } from "antd";
 import { effect, watch } from "alien-deepsignals";
-import { AbstractModel } from "@formula/core/model/abstract_model";
+import { AbstractModel } from "@signals-form/core/model/abstract_model";
 interface Props {
   app: ReactNode,
 form: AbstractModel<Record<string, any>>

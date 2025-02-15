@@ -2,7 +2,7 @@ import { computed, deepSignal, effect, isFunction, isObject, signal, Signal } fr
 import { effectScope } from "alien-signals"
 import { ActionOptions, ComponentOptions, Field, FieldBuilderType, FieldErrors, Lifecycle, ValidateMode, ValidateType, ValidatorOptions } from "../types/field"
 import { Decision } from "../boolless"
-import { isArray, isEmpty, isPromise, set } from "@formula/shared"
+import { isArray, isEmpty, isPromise, set } from "@signals-form/shared"
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
 import { AbstractModelMethods } from "../types/form"

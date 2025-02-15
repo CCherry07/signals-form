@@ -1,10 +1,10 @@
 import React from "react";
 import { ReactNode } from "react";
-import { createForm } from "@formula/react"
-import { createDecision, defineField, match } from "@formula/core";
+import { createForm } from "@signals-form/react"
+import { createDecision, defineField, match } from "@signals-form/core";
 import { z } from "zod";
-import { zodResolver } from "@formula/resolvers";
-import { defineRelation } from "@formula/core"
+import { zodResolver } from "@signals-form/resolvers";
+import { defineRelation } from "@signals-form/core"
 import Form from "../../components/Form";
 import Input from "../../components/Input";
 import { App } from "./app"

@@ -1,5 +1,5 @@
 {
-  "name": "@formula/shared",
+  "name": "@signals-form/shared",
   "version": "0.0.0",
   "main": "index.ts",
   "files": [

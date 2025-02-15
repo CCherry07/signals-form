@@ -1,4 +1,4 @@
-import { set, setSignal } from "@formula/shared"
+import { set, setSignal } from "@signals-form/shared"
 import { deepSignal, effect } from "alien-deepsignals"
 import { describe, expect, it } from "vitest"
 interface Store {

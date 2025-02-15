@@ -1,5 +1,5 @@
 {
-  "name": "@formula/resolvers",
+  "name": "@signals-form/resolvers",
   "version": "0.0.0",
   "main": "index.ts",
   "type": "module",

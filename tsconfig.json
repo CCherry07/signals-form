@@ -21,7 +21,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@formula/*": ["./packages/*",]
+      "@signals-form/*": ["./packages/*",]
     }
   },
 }

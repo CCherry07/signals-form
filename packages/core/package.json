@@ -1,5 +1,5 @@
 {
-  "name": "@formula/core",
+  "name": "@signals-form/core",
   "version": "0.0.1",
   "main": "index.ts",
   "type": "module",
@@ -16,7 +16,7 @@
     "release": "bumpp && npm run build && npm publish --registry=https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@formula/shared": "workspace:*"
+    "@signals-form/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.5"

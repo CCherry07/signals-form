@@ -5,7 +5,7 @@ export * from "./model/form"
 export * from "./model/form_group"
 export * from "./boolless"
 export * from "./match"
-export * from "@formula/shared"
+export * from "@signals-form/shared"
 export {
   setup as setupValidator,
   validate

@@ -1,5 +1,5 @@
 import { deepSignal, peek, Signal, signal, effect, isString, isArray } from "alien-deepsignals";
-import { clonedeep, get, set, setSignal } from "@formula/shared";
+import { clonedeep, get, set, setSignal } from "@signals-form/shared";
 import { createModel } from "./utils";
 
 import { type BoolContext, Decision, setup } from "../boolless"

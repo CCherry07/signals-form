@@ -1,4 +1,4 @@
-import { isProd, isArray, isString, isFunction } from "@formula/shared"
+import { isProd, isArray, isString, isFunction } from "@signals-form/shared"
 import type { AbstractModel } from "../model/abstract_model"
 import { FieldError } from "../types/field"
 import { Resolver } from "../resolvers/type";

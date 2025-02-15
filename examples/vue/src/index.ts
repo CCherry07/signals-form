@@ -1,11 +1,11 @@
 import { createApp, createVNode } from 'vue';
-import { zodResolver } from "@formula/resolvers"
-import { createForm } from "@formula/vue"
+import { zodResolver } from "@signals-form/resolvers"
+import { createForm } from "@signals-form/vue"
 
 import App from './App.vue';
 import Form from "./components/Form.vue"
 import Input from './components/Input.vue';
-import { defineField } from '@formula/core';
+import { defineField } from '@signals-form/core';
 
 interface Model {
   nickname: string;

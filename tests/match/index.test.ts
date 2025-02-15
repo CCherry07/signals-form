@@ -1,4 +1,4 @@
-import { match, js, _ } from "@formula/core"
+import { match, js, _ } from "@signals-form/core"
 import { expect, describe, it } from "vitest"
 
 describe("match", () => {

@@ -1,8 +1,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import Input from "./components/Input"
-import { createForm } from "@formula/react"
-import { FieldBuilder } from "@formula/core"
+import { createForm } from "@signals-form/react"
+import { FieldBuilder } from "@signals-form/core"
 import { App } from './App';
 
 const graph = Array.from({ length: 2000 }).map((_, i) => {

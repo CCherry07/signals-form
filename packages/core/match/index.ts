@@ -1,4 +1,4 @@
-import { createTemplateLiterals as js } from "@formula/shared";
+import { createTemplateLiterals as js } from "@signals-form/shared";
 import { isFunction, isMap, isPlainObject, isRegExp, isSet, isString } from "alien-deepsignals";
 type Pattern<T> = T | RegExp | ((value: T) => boolean) | { [K in keyof T]?: Pattern<T[K]> } | string;
 

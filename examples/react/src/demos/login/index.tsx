@@ -1,9 +1,9 @@
-import { createForm } from "@formula/react"
-import { defineField } from "@formula/core";
+import { createForm } from "@signals-form/react"
+import { defineField } from "@signals-form/core";
 import Input from "../../components/Input";
 import { z } from "zod";
 import { ReactNode } from "react";
-import { zodResolver } from "@formula/resolvers";
+import { zodResolver } from "@signals-form/resolvers";
 import Form from "../../components/Form";
 import { App } from "./app"
 import React from "react";

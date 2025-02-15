@@ -1,7 +1,7 @@
 import { defineComponent, h, onBeforeMount, onScopeDispose, onUnmounted, shallowRef } from "vue";
 import type { Component, DefineComponent, PropType, Slots } from 'vue';
-import type { Field } from "@formula/core/types/field";
-import { FieldBuilder } from "@formula/core"
+import type { Field } from "@signals-form/core/types/field";
+import { FieldBuilder } from "@signals-form/core"
 import { batch, effect } from "alien-deepsignals";
 import { effectScope } from "alien-signals";
 

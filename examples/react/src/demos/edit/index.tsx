@@ -1,8 +1,8 @@
 import { z } from "zod"
-import { createForm } from "@formula/react"
+import { createForm } from "@signals-form/react"
 import { App } from "./app"
-import { zodResolver } from "@formula/resolvers"
-import { defineField } from "@formula/core"
+import { zodResolver } from "@signals-form/resolvers"
+import { defineField } from "@signals-form/core"
 import React from "react";
 import InputType from "../../components/InputType";
 import Input from "../../components/Input"

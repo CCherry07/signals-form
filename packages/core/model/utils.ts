@@ -1,4 +1,4 @@
-import { isFunction } from "@formula/shared"
+import { isFunction } from "@signals-form/shared"
 import { FieldBuilder } from "../builder/field"
 import type { AbstractModelMethods, Model } from "../types/form"
 

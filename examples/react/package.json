@@ -10,10 +10,10 @@
     "clean": "farm clean"
   },
   "dependencies": {
-    "@formula/core": "workspace:*",
-    "@formula/react": "workspace:*",
-    "@formula/resolvers": "workspace:*",
-    "@formula/shared": "workspace:*",
+    "@signals-form/core": "workspace:*",
+    "@signals-form/react": "workspace:*",
+    "@signals-form/resolvers": "workspace:*",
+    "@signals-form/shared": "workspace:*",
     "antd": "^5.22.5",
     "lodash-es": "^4.17.21",
     "react": "18.3.1",

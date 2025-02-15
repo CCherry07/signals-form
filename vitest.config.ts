@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.ts'],
     alias: {
-      '@formula/': new URL('./packages/', import.meta.url).pathname,
+      '@signals-form/': new URL('./packages/', import.meta.url).pathname,
     },
   },
 })

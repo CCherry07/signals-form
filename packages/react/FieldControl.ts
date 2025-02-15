@@ -1,8 +1,8 @@
 import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { FieldBuilder } from "@formula/core"
+import { FieldBuilder } from "@signals-form/core"
 import { batch, effect } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
-import { Field } from '@formula/core/types/field';
+import { Field } from '@signals-form/core/types/field';
 interface Props {
   field: FieldBuilder
   resolveComponent: (component: string | FunctionComponent<any> | ComponentClass<any, any>) => string | FunctionComponent<any> | ComponentClass<any, any>
