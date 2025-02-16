@@ -1,4 +1,4 @@
-import { BoolsConfig, BoolContext, Decision } from "../boolless";
+import { BoolsConfig, BoolContext, Decision} from "../boolless";
 import { Resolver } from "../resolvers/type";
 import { Signal } from "alien-deepsignals";
 import { FieldBuilder } from "../builder/field";
@@ -40,8 +40,8 @@ export interface ComponentOptions<T> {
   type?: FieldBuilderType
   component?: any;
   wrapper?: any;
-  hidden?: Decision;
-  disabled?: Decision;
+  hidden?: Decision
+  disabled?: Decision
   removeValueOnHidden?: boolean
   recoverValueOnShown?: boolean
   initialValue?: () => T | T | Promise<T>

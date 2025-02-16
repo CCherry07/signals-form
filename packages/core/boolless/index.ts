@@ -55,7 +55,7 @@ export function createDecision<T extends string>(boolContext: Record<T, unknown>
 
 const registedOperators = () => Object.keys(Operator).concat(Object.keys(CustomOperator));
 
-export class Decision<T extends string | Node | BoolFn> {
+export class Decision<T extends string | Node | BoolFn = string | Node | BoolFn> {
   private operator: OperatorEnum;
   private nodes: Node[];
   constructor(operator: OperatorEnum, ...nodes: Node[]) {
