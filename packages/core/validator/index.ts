@@ -1,8 +1,8 @@
 import { isProd, isArray, isString, isFunction } from "@signals-form/shared"
 import type { AbstractModel } from "../model/abstract_model"
 import { FieldError } from "../types/field"
-import { Resolver } from "../resolvers/type";
-import { Context, ValidateItem, ValidatorResolvers } from "./types";
+import { Resolver } from "../types/resolvers";
+import { Context, ValidateItem, ValidatorResolvers } from "../types/validator";
 
 export function setup(this: AbstractModel<any>, validator: string, resolver: Resolver) {
   if (!isProd && this.validatorResolvers[validator]) {

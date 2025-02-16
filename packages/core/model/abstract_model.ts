@@ -3,12 +3,12 @@ import { clonedeep, get, set, setSignal } from "@signals-form/shared";
 import { createModel } from "./utils";
 
 import { type BoolContext, Decision, setup } from "../boolless"
-import type { Resolver } from "../resolvers/type";
+import type { Resolver } from "../types/resolvers";
 import type { AbstractModelConstructor, AbstractModelInitOptions, Model, SubscribeProps } from "../types/form";
 import { FieldBuilder } from "../builder/field";
 import { FieldErrors } from "../types/field";
 import { validate } from "../validator";
-import { Context, ValidateItem } from "../validator/types";
+import { Context, ValidateItem } from "../types/validator";
 
 export class AbstractModel<M extends Model> {
   id: string;

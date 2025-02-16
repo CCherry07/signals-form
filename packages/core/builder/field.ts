@@ -1,12 +1,16 @@
+
+import type { ActionOptions, ComponentOptions, Field, FieldBuilderType, FieldErrors, Lifecycle, ValidateMode, ValidateType, ValidatorOptions } from "../types/field"
+import type { Decision } from "../boolless"
+import type { AbstractModelMethods } from "../types/form"
+import type { Context, ValidateItem } from "../types/validator"
+
 import { computed, deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
-import { ActionOptions, ComponentOptions, Field, FieldBuilderType, FieldErrors, Lifecycle, ValidateMode, ValidateType, ValidatorOptions } from "../types/field"
-import { Decision } from "../boolless"
 import { isArray, isEmpty, isPromise, set } from "@signals-form/shared"
+
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
-import { AbstractModelMethods } from "../types/form"
-import { Context, ValidateItem } from "../validator/types"
+
 let index = 0
 function getParentField(field: FieldBuilder): FieldBuilder | null {
   if (field.parent?.isVoidField) {

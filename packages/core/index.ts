@@ -1,4 +1,4 @@
-export * from "./resolvers/type"
+export * from "./types/resolvers"
 export * from "./builder/field"
 export * from "./hooks"
 export * from "./model/form"
@@ -12,4 +12,4 @@ export {
 } from "./validator"
 
 export type * from "./types/form"
-export type * from "./validator/types"
+export type * from "./types/validator"

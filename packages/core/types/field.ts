@@ -1,8 +1,8 @@
 import { BoolsConfig, BoolContext, Decision} from "../boolless";
-import { Resolver } from "../resolvers/type";
+import { Resolver } from "./resolvers";
 import { Signal } from "alien-deepsignals";
 import { FieldBuilder } from "../builder/field";
-import { ValidateItem } from "../validator/types";
+import { ValidateItem } from "./validator";
 
 export interface FormConfig {
   graph: typeof FieldBuilder[];

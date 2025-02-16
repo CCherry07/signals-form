@@ -1,5 +1,5 @@
 import type { Decision, BoolFn, Node } from "../boolless"
-import type { FactoryOptions, Resolver } from "../resolvers/type"
+import type { FactoryOptions, Resolver } from "./resolvers"
 
 export interface ValidateItem<T = any> {
   schema: any

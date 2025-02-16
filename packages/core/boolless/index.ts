@@ -1,4 +1,5 @@
-import { Computed, computed, isFunction, isString, MaybeSignal, MaybeSignalOrGetter, toValue } from 'alien-deepsignals';
+import { Computed, computed, MaybeSignal, MaybeSignalOrGetter, toValue } from 'alien-deepsignals';
+import { isFunction, isString } from '@signals-form/shared';
 
 export type BoolContext = MaybeSignal<Record<string, MaybeSignalOrGetter<any>>>;
 
@@ -123,7 +124,7 @@ export class LeafNode {
     if (node === undefined) {
       throw new Error('LeafNode name can not be undefined');
     }
-    if (typeof node === 'function') {
+    if (isFunction(node)) {
       this.fn = node;
     } else {
       this.name = node;
@@ -134,7 +135,7 @@ export class LeafNode {
     if (this.computed) {
       return this.computed.value
     }
-    if (typeof this.fn === 'function') {
+    if (isFunction(this.fn)) {
       this.computed = computed(() => this.fn!(ctx));
       return this.computed.value
     }
@@ -148,7 +149,6 @@ export class LeafNode {
 }
 
 function createAndDecision(...ns: (string | Node | BoolFn)[]) {
-
   return new Decision(OperatorEnum.AND, ...ns.map(n => isString(n) || isFunction(n) ? new LeafNode(n) : n));
 };
 

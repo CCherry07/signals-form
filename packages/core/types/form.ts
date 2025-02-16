@@ -1,6 +1,6 @@
 import type {AbstractModel} from "../model/abstract_model";
 import {BoolsConfig, BoolContext} from "../boolless";
-import {Resolver} from "../resolvers/type";
+import {Resolver} from "./resolvers";
 import {DeepSignal, Signal} from "alien-deepsignals";
 import { FieldBuilder } from "../builder/field";
 import { FieldErrors } from "./field";
