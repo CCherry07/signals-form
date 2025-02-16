@@ -9,13 +9,13 @@ const validatorResolvers = {
   zod: zodResolver
 }
 const context = deepSignal({
-  name: ('cherry'),
-  age: (18),
-  addr: ({
+  name: 'cherry',
+  age: 18,
+  addr: {
     city: ('重庆')
-  }),
-  d: ('dd'),
-  userinfo: ({ name: ('Tom'), age: (18) })
+  },
+  d: 'dd',
+  userinfo: { name: ('Tom'), age: (18) }
 })
 
 type Context = typeof context
@@ -24,8 +24,9 @@ const bools = {
   isD: (context: Context) => context.d === 'd',
   isTom: (context: Context) => context.userinfo.name === 'Tom',
 } as const
-
 const boolContext = setup(bools, context)
+
+const execDecision = (decision: any) => decision.evaluate(boolContext)
 
 describe("validate", () => {
   const rules: ValidateItem[] = [
@@ -42,7 +43,7 @@ describe("validate", () => {
 
   it("validate success", async () => {
     const result = await validate({
-      state: {
+      value: {
         name: "cherry",
         age: 18,
         addr: {
@@ -52,14 +53,14 @@ describe("validate", () => {
       updateOn: "change",
       defaultValidatorEngine: "zod",
       model: context,
-      boolContext
+      execDecision
     }, rules, validatorResolvers)
     expect(result).toMatchInlineSnapshot(`{}`)
   })
 
   it("validate fail", async () => {
     const result = await validate({
-      state: {
+      value: {
         name: "cherry",
         age: "18",
         addr: {
@@ -69,7 +70,7 @@ describe("validate", () => {
       updateOn: "change",
       defaultValidatorEngine: "zod",
       model: context,
-      boolContext
+      execDecision
     }, rules, validatorResolvers)
 
     expect(result).toMatchInlineSnapshot(`
@@ -85,16 +86,22 @@ describe("validate", () => {
   it('fact success', async () => {
     const rules: ValidateItem[] = [
       {
-        fact: {
-          $state: "$state",
+        fact: () => ({
+          value: {
+            name: "cherry",
+            age: 18,
+            addr: {
+              city: '重庆'
+            }
+          },
           userinfo: {
             addr: "朝阳区",
-            name: "$.userinfo.name",
-            age: "$.userinfo.age"
+            name: context.userinfo.name,
+            age: context.userinfo.age
           }
-        },
+        }),
         schema: z.object({
-          $state: z.object({
+          value: z.object({
             name: z.string(),
             age: z.number(),
             addr: z.object({
@@ -111,7 +118,7 @@ describe("validate", () => {
     ]
 
     const result = await validate({
-      state: {
+      value: {
         name: "cherry",
         age: 18,
         addr: {
@@ -121,7 +128,7 @@ describe("validate", () => {
       updateOn: "change",
       defaultValidatorEngine: "zod",
       model: context,
-      boolContext
+      execDecision
     }, rules, validatorResolvers)
     expect(result).toMatchInlineSnapshot(`{}`)
   })
@@ -140,7 +147,7 @@ describe("validate", () => {
       }
     ]
     const result = await validate({
-      state: {
+      value: {
         name: "cherry",
         age: 18,
         addr: {
@@ -150,7 +157,7 @@ describe("validate", () => {
       updateOn: "change",
       defaultValidatorEngine: "zod",
       model: context,
-      boolContext
+      execDecision
     }, rules, validatorResolvers)
     expect(result).toMatchInlineSnapshot(`{}`)
   })

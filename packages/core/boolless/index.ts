@@ -1,6 +1,6 @@
-import { computed, MaybeSignal, MaybeSignalOrGetter, toValue } from 'alien-deepsignals';
+import { Computed, computed, isFunction, isString, MaybeSignal, MaybeSignalOrGetter, toValue } from 'alien-deepsignals';
 
-export type BoolContext = MaybeSignal<Record<string, MaybeSignalOrGetter<boolean>>>;
+export type BoolContext = MaybeSignal<Record<string, MaybeSignalOrGetter<any>>>;
 
 export enum OperatorEnum {
   AND = "and",
@@ -21,6 +21,8 @@ export const CustomDecisionCreator = {} as { [key: string]: (...ns: (string | No
 
 export type Node = Decision<string> | LeafNode;
 
+export type BoolFn = (context: any) => boolean;
+
 export interface D<T extends string> {
   and: (...nodes: T[]) => Decision<T>;
   or: (...nodes: T[]) => Decision<T>;
@@ -37,8 +39,8 @@ export const D = {
     }
     return new Decision(OperatorEnum.NOT, node);
   },
-  use: (node: string | Node) => {
-    return new Decision(OperatorEnum.USE, typeof node === 'string' ? new LeafNode(node) : node);
+  use: (node: string | Node | BoolFn) => {
+    return new Decision(OperatorEnum.USE, isString(node) || isFunction(node) ? new LeafNode(node) : node);
   },
 };
 
@@ -47,13 +49,13 @@ export const D = {
  * @param boolContext
  * @returns Decision Methods
  */
-export function createDecision<T extends string>(boolContext: Record<T, unknown>){
+export function createDecision<T extends string>(boolContext: Record<T, unknown>) {
   return D as D<keyof typeof boolContext>;
 }
 
 const registedOperators = () => Object.keys(Operator).concat(Object.keys(CustomOperator));
 
-export class Decision <T extends string = string> {
+export class Decision<T extends string | Node | BoolFn> {
   private operator: OperatorEnum;
   private nodes: Node[];
   constructor(operator: OperatorEnum, ...nodes: Node[]) {
@@ -100,11 +102,11 @@ export function registerCustomOperator(operatorDSL: string,
     operator: (left: boolean, right: boolean) => boolean
   }) {
   CustomOperator[operatorDSL] = operator;
-  function DecisionCreator<T extends string>(this: Decision<T>, ...ns: (string | Node)[]) {
+  function DecisionCreator<T extends string>(this: Decision<T>, ...ns: (string | Node | BoolFn)[]) {
     if (this instanceof Decision) {
-      return new Decision(operatorDSL as OperatorEnum, ...[this, ...ns].map(n => typeof n === 'string' ? new LeafNode(n) : n));
+      return new Decision(operatorDSL as OperatorEnum, ...[this, ...ns].map(n => isString(n) || isFunction(n) ? new LeafNode(n) : n));
     }
-    return new Decision(operatorDSL as OperatorEnum, ...ns.map(n => typeof n === 'string' ? new LeafNode(n) : n));
+    return new Decision(operatorDSL as OperatorEnum, ...ns.map(n => isString(n) || isFunction(n) ? new LeafNode(n) : n));
   };
   CustomDecisionCreator[operatorDSL] = DecisionCreator
   // @ts-ignore
@@ -114,25 +116,44 @@ export function registerCustomOperator(operatorDSL: string,
 }
 
 export class LeafNode {
-  name: string
-  constructor(name: string | (() => string)) {
-    this.name = toValue(name) as string;
+  name?: string
+  computed?: Computed<boolean>
+  fn?: BoolFn
+  constructor(node: string | BoolFn) {
+    if (node === undefined) {
+      throw new Error('LeafNode name can not be undefined');
+    }
+    if (typeof node === 'function') {
+      this.fn = node;
+    } else {
+      this.name = node;
+    }
   }
   evaluate(values: BoolContext): boolean {
     const ctx = toValue(values) as Record<string, MaybeSignal<boolean>>;
-    if (ctx[this.name] === undefined) {
+    if (this.computed) {
+      return this.computed.value
+    }
+    if (typeof this.fn === 'function') {
+      this.computed = computed(() => this.fn!(ctx));
+      return this.computed.value
+    }
+
+    if (!this.name || ctx[this.name] === undefined) {
       throw new Error(`Unknown bool config: ${this.name}`);
     }
-    return toValue(ctx[this.name]);
+
+    return toValue(ctx[this.name!]);
   }
 }
 
-function createAndDecision(...ns: (string | Node)[]) {
-  return new Decision(OperatorEnum.AND, ...ns.map(n => typeof n === 'string' ? new LeafNode(n) : n));
+function createAndDecision(...ns: (string | Node | BoolFn)[]) {
+
+  return new Decision(OperatorEnum.AND, ...ns.map(n => isString(n) || isFunction(n) ? new LeafNode(n) : n));
 };
 
-function createOrDecision(...ns: (string | Node)[]) {
-  return new Decision(OperatorEnum.OR, ...ns.map(n => typeof n === 'string' ? new LeafNode(n) : n));
+function createOrDecision(...ns: (string | Node | BoolFn)[]) {
+  return new Decision(OperatorEnum.OR, ...ns.map(n => isString(n) || isFunction(n) ? new LeafNode(n) : n));
 }
 
 type Check = () => boolean;

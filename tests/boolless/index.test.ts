@@ -1,5 +1,5 @@
-import { signal } from "alien-deepsignals"
-import { D, Decision, type Node, registerCustomOperator } from "@signals-form/core"
+import { deepSignal, signal, effect } from "alien-deepsignals"
+import { BoolFn, D, Decision, type Node, registerCustomOperator } from "@signals-form/core"
 import { test, expect } from "vitest"
 
 registerCustomOperator(
@@ -44,10 +44,10 @@ registerCustomOperator(
 
 
 let T = D as typeof D & {
-  n_and: (...nodes: (string | Node)[]) => Decision
-  n_or: (...nodes: (string | Node)[]) => Decision
-  x_or: (...nodes: (string | Node)[]) => Decision
-  x_n_or: (...nodes: (string | Node)[]) => Decision
+  n_and: (...nodes: (string | Node)[]) => Decision<string | Node | BoolFn>
+  n_or: (...nodes: (string | Node)[]) => Decision<string | Node | BoolFn>
+  x_or: (...nodes: (string | Node)[]) => Decision<string | Node | BoolFn>
+  x_n_or: (...nodes: (string | Node)[]) => Decision<string | Node | BoolFn>
 }
 
 const values = signal({
@@ -140,4 +140,66 @@ test('custom xor operator', () => {
   // @ts-ignore
   const node = T.x_or('isA', 'isD')
   expect(node.evaluate(values)).toBe(true)
+})
+
+test('leaf node is fn', () => {
+  interface Model {
+    a: number,
+    b: string,
+    c: boolean,
+  }
+  const isA = (model: Model) => model.a > 10
+  const isB = (model: Model) => model.b === 'hello'
+  const isC = (model: Model) => model.c
+  const node = D.and(isA, isB, isC)
+  const store = deepSignal<Model>({
+    a: 11,
+    b: 'hello',
+    c: true,
+  })
+  expect(node.evaluate(store)).toBe(true)
+
+  store.a = 9
+  expect(node.evaluate(store)).toBe(false)
+
+  let count = 0
+  effect(() => {
+    if (node.evaluate(store)) {
+      count += 1
+    }
+  })
+
+  store.a = 11
+  store.c = false
+  store.c = true
+
+  expect(count).toBe(2)
+})
+
+test('leaf node is fn with effect', () => {
+  interface Model {
+    a: number,
+    b: string,
+    c: boolean,
+  }
+  const isA = (model: Model) => model.a > 10
+  const isB = (model: Model) => model.b === 'hello'
+  const isC = (model: Model) => model.c
+  const node = D.and(isA, isB, isC)
+  const store = deepSignal<Model>({
+    a: 11,
+    b: 'hello',
+    c: true,
+  })
+  let count = 0
+  effect(() => {
+    if (node.evaluate(store)) {
+      count += 1
+    }
+  })
+
+  store.c = false
+  store.c = true
+
+  expect(count).toBe(2)
 })
