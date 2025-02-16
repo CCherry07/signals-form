@@ -80,7 +80,7 @@ type ReadonlyPickKeys = "getProps" | "getAppContext" |
   "execDecision" | "setFieldErrors" | "cleanErrors" |
   "setErrors" | "peek" | "setProp" | "isHidden" |
   "isDisabled" | "isBlurred" | "isFocused" | "isMounted" |
-  "isDestroyed" | "isInitialized"
+  "isDestroyed" | "isInitialized" | "updateProperties" | "getProperties"
 
 type PickKeys = "value" | "errors"
 

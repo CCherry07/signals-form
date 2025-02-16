@@ -1,4 +1,4 @@
-import { isProd, isArray, isString, isFunction } from "@signals-form/shared"
+import { isProd, isArray, isString, isFunction, isEmpty } from "@signals-form/shared"
 import type { AbstractModel } from "../model/abstract_model"
 import { FieldError } from "../types/field"
 import { Resolver } from "../types/resolvers";
@@ -22,7 +22,7 @@ export const validate = async <T>(
   validates: ValidateItem<T>[],
   validatorResolvers: ValidatorResolvers
 ): Promise<Record<string, FieldError>> => {
-  const fieldErrors = {} as Record<string, FieldError>
+  let fieldErrors = {} as Record<string, FieldError>
   for (const item of validates) {
     const { schema, engine = defaultValidatorEngine, fact, updateOn, schemaOptions, factoryOptions, needValidate } = item
 
@@ -40,8 +40,10 @@ export const validate = async <T>(
     const validator = validatorResolvers[engine](schema, schemaOptions, factoryOptions)
     const factValue = fact ? fact(value, model, execDecision) : value
     const { errors } = await validator(factValue)
-    // 分离错误
-    Object.assign(fieldErrors, errors)
+    if (!isEmpty(errors)) {
+      fieldErrors = errors
+      break
+    }
   }
   return fieldErrors
 }

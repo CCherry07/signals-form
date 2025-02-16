@@ -6,6 +6,7 @@ import { zodResolver } from "@signals-form/resolvers";
 import Form from "../../components/Form";
 import { App } from "./app"
 import React from "react";
+import { z } from "zod";
 interface Props {
   label: string
   type?: "Group" | "Search" | "TextArea" | "Password" | "OTP";
@@ -39,8 +40,8 @@ const password = defineField<string, Props>()
     id: "password",
     component: Input,
   })
+  .validator(z.string({ message: "密码是必填的" }))
   .props({ label: "密码", type: "Password", prefix: "🔒", required: true })
-
 
 
 const useraccount = defineField<{ username: string, password: string }, any>()

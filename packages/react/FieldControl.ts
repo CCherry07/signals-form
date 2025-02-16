@@ -19,7 +19,8 @@ export function FieldControl(props: Props) {
   if (!field.getComponent()) {
     return null
   }
-
+  const [_, forceRender] = useState({})
+  field.forceRender = () => forceRender({})
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
   const [isHidden, setIsHidden] = useState(() => field.isHidden.value)
   const [isDisabled, setIsDisabled] = useState(() => field.isDisabled.value)
@@ -91,6 +92,10 @@ export function FieldControl(props: Props) {
       effect(() => {
         setIsDisabled(field.isDisabled.value)
       })
+      // effect(()=>{
+      //   const properties = field.getProperties().value
+      //   forceUpdate({})
+      // })
     });
     field.onMounted?.()
     field.isMounted.value = true
@@ -114,6 +119,8 @@ export function FieldControl(props: Props) {
       })
     }
   }
+
+
 
   return createElement("div", {
     "data-field-id": field.id,

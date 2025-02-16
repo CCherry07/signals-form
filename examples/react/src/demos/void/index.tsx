@@ -85,6 +85,28 @@ const divider = defineField()
     component: Divider
   })
 
+
+const useraccountRelation = defineRelation([
+  [
+    ["firstName"],
+    (field, [username]) => {
+      if (!username) {
+        return
+      }
+      const ps = field.getProperties() ?? []
+      field.updateProperties([
+        ...ps,
+        defineField<string, Props>()
+        .component({
+          id: username,
+          component: Input
+        }).props({
+          label: username,
+        })
+      ])
+    }
+  ]
+])
 const useraccount = defineField<{ username: string, password: string }, any>()
   .component({
     id: "layout",
@@ -97,6 +119,7 @@ const useraccount = defineField<{ username: string, password: string }, any>()
     password,
     age,
   ])
+  .relation(useraccountRelation)
   .props({
     style: {
       width: "400px"

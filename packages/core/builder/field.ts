@@ -385,6 +385,16 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
+  updateProperties(properties: FieldBuilder[]) {
+    this.#properties = properties
+    this.normalizeProperties(true)
+    this.forceRender()
+  }
+
+  forceRender() {
+    // force render the component
+  }
+
   getProperties() {
     return this.#properties
   }
@@ -402,10 +412,13 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     }
   }
 
-  normalizeProperties() {
+  normalizeProperties(isShallow: boolean = false) {
     if (this.#properties) {
       const parentpath = this.#getValidParentFieldPath()
       this.#properties.forEach((field) => {
+        if (field.isMounted.value) {
+          return
+        }
         field.parent = this as FieldBuilder
         field.parentpath = this.path
         if (this.isVoidField) {
@@ -419,7 +432,9 @@ export class FieldBuilder<T = any, P extends Object = Object> {
         }
         field.setAbstractModel(this.#abstractModel)
         field.setAppContext(this.#appContext)
-        field.normalizeProperties()
+        if (!isShallow) {
+          field.normalizeProperties()
+        }
         field.reset()
         field.onInit?.()
         if (field.isField) {
