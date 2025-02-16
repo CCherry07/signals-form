@@ -12,7 +12,7 @@ interface Props {
   type?: "Group" | "Search" | "TextArea" | "Password" | "OTP";
   required?: boolean
 }
-export default function (props: Props) {
+export default function FieldInput(props: Props) {
   const { onChange, value, errors, label, isDisabled, type, required, ...other } = props
 
   const Node = useMemo(() => type ? Input[type] : Input, [type])

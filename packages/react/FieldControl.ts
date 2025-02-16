@@ -1,4 +1,4 @@
-import { ComponentClass, createElement, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { ComponentClass, createElement, FunctionComponent, ReactNode, useEffect, useMemo, useState } from 'react';
 import { FieldBuilder } from "@signals-form/core"
 import { batch, effect } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
@@ -19,19 +19,12 @@ export function FieldControl(props: Props) {
   if (!field.getComponent()) {
     return null
   }
-  
+
   const [filedState, setFiledState] = useState(() => normalizeProps(field))
   const [isHidden, setIsHidden] = useState(() => field.isHidden.value)
   const [isDisabled, setIsDisabled] = useState(() => field.isDisabled.value)
 
-  const triggerValidate = useCallback((key: string) => {
-    return field.validate({
-      value: field.value,
-      updateOn: key,
-    })
-  }, [])
-
-  const methods = useMemo(() => {
+  const events = useMemo(() => {
     const _events = field.getEvents()
     const onChange = (async function (this: Field<FieldBuilder>, ...args: any[]) {
       if (_events.onChange) {
@@ -39,7 +32,10 @@ export function FieldControl(props: Props) {
       } else {
         this.value = args[0]
       }
-      triggerValidate("onChange")
+      field.validate({
+        value: field.value,
+        updateOn: "onChange",
+      })
     }).bind(field)
 
     const onBlur = (value: any) => {
@@ -48,7 +44,10 @@ export function FieldControl(props: Props) {
         field.isFocused.value = false
         field.isBlurred.value = true
       })
-      triggerValidate("onBlur")
+      field.validate({
+        value: field.value,
+        updateOn: "onBlur",
+      })
     }
 
     const onFocus = () => {
@@ -67,7 +66,10 @@ export function FieldControl(props: Props) {
       }
       events[key] = (...args: any[]) => {
         event(...args)
-        triggerValidate(key)
+        field.validate({
+          value: field.value,
+          updateOn: key,
+        })
       }
     })
 
@@ -113,17 +115,14 @@ export function FieldControl(props: Props) {
     }
   }
 
-  const component = useMemo(() => resolveComponent(field.getComponent()), [field.getComponent()])
-
   return createElement("div", {
     "data-field-id": field.id,
     hidden: isHidden,
   },
-    createElement(component, {
-      key: field.path,
+    createElement(resolveComponent(field.getComponent()), {
       disabled: isDisabled,
       ...filedState,
-      ...methods,
+      ...events,
     }, getChildren())
   );
 }

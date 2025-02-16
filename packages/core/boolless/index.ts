@@ -23,7 +23,7 @@ export type Node = Decision<string> | LeafNode;
 
 export type BoolFn = (context: any) => boolean;
 
-export interface D<T extends string> {
+export interface D<T extends string | Node | BoolFn> {
   and: (...nodes: T[]) => Decision<T>;
   or: (...nodes: T[]) => Decision<T>;
   not: (node: T) => Decision<T>;
