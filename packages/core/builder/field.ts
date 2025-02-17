@@ -120,7 +120,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this.#provides
   }
 
-  private effectFields: Set<FieldBuilder> = new Set()
+  effectFields: Set<FieldBuilder> = new Set()
 
   onDisabled?(isDisabled: boolean): void
   onHidden?(isHidden: boolean): void
@@ -416,7 +416,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     if (this.#properties) {
       const parentpath = this.#getValidParentFieldPath()
       this.#properties.forEach((field) => {
-        if (field.isMounted.value) {
+        if (field.isInitialized.value) {
           return
         }
         field.parent = this as FieldBuilder

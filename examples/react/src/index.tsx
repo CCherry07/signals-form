@@ -14,10 +14,10 @@ function createElement(node: ReactNode){
   document.body.appendChild(el);
 }
 
-// createElement(<Login />);
-// createElement(<Actions />);
-// createElement(<Edit />);
-// createElement(<Validator />);
-// createElement(<Boolless />);
-// createElement(<Relation />);
+createElement(<Login />);
+createElement(<Actions />);
+createElement(<Edit />);
+createElement(<Validator />);
+createElement(<Boolless />);
+createElement(<Relation />);
 createElement(<Void />);

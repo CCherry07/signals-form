@@ -1,5 +1,5 @@
 import { deepSignal, peek, Signal, signal, effect, isString, isArray } from "alien-deepsignals";
-import { clonedeep, get, set, setSignal } from "@signals-form/shared";
+import { clonedeep, get, isProd, set, setSignal } from "@signals-form/shared";
 import { createModel } from "./utils";
 
 import { type BoolContext, Decision, setup } from "../boolless"
@@ -25,6 +25,10 @@ export class AbstractModel<M extends Model> {
   validatorResolvers: Record<string, Resolver>;
   appContext!: Record<string, any>;
   model!: M;
+
+  // status 
+  isInitialized: Signal<boolean> = signal(false)
+
   constructor(id: string, options?: AbstractModelConstructor) {
     this.validatorResolvers = {}
     this.isUpdating = signal(false)
@@ -52,6 +56,7 @@ export class AbstractModel<M extends Model> {
     })
     this.graph = graph!
     this.normalizeFields()
+    this.isInitialized.value = true
     // handle field effectFields
     effect(() => {
       // this.isUpdating.value = Object.values(this.fields ?? {}).some((field) => field.isUpdating) ?? false
@@ -62,7 +67,60 @@ export class AbstractModel<M extends Model> {
     for (let field of Object.values(this.fields)) {
       field.normalizeField()
     }
+
+    // handle field relations has cycle
+    this.warningRelationCycle()
   }
+
+  warningRelationCycle() {
+    const cycles = this.detectCycles(Object.values(this.fields))
+    if (!isProd && cycles.length) {
+      console.warn('relation has cycle dependencies:', cycles.map((cycle) => cycle.map(n => n.path).join(' -> ') + '->' + cycle[0].path));
+    }
+  }
+
+  detectCycles(graph: FieldBuilder[]) {
+    const UNVISITED = 0, VISITING = 1, VISITED = 2;
+    const nodeStates = new Map<FieldBuilder, number>();
+    const currentFields: FieldBuilder[] = [];
+    const cycles: FieldBuilder[][] = [];
+    for (const node of graph) {
+      nodeStates.set(node, UNVISITED);
+    }
+
+    function dfs(node: FieldBuilder) {
+      const currentState = nodeStates.get(node);
+      if (node.isVoidField || currentState === VISITED) {
+        return;
+      }
+      if (currentState === VISITING) {
+        const cycleStartIndex = currentFields.indexOf(node);
+        if (cycleStartIndex !== -1) {
+          cycles.push(currentFields.slice(cycleStartIndex));
+        }
+        return;
+      }
+
+      nodeStates.set(node, VISITING);
+      currentFields.push(node);
+
+      for (const neighbor of node.effectFields) {
+        dfs(neighbor);
+      }
+
+      currentFields.pop();
+      nodeStates.set(node, VISITED);
+    }
+
+    for (const node of graph) {
+      if (nodeStates.get(node) === UNVISITED) {
+        dfs(node);
+      }
+    }
+
+    return cycles;
+  }
+
 
   async createModel() {
     return await createModel(this.graph)
@@ -200,6 +258,10 @@ export class AbstractModel<M extends Model> {
 
   addField(field: FieldBuilder) {
     this.fields[field.path] = field
+    // triggered by field update properties so you also need to calculate whether there is a circular dependency
+    if (this.isInitialized.value && field.effectFields.size > 0) {
+      this.warningRelationCycle()
+    }
   }
 
   getFieldValueStatus(field: string) {

@@ -56,6 +56,24 @@ const nameRelaition = defineRelation([
   }
 ])
 
+const addressRelaition = defineRelation([
+  [
+    "account.username",
+    (field, name) => {
+      console.log(`address: ${field.value}; name: ${name}`);
+    }
+  ],
+])
+
+const ageRelaition = defineRelation([
+  [
+    "account.username",
+    (field, name) => {
+      console.log(`age: ${field.value}; name: ${name}`);
+    }
+  ],
+])
+
 const infoRelaition = defineRelation([
   [
     ["account.username", "account.age"],
@@ -136,6 +154,7 @@ const age = defineField<number, Props>()
     prefix: "🎂",
     required: true
   })
+  .relation(ageRelaition)
   .actions({
     onSubmitValue(model) {
       const username = this.getAbstractModel().getFieldsValue("account.username")
@@ -151,7 +170,6 @@ const age = defineField<number, Props>()
   })
   .validator(z.number({ message: "年龄必须是数字" }).min(1, "年龄必须大于0").max(100, "年龄必须小于100"))
 
-
 const address = defineField<string, Props>()
   .component({
     id: "address",
@@ -162,6 +180,7 @@ const address = defineField<string, Props>()
     prefix: "🏠",
     required: true
   })
+  .relation(addressRelaition)
   .validator(z.string({ message: "地址为必填项" }).min(2, "地址长度必须在2-10").max(10, "地址长度必须在2-10"))
 
 
