@@ -245,7 +245,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     })
   }
 
-  resetState() {
+  resetStatus() {
     this.isInitialized.value = true
     this.#updating.value = true
     this.isBlurred.value = false
@@ -280,12 +280,12 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   reset(model?: T) {
-    this.resetState()
+    this.resetStatus()
     this.onBeforeInit?.()
 
     const { setDefaultValue } = this.#actions
-    const filedValue: any = isFunction(setDefaultValue) ? setDefaultValue.call(this) : model;
-    if (this.#properties?.length && filedValue === undefined) {
+    const filedValue = isFunction(setDefaultValue) ? setDefaultValue.call(this) : model;
+    if (filedValue === undefined && this.#properties?.length) {
       return
     }
     if (isPromise(filedValue)) {
@@ -293,7 +293,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
         this.value = value
       })
     } else {
-      this.value = filedValue!
+      this.value = filedValue as T
     }
   }
 

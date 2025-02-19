@@ -73,9 +73,11 @@ export class AbstractModel<M extends Model> {
   }
 
   warningRelationCycle() {
-    const cycles = this.detectCycles(Object.values(this.fields))
-    if (!isProd && cycles.length) {
-      console.warn('relation has cycle dependencies:', cycles.map((cycle) => cycle.map(n => n.path).join(' -> ') + '->' + cycle[0].path));
+    if (!isProd) {
+      const cycles = this.detectCycles(Object.values(this.fields))
+      if (cycles.length) {
+        console.warn('relation has cycle dependencies:', cycles.map((cycle) => cycle.map(n => n.path).join(' -> ') + '->' + cycle[0].path));
+      }
     }
   }
 
