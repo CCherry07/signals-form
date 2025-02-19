@@ -13,3 +13,5 @@ export {
 
 export type * from "./types/form"
 export type * from "./types/validator"
+
+export * from "./daggy"
