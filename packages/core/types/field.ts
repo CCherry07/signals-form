@@ -109,3 +109,10 @@ export interface BaseFieldProps<T> {
   isDestroyed: boolean,
   isInitialized: boolean,
 }
+
+export enum ValueStatus {
+  Commiting = "Commiting",
+  Pending = "Pending",
+  Committed = "Committed",
+  Failed = "Failed",
+}

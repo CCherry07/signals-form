@@ -1,5 +1,5 @@
 
-import type { ActionOptions, ComponentOptions, Field, FieldBuilderType, FieldErrors, Lifecycle, ValidateMode, ValidateType, ValidatorOptions } from "../types/field"
+import { ValueStatus, type ActionOptions, type ComponentOptions, type Field, type FieldBuilderType, type FieldErrors, type Lifecycle, type ValidateMode, type ValidateType, type ValidatorOptions } from "../types/field"
 import type { Decision } from "../boolless"
 import type { AbstractModelMethods } from "../types/form"
 import type { Context, ValidateItem } from "../types/validator"
@@ -34,9 +34,10 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   #properties?: FieldBuilder[]
 
   // value status
-  #updating = signal(false)
-  #pending = signal(false)
-  #updated = signal(false)
+  private [ValueStatus.Commiting] = signal(false)
+  private [ValueStatus.Committed] = signal(false)
+  private [ValueStatus.Pending] = signal(false)
+  private [ValueStatus.Failed] = signal(false)
 
   isValidating: Signal<boolean> = signal(false)
   isBlurred: Signal<boolean> = signal(false)
@@ -183,15 +184,15 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   setValueWillPending(isPending: boolean) {
-    this.#pending.value = isPending
+    this[ValueStatus.Pending].value = isPending
   }
 
-  setValueWillUpdating(isUpdating: boolean) {
-    this.#updating.value = isUpdating
+  setValueWillCommiting(isCommiting: boolean) {
+    this[ValueStatus.Commiting].value = isCommiting
   }
 
-  setValueWillUpdated(isUpdated: boolean) {
-    this.#updated.value = isUpdated
+  setValueWillCommitted(isCommitted: boolean) {
+    this[ValueStatus.Committed].value = isCommitted
   }
 
   get isRoot() {
@@ -212,42 +213,43 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   getValueStatus() {
     return {
-      updated: this.#updated.value,
-      updating: this.#updating.value,
-      pending: this.#pending.value,
+      committed: this[ValueStatus.Committed].value,
+      commiting: this[ValueStatus.Commiting].value,
+      pending: this[ValueStatus.Pending].value,
+      failed: this[ValueStatus.Failed].value,
     }
   }
 
   getValueStatusMethods() {
     return {
       setValueWillPending: this.setValueWillPending.bind(this),
-      setValueWillUpdating: this.setValueWillUpdating.bind(this),
-      setValueWillUpdated: this.setValueWillUpdated.bind(this),
+      setValueWillCommiting: this.setValueWillCommiting.bind(this),
+      setValueWillCommitted: this.setValueWillCommitted.bind(this),
     }
   }
 
   #batchDispatchEffectStart() {
     this.effectFields.forEach(field => {
-      const { setValueWillUpdating, setValueWillPending, setValueWillUpdated } = field.getValueStatusMethods()
-      setValueWillUpdating(true)
+      const { setValueWillCommiting, setValueWillPending, setValueWillCommitted } = field.getValueStatusMethods()
+      setValueWillCommiting(true)
       setValueWillPending(true)
-      setValueWillUpdated(false)
+      setValueWillCommitted(false)
       field.#batchDispatchEffectStart()
     })
   }
 
   #batchDispatchEffectEnd() {
     this.effectFields.forEach(field => {
-      const { setValueWillUpdating, setValueWillPending, setValueWillUpdated } = field.getValueStatusMethods()
-      setValueWillUpdating(false)
+      const { setValueWillCommiting, setValueWillPending, setValueWillCommitted } = field.getValueStatusMethods()
+      setValueWillCommiting(false)
       setValueWillPending(false)
-      setValueWillUpdated(true)
+      setValueWillCommitted(true)
     })
   }
 
   resetStatus() {
     this.isInitialized.value = true
-    this.#updating.value = true
+    this[ValueStatus.Commiting].value = true
     this.isBlurred.value = false
     this.isFocused.value = false
     this.isDestroyed.value = false
