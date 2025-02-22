@@ -10,6 +10,11 @@ import { isArray, isEmpty, isPromise, set } from "@signals-form/shared"
 
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
+import { Action, createUpdate, createUpdateQueue, enqueueUpdate, processUpdateQueue, Update, UpdateQueue } from "../updater/updateQueue"
+import { DefaultLane, Lane, NoLane, requestUpdateLane } from "../updater/lanes"
+import { updater } from "../updater"
+
+let lane = NoLane
 
 let index = 0
 function getParentField(field: FieldBuilder): FieldBuilder | null {
@@ -18,6 +23,11 @@ function getParentField(field: FieldBuilder): FieldBuilder | null {
   } else {
     return field.parent
   }
+}
+
+interface UpdateState<T> extends UpdateQueue<T> {
+  lastRenderedState: T
+  baseQueue: Update<T> | null
 }
 
 export class FieldBuilder<T = any, P extends Object = Object> {
@@ -38,6 +48,8 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   private [ValueStatus.Committed] = signal(false)
   private [ValueStatus.Pending] = signal(false)
   private [ValueStatus.Failed] = signal(false)
+
+  updateQueueMap = new Map<string, UpdateState<any>>()
 
   isValidating: Signal<boolean> = signal(false)
   isBlurred: Signal<boolean> = signal(false)
@@ -95,6 +107,64 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     this.#batchDispatchEffectEnd()
   }
 
+  setValue(action: Action<T>) {
+    const line = requestUpdateLane()
+    const update = createUpdate(action, line)
+    const valueUpdateQueue = this.updateQueueMap.get('value')!
+    enqueueUpdate(valueUpdateQueue, update)
+    updater.enqueueUpdate(() => {
+      this.updateState(line, 'value')
+    }, line)
+  }
+
+  updateState<K extends keyof P>(lane: Lane = DefaultLane, key: 'value' | K = 'value') {
+    const queue = this.updateQueueMap.get(key as string)!
+    // @ts-ignore
+    const baseState = key === 'value' ? this.value : this.#props[key];
+    const pending = queue.shared.pending;
+    let baseQueue = queue.baseQueue;
+
+    if (pending !== null) {
+      // pending baseQueue update保存在current中
+      if (baseQueue !== null) {
+        // baseQueue b2 -> b0 -> b1 -> b2
+        // pendingQueue p2 -> p0 -> p1 -> p2
+        // b0
+        const baseFirst = baseQueue.next;
+        // p0
+        const pendingFirst = pending.next;
+        // b2 -> p0
+        baseQueue.next = pendingFirst;
+        // p2 -> b0
+        pending.next = baseFirst;
+        // p2 -> b0 -> b1 -> b2 -> p0 -> p1 -> p2
+      }
+      baseQueue = pending;
+      queue.baseQueue = pending;
+      queue.shared.pending = null;
+    }
+
+    if (baseQueue !== null) {
+      const prevState = this.value;
+      const {
+        memoizedState,
+        baseQueue: newBaseQueue,
+      } = processUpdateQueue(baseState, baseQueue, lane)
+      if (!Object.is(prevState, memoizedState)) {
+        //
+      }
+
+      if (key === 'value') {
+        this.value = memoizedState;
+      } else {
+        // @ts-ignore
+        this.#props[key] = memoizedState;
+      }
+      queue.baseQueue = newBaseQueue;
+      queue.lastRenderedState = memoizedState;
+    }
+  }
+
   #component?: any;
   #validator: {
     initiative?: ValidateItem<T>[];
@@ -134,6 +204,12 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   onUnmounted?(): void
 
   constructor() {
+    this.updateQueueMap.set('value', {
+      ...createUpdateQueue<T>(),
+      dispatch: this.setValue.bind(this),
+      lastRenderedState: undefined as T,
+      baseQueue: null
+    })
     const stop = effectScope(() => {
       // disabled
       effect(() => {
@@ -507,13 +583,27 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   props(ps: P) {
+    Object.keys(ps).forEach((key) => {
+      this.updateQueueMap.set(key, {
+        ...createUpdateQueue(),
+        // @ts-ignore
+        dispatch: this.setProp.bind(this, key),
+        lastRenderedState: undefined,
+        baseQueue: null
+      })
+    })
     Object.assign(this.#props, ps)
     return this
   }
 
-  setProp<K extends keyof P, V extends P[K]>(key: K, value: V) {
-    // @ts-ignore
-    this.#props[key] = value
+  setProp<K extends keyof P, V extends P[K]>(key: K, action: Action<V>) {
+    const line = requestUpdateLane()
+    const update = createUpdate(action, line)
+    const propUpdateQueue = this.updateQueueMap.get(key as string)!
+    enqueueUpdate(propUpdateQueue, update)
+    updater.enqueueUpdate(() => {
+      this.updateState(line, key)
+    }, line)
   }
 
   events(events: Record<string, (this: Field<FieldBuilder<T, P>>, ...args: any[]) => void>) {

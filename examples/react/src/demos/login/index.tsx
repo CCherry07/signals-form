@@ -1,7 +1,7 @@
 import { createForm } from "@signals-form/react"
-import { defineField } from "@signals-form/core";
+import { defineField, defineRelation } from "@signals-form/core";
 import Input from "../../components/Input";
-import { z } from "zod";
+import { promise, z } from "zod";
 import { ReactNode } from "react";
 import { zodResolver } from "@signals-form/resolvers";
 import Form from "../../components/Form";
@@ -25,6 +25,23 @@ const username = defineField<string, Props>()
     required: true
   })
   .validator(z.string({ message: "该字段为必填项" }))
+  .events({
+    onChange(value) {
+      this.setValue(() => {
+        const num = Math.floor(Math.random() * 100)
+        const state = value + String(num)
+        // this.setProp('label', state)
+        return state
+      })
+
+      this.setValue(() => {
+        const num = Math.floor(Math.random() * 100)
+        const state = value + String(num)
+        // this.setProp('label', state)
+        return state
+      })
+    }
+  })
 
 
 const password = defineField<string, Props>()
@@ -33,20 +50,14 @@ const password = defineField<string, Props>()
     component: Input,
   })
   .props({ label: "密码", type: "Password", prefix: "🔒", required: true })
-
-
-const age = defineField({
-  component:{
-    id: "age",
-    component: Input,
-  },
-  events:{
-    onChange: function (value) {
-      this.value = value
-    }
-  }
-})
-
+  .relation(defineRelation([
+    [
+      "account.username",
+      () => {
+        console.log('username');
+      }
+    ]
+  ]))
 
 const useraccount = defineField<{ username: string, password: string }, any>()
   .component({

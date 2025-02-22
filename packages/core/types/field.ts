@@ -78,8 +78,8 @@ export type FieldBuilderType = "Field" | "Void"
 type ReadonlyPickKeys = "getProps" | "getAppContext" |
   "getProvides" | "isRoot" | "isLeaf" |
   "execDecision" | "setFieldErrors" | "cleanErrors" |
-  "setErrors" | "peek" | "setProp" | "isHidden" |
-  "isDisabled" | "isBlurred" | "isFocused" | "isMounted" |
+  "setErrors" | "peek" | "setProp" | "isHidden" | "updateValue"|
+  "isDisabled" | "isBlurred" | "isFocused" | "isMounted" | "setValue"|
   "isDestroyed" | "isInitialized" | "updateProperties" | "getProperties"
 
 type PickKeys = "value" | "errors"
