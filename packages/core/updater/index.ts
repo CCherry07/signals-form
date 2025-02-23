@@ -8,6 +8,8 @@ export class Updater {
   private endUpdateCallbacks: Set<() => void> = new Set();
 
   enqueueUpdate(callback: UpdateCallback, priority: number = NormalPriority) {
+    console.log('enqueueUpdate', priority);
+    
     this.updateQueue.push(() => scheduleCallback(priority, callback));
     this.scheduleUpdate();
   }

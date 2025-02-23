@@ -14,6 +14,8 @@ import { Action, createUpdate, createUpdateQueue, enqueueUpdate, processUpdateQu
 import { DefaultLane, Lane, lanesToSchedulerPriority, NoLane, requestUpdateLane } from "../updater/lanes"
 import { updater } from "../updater"
 import { getEventPriority } from "../updater/eventsPriority"
+import { createEventListenerWrapperWithPriority } from "../updater/events"
+import { unstable_getCurrentPriorityLevel } from "scheduler"
 
 const caclHighPriorityRelation = () => {
   // 1. **用户交互**：与用户交互相关的联动关系通常是高优先级的。
@@ -112,13 +114,15 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   setValue(action: Action<T>) {
-    const line = requestUpdateLane()
-    const update = createUpdate(action, line)
+    // const lane = requestUpdateLane()
+    const lane = unstable_getCurrentPriorityLevel()
+    
+    const update = createUpdate(action, lane)
     const valueUpdateQueue = this.updateQueueMap.get('value')!
     enqueueUpdate(valueUpdateQueue, update)
     updater.enqueueUpdate(() => {
-      this.updateState(line, 'value')
-    }, lanesToSchedulerPriority(line))
+      this.updateState(lane, 'value')
+    }, lane)
   }
 
   updateState<K extends keyof P>(lane: Lane = DefaultLane, key: 'value' | K = 'value') {
@@ -611,7 +615,8 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   events(events: Record<string, (this: Field<FieldBuilder<T, P>>, ...args: any[]) => void>) {
     Object.entries(events).forEach(([key, value]) => {
-      this.#events[key] = value.bind(this as Field<FieldBuilder<T, P>>)
+      // @ts-ignore
+      this.#events[key] = createEventListenerWrapperWithPriority(key,value).bind(this as Field<FieldBuilder<T, P>>)
     })
     return this
   }

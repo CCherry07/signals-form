@@ -1,7 +1,7 @@
 import { createForm } from "@signals-form/react"
 import { defineField, defineRelation } from "@signals-form/core";
 import Input from "../../components/Input";
-import { promise, z } from "zod";
+import { z } from "zod";
 import { ReactNode } from "react";
 import { zodResolver } from "@signals-form/resolvers";
 import Form from "../../components/Form";
