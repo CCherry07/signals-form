@@ -11,10 +11,14 @@ import { isArray, isEmpty, isPromise, set } from "@signals-form/shared"
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
 import { Action, createUpdate, createUpdateQueue, enqueueUpdate, processUpdateQueue, Update, UpdateQueue } from "../updater/updateQueue"
-import { DefaultLane, Lane, NoLane, requestUpdateLane } from "../updater/lanes"
+import { DefaultLane, Lane, lanesToSchedulerPriority, NoLane, requestUpdateLane } from "../updater/lanes"
 import { updater } from "../updater"
+import { getEventPriority } from "../updater/eventsPriority"
 
-let lane = NoLane
+const caclHighPriorityRelation = () => {
+  // 1. **用户交互**：与用户交互相关的联动关系通常是高优先级的。
+  
+}
 
 let index = 0
 function getParentField(field: FieldBuilder): FieldBuilder | null {
@@ -114,7 +118,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     enqueueUpdate(valueUpdateQueue, update)
     updater.enqueueUpdate(() => {
       this.updateState(line, 'value')
-    }, line)
+    }, lanesToSchedulerPriority(line))
   }
 
   updateState<K extends keyof P>(lane: Lane = DefaultLane, key: 'value' | K = 'value') {
@@ -125,7 +129,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     let baseQueue = queue.baseQueue;
 
     if (pending !== null) {
-      // pending baseQueue update保存在current中
       if (baseQueue !== null) {
         // baseQueue b2 -> b0 -> b1 -> b2
         // pendingQueue p2 -> p0 -> p1 -> p2
@@ -583,15 +586,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   props(ps: P) {
-    Object.keys(ps).forEach((key) => {
-      this.updateQueueMap.set(key, {
-        ...createUpdateQueue(),
-        // @ts-ignore
-        dispatch: this.setProp.bind(this, key),
-        lastRenderedState: undefined,
-        baseQueue: null
-      })
-    })
     Object.assign(this.#props, ps)
     return this
   }
@@ -599,6 +593,15 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   setProp<K extends keyof P, V extends P[K]>(key: K, action: Action<V>) {
     const line = requestUpdateLane()
     const update = createUpdate(action, line)
+    if (!this.updateQueueMap.has(key as string)) {
+      this.updateQueueMap.set(key as string, {
+        ...createUpdateQueue(),
+        // @ts-ignore
+        dispatch: this.setProp.bind(this, key),
+        lastRenderedState: undefined,
+        baseQueue: null
+      })
+    }
     const propUpdateQueue = this.updateQueueMap.get(key as string)!
     enqueueUpdate(propUpdateQueue, update)
     updater.enqueueUpdate(() => {

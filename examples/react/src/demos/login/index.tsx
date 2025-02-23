@@ -30,14 +30,14 @@ const username = defineField<string, Props>()
       this.setValue(() => {
         const num = Math.floor(Math.random() * 100)
         const state = value + String(num)
-        // this.setProp('label', state)
+        this.setProp('label', state)
         return state
       })
 
       this.setValue(() => {
         const num = Math.floor(Math.random() * 100)
         const state = value + String(num)
-        // this.setProp('label', state)
+        this.setProp('label', state)
         return state
       })
     }
