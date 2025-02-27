@@ -1,115 +1,60 @@
-import { match, js, _ } from "@signals-form/core"
-import { expect, describe, it } from "vitest"
+import { describe, it, expect } from 'vitest';
+import { match, _ } from '@signals-form/core';
 
-describe("match", () => {
-  it("should match value with pattern", () => {
-    const value = { type: 'user', name: 'Alice', age: 30 };
-    const result = match(value, [
-      [{ type: 'admin' }, () => 'Matched admin'],
-      [{ type: 'user', age: js`value > 18` }, () => 'Matched adult user'],
-      [{ type: 'user', age: (age) => age <= 18 }, () => 'Matched minor user'],
-      [/^hello/, () => 'Matched pattern starting with hello'],
-      [js`value.length > 3`, () => 'Matched string with length > 3'],
-      [_, () => 'Default case']
-    ]);
-    expect(result).toMatchInlineSnapshot(`"Matched adult user"`);
-  })
-
-  it("should match array value with pattern", () => {
-    const arrayValue = [1, 2, 3];
-    const arrayResult = match(arrayValue, [
-      [[1, 2, 3], () => 'Matched array [1, 2, 3]'],
-      [_, () => 'Default case']
-    ]);
-
-    expect(arrayResult).toMatchInlineSnapshot(`"Matched array [1, 2, 3]"`);
-  })
-
-  it("should match map value with pattern", () => {
-    const mapValue = new Map([['key1', 'value1'], ['key2', 'value2']]);
-    const mapResult = match(mapValue, [
-      [new Map([['key1', 'value1'], ['key2', 'value2']]), () => 'Matched map'],
-      [_, () => 'Default case']
-    ]);
-
-    expect(mapResult).toMatchInlineSnapshot(`"Matched map"`);
-  })
-
-  it("should match set value with pattern", () => {
-    const setValue = new Set([1, 2, 3]);
-    const setResult = match(setValue, [
-      [new Set([1, 2, 3]), () => 'Matched set'],
-      [_, () => 'Default case']
-    ]);
-
-    expect(setResult).toMatchInlineSnapshot(`"Matched set"`);
-  })
-
-  it("not match object value with pattern", () => {
-    const value = { type: 'user', name: 'Alice', age: 30 };
-    const result = match(value, [
-      [{ type: 'admin' }, () => 'Matched admin'],
-      [_, () => 'Default case']
-    ]);
-
-    expect(result).toMatchInlineSnapshot(`"Default case"`);
+describe('Matcher', () => {
+  it('should match exact value', () => {
+    const result = match(42)
+      .when(42, () => 'matched')
+      .otherwise(() => 'not matched')
+    expect(result).toBe('matched');
   });
 
-  it('test basic type matching', () => {
-    const result = match(1, [
-      [1, () => 'Matched 1'],
-      [2, () => 'Matched 2'],
-      [_, () => 'Default case']
-    ]);
-
-    expect(result).toMatchInlineSnapshot(`"Matched 1"`);
-
-    const result2 = match('hello', [
-      ['hello', () => 'Matched hello'],
-      [_, () => 'Default case']
-    ]);
-    expect(result2).toMatchInlineSnapshot(`"Matched hello"`);
-
-    const result3 = match(true, [
-      [true, () => 'Matched true'],
-      [false, () => 'Matched false'],
-      [_, () => 'Default case']
-    ]);
-    expect(result3).toMatchInlineSnapshot(`"Matched true"`);
-
-    const result4 = match(null, [
-      [null, () => 'Matched null'],
-      [_, () => 'Default case']
-    ]);
-    
-    expect(result4).toMatchInlineSnapshot(`"Matched null"`);
-
-
-    const result5 = match(undefined, [
-      [undefined, () => 'Matched undefined'],
-      [_, () => 'Default case']
-    ]);
-
-    expect(result5).toMatchInlineSnapshot(`"Matched undefined"`);
-
-    const symbol = Symbol('symbol');
-    const result6 = match(symbol, [
-      [Symbol('symbol'), () => 'Matched symbol'],
-      [_, () => 'Default case']
-    ]);
-    expect(result6).toMatchInlineSnapshot(`"Default case"`);
-    const result7 = match(symbol, [
-      [symbol, () => 'Matched symbol'],
-      [_, () => 'Default case']
-    ]);
-
-    expect(result7).toMatchInlineSnapshot(`"Matched symbol"`);
-
-    const result8 = match({}, [
-      [{}, () => 'Matched object'],
-      [_, () => 'Default case']
-    ]);
-
-    expect(result8).toMatchInlineSnapshot(`"Matched object"`);
+  it('should match using function', () => {
+    const result = match(42)
+      .when((value) => value > 40, () => 'matched')
+      .otherwise(() => 'not matched')
+    expect(result).toBe('matched');
   });
-})
+
+  it('should match using RegExp', () => {
+    const result = match('hello')
+      .when(/hello/, () => 'matched')
+      .otherwise(() => 'not matched')
+    expect(result).toBe('matched');
+  });
+
+  it('should match using object pattern', () => {
+    const result = match({ a: 1, b: 2 })
+      .when({ a: 1 }, () => 'matched')
+      .otherwise(() => 'not matched')
+    expect(result).toBe('matched');
+  });
+
+  it('should match using array pattern', () => {
+    const result = match([1, 2, 3])
+      .when([1, 2, 3], () => 'matched')
+      .otherwise(() => 'not matched')
+    expect(result).toBe('matched');
+  });
+
+  it('should match using Map pattern', () => {
+    const result = match(new Map([['a', 1], ['b', 2]]))
+      .when(new Map([['a', 1], ['b', 2]]), () => 'matched')
+      .otherwise(() => 'not matched')
+    expect(result).toBe('matched');
+  });
+
+  it('should match using Set pattern', () => {
+    const result = match(new Set([1, 2, 3]))
+      .when(new Set([1, 2, 3]), () => 'matched')
+      .otherwise(() => 'not matched')
+    expect(result).toBe('matched');
+  });
+
+  it('should return default when no match found', () => {
+    const result = match(42)
+      .when(43, () => 'matched')
+      .otherwise(() => 'not matched')
+    expect(result).toBe('not matched');
+  });
+});

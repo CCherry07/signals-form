@@ -1,31 +1,62 @@
 import { createTemplateLiterals as js } from "@signals-form/shared";
 import { isFunction, isMap, isPlainObject, isRegExp, isSet, isString } from "alien-deepsignals";
+
 type Pattern<T> = T | RegExp | ((value: T) => boolean) | { [K in keyof T]?: Pattern<T[K]> } | string;
 
 export const _ = Symbol('_');
 
-export function match<T, R>(value: T, patterns: Array<[Pattern<T> | typeof _, (value?: T) => R]>): R {
-  for (const [pattern, handler] of patterns) {
-  switch (true) {
-      case pattern === _:
-        return handler(value);
-      case isFunction(pattern) && (pattern as (value: T) => boolean)(value):
-        return handler(value);
-      case isRegExp(pattern) && isString(value) && pattern.test(value):
-        return handler(value);
-      case Array.isArray(pattern) && Array.isArray(value) && matchArray(value, pattern):
-        return handler(value);
-      case isMap(pattern) && isMap(value) && matchMap(value, pattern):
-        return handler(value);
-      case isSet(pattern) && isSet(value) && matchSet(value, pattern):
-        return handler(value);
-      case isPlainObject(pattern) && isPlainObject(value) && matchObject(value, pattern as Object):
-        return handler(value);
-      case pattern === value:
-        return handler(value);
-    }
+class Matcher<T, R> {
+  private value: T;
+  private patterns: Array<[Pattern<T> | typeof _, (value?: T) => R]> = [];
+
+  constructor(value: T) {
+    this.value = value;
   }
-  throw new Error(`No match found for value: ${JSON.stringify(value)}, The part that does not need to be matched can be replaced by _`);
+
+  when(pattern: Pattern<T> | typeof _, handler: (value?: T) => R): this {
+    this.patterns.push([pattern, handler]);
+    return this;
+  }
+
+  private match(): R {
+    for (const [pattern, handler] of this.patterns) {
+      switch (true) {
+        case pattern === _:
+          return handler(this.value);
+        case isFunction(pattern) && (pattern as (value: T) => boolean)(this.value):
+          return handler(this.value);
+        case isRegExp(pattern) && isString(this.value) && pattern.test(this.value):
+          return handler(this.value);
+        case Array.isArray(pattern) && Array.isArray(this.value) && matchArray(this.value, pattern):
+          return handler(this.value);
+        case isMap(pattern) && isMap(this.value) && matchMap(this.value, pattern):
+          return handler(this.value);
+        case isSet(pattern) && isSet(this.value) && matchSet(this.value, pattern):
+          return handler(this.value);
+        case isPlainObject(pattern) && isPlainObject(this.value) && matchObject(this.value, pattern as Object):
+          return handler(this.value);
+        case pattern === this.value:
+          return handler(this.value);
+      }
+    }
+    throw new Error(`No match found for value: ${JSON.stringify(this.value)}, The part that does not need to be matched can be replaced by _`);
+  }
+
+  otherwise(handler: (value?: T) => R): R {
+    this.patterns.push([_, handler]);
+    return this.match();
+  }
+
+  exhaustive(): R {
+    if (this.patterns.length === 0) {
+      return this.value as unknown as R;
+    }
+    return this.match();
+  }
+}
+
+export function match<T>(value: T): Matcher<T, any> {
+  return new Matcher(value);
 }
 
 function matchObject<T>(value: T, pattern: { [K in keyof T]?: Pattern<T[K]> }): boolean {
@@ -33,7 +64,11 @@ function matchObject<T>(value: T, pattern: { [K in keyof T]?: Pattern<T[K]> }): 
     if (pattern.hasOwnProperty(key)) {
       const patternValue = pattern[key];
       const targetValue = value[key];
-      if (!match(targetValue, [[patternValue, () => true], [_, () => false]])) {
+      if (
+        !match(targetValue)
+          .when(patternValue!, () => true)
+          .otherwise(() => false)
+      ) {
         return false;
       }
     }
@@ -46,9 +81,7 @@ function matchArray<T>(value: T[], pattern: Pattern<T>[]): boolean {
     return false;
   }
   for (let i = 0; i < value.length; i++) {
-    if (!match(value[i],
-      [[pattern[i], () => true],
-      [_, () => false]])) {
+    if (!match(value[i]).when(pattern[i], () => true).otherwise(() => false)) {
       return false;
     }
   }
@@ -61,9 +94,11 @@ function matchMap<K, V>(value: Map<K, V>, pattern: Map<K, Pattern<V>>): boolean 
   }
   for (const [key, patternValue] of pattern) {
     const val = value.get(key);
-    if (!value.has(key) || !match(val as V, [[patternValue, () => true], [_, () => {
-      return false
-    }]])) {
+    if (
+      !value.has(key) || !match(val as V)
+        .when(patternValue, () => true)
+        .otherwise(() => false)
+    ) {
       return false;
     }
   }
