@@ -111,6 +111,17 @@ const username = defineField<string, Props>()
     required: true
   })
   .relation(nameRelaition)
+  .events({
+    onChange: function (value) {
+      this.setValue(value)
+      match(this.execDecision(D.and("is18", "isTom")))
+      .when(true, () => {
+        console.log("Tom is 18");
+      }).when(false, () => {
+        console.log("Tom is not 18");
+      }).exhaustive()
+    },
+  })
   .validator(z.string({ message: "用户名为必填项" }).min(2, "用户名长度必须在2-10").max(10, "用户名长度必须在2-10").regex(/^[a-zA-Z]+$/, { message: "用户名必须是英文" }))
 
 
@@ -126,23 +137,9 @@ const password = defineField<string, Props>()
         schema: z.string({ message: "密码必须包含大小写字母、数字和特殊字符" })
           .min(6, "密码长度必须在6-16").max(16, "密码长度必须在6-16")
           .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,16}$/, { message: "密码必须包含大小写字母、数字和特殊字符" }),
-        updateOn: ["onxxClick"]
       }
     }
   )
-  .events({
-    onChange: function (value) {
-      const res = match(this.execDecision(D.and("is18", "isTom")),
-        [
-          [true, () => "Tom is 18"],
-          [false, () => "Tom is not 18"]
-        ]
-      )
-      this.value = value
-    },
-  })
-
-
 const age = defineField<number, Props>()
   .component({
     id: "age",

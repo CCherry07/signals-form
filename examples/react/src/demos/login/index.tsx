@@ -7,6 +7,7 @@ import { zodResolver } from "@signals-form/resolvers";
 import Form from "../../components/Form";
 import { App } from "./app"
 import React from "react";
+import { batch } from "alien-deepsignals";
 interface Props {
   label: string
   type?: "Group" | "Search" | "TextArea" | "Password" | "OTP";
@@ -27,19 +28,32 @@ const username = defineField<string, Props>()
   .validator(z.string({ message: "该字段为必填项" }))
   .events({
     onChange(value) {
-      this.setValue(() => {
-        const num = Math.floor(Math.random() * 100)
-        const state = value + String(num)
-        this.setProp('label', state)
-        return state
-      })
+        Promise.resolve(value).then(res => {
+          const num = Math.floor(Math.random() * 100)
+          const state = res + String(num)
+          // this.value = state
+          this.setValue(() => {
+            return state
+          })
+        })
 
-      this.setValue(() => {
-        const num = Math.floor(Math.random() * 100)
-        const state = value + String(num)
-        this.setProp('label', state)
-        return state
-      })
+        setTimeout(() => {
+          const num = Math.floor(Math.random() * 100)
+          const state = value + String(num)
+          // this.value = state
+          this.setValue(() => {
+            return state
+          })
+        });
+  
+        Promise.resolve(value).then(res => {
+          const num = Math.floor(Math.random() * 100)
+          const state = res + String(num)
+          // this.value = state
+          this.setValue(() => {
+            return state
+          })
+        })
     }
   })
 

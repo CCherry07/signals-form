@@ -51,7 +51,7 @@ export const D = {
  * @returns Decision Methods
  */
 export function createDecision<T extends string>(boolContext: Record<T, unknown>) {
-  return D as D<keyof typeof boolContext>;
+  return D as D<keyof typeof boolContext | BoolFn>;
 }
 
 const registedOperators = () => Object.keys(Operator).concat(Object.keys(CustomOperator));

@@ -39,7 +39,7 @@ class Matcher<T, R> {
           return handler(this.value);
       }
     }
-    throw new Error(`No match found for value: ${JSON.stringify(this.value)}, The part that does not need to be matched can be replaced by _`);
+    throw new Error(`No match found for value: ${JSON.stringify(this.value)}, The part that does not need to be matched can be replaced by otherwise`);
   }
 
   otherwise(handler: (value?: T) => R): R {
