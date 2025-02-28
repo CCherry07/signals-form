@@ -7,7 +7,6 @@ import { zodResolver } from "@signals-form/resolvers";
 import Form from "../../components/Form";
 import { App } from "./app"
 import React from "react";
-import { batch } from "alien-deepsignals";
 interface Props {
   label: string
   type?: "Group" | "Search" | "TextArea" | "Password" | "OTP";

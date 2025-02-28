@@ -26,61 +26,9 @@ export function FieldControl(props: Props) {
   const [isDisabled, setIsDisabled] = useState(() => field.isDisabled.value)
 
   const events = useMemo(() => {
-    const _events = field.getEvents()
-    const onChange = (async function (this: Field<FieldBuilder>, ...args: any[]) {
-      if (_events.onChange) {
-        await _events.onChange(...args)
-      } else {
-        this.value = args[0]
-      }
-      field.validate({
-        value: field.value,
-        updateOn: "onChange",
-      })
-    }).bind(field)
-
-    const onBlur = (value: any) => {
-      _events.onBlur?.(value)
-      batch(() => {
-        field.isFocused.value = false
-        field.isBlurred.value = true
-      })
-      field.validate({
-        value: field.value,
-        updateOn: "onBlur",
-      })
-    }
-
-    const onFocus = () => {
-      if (_events.onFocus) {
-        _events.onFocus()
-      }
-      batch(() => {
-        field.isBlurred.value = false
-        field.isFocused.value = true
-      })
-    }
-    const events = {} as Record<string, Function>
-    Object.entries(normalizeEvents(field)).forEach(([key, event]) => {
-      if (key === "onChange" || key === "onBlur" || key === "onFocus") {
-        return
-      }
-      events[key] = (...args: any[]) => {
-        event(...args)
-        field.validate({
-          value: field.value,
-          updateOn: key,
-        })
-      }
-    })
-
-    return {
-      ...events,
-      onChange,
-      onBlur,
-      onFocus,
-    }
+    return normalizeEvents(field)
   }, [])
+  
   useEffect(() => {
     const stopScope = effectScope(() => {
       effect(() => {

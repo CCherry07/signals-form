@@ -4,7 +4,7 @@ import type { Decision } from "../boolless"
 import type { AbstractModelMethods } from "../types/form"
 import type { Context, ValidateItem } from "../types/validator"
 
-import { computed, deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
+import { batch, computed, deepSignal, effect, isFunction, isObject, signal, Signal } from "alien-deepsignals"
 import { effectScope } from "alien-signals"
 import { isArray, isEmpty, isPromise, set } from "@signals-form/shared"
 
@@ -19,7 +19,7 @@ import { unstable_getCurrentPriorityLevel } from "scheduler"
 
 const caclHighPriorityRelation = () => {
   // 1. **用户交互**：与用户交互相关的联动关系通常是高优先级的。
-  
+
 }
 
 let index = 0
@@ -116,7 +116,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   setValue(action: Action<T>) {
     // const lane = requestUpdateLane()
     const lane = unstable_getCurrentPriorityLevel()
-    
+
     const update = createUpdate(action, lane)
     const valueUpdateQueue = this.updateQueueMap.get('value')!
     enqueueUpdate(valueUpdateQueue, update)
@@ -614,9 +614,50 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   events(events: Record<string, (this: Field<FieldBuilder<T, P>>, ...args: any[]) => void>) {
-    Object.entries(events).forEach(([key, value]) => {
+
+    const onChange = async (value: T) => {
+      if (events.onChange) {
+        // @ts-ignore
+        await events.onChange.call(this, value)
+      } else {
+        this.value = value
+      }
+    }
+
+    const onBlur = (value: any) => {
       // @ts-ignore
-      this.#events[key] = createEventListenerWrapperWithPriority(key,value).bind(this as Field<FieldBuilder<T, P>>)
+      events.onBlur?.(value)
+      batch(() => {
+        this.isFocused.value = false
+        this.isBlurred.value = true
+      })
+    }
+
+    const onFocus = () => {
+      if (events.onFocus) {
+        // @ts-ignore
+        events.onFocus()
+      }
+      batch(() => {
+        this.isBlurred.value = false
+        this.isFocused.value = true
+      })
+    }
+    Object.entries({
+      ...events,
+      onChange,
+      onBlur,
+      onFocus
+    }).forEach(([key, event]) => {
+      // @ts-ignore
+      this.#events[key] = createEventListenerWrapperWithPriority(key, async(...args: any[]) => {
+        // @ts-ignore
+        await event.call(this, args)
+        this.validate({
+          value: this.value,
+          updateOn: key,
+        })
+      }).bind(this as Field<FieldBuilder<T, P>>)
     })
     return this
   }
