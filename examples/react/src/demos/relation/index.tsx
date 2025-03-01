@@ -1,10 +1,9 @@
 import React from "react";
 import { ReactNode } from "react";
 import { createForm } from "@signals-form/react"
-import { createDecision, defineField, match } from "@signals-form/core";
+import { createDecision, defineField, setupRelation } from "@signals-form/core";
 import { z } from "zod";
 import { zodResolver } from "@signals-form/resolvers";
-import { defineRelation } from "@signals-form/core"
 import Form from "../../components/Form";
 import Input from "../../components/Input";
 import { App } from "./app"
@@ -34,71 +33,6 @@ const boolsConfig = {
 
 const D = createDecision(boolsConfig)
 
-const nameRelaition = defineRelation([
-  [
-    "account.age",
-    (field, age) => {
-      console.log(`${field.value} is ${age} years old`);
-    }
-  ],
-  [
-    ["account.address", "account.age"],
-    (field, [address, age]) => {
-      if (address && age) {
-        console.log(`${field.value} is ${age} years old, and he lives in ${address}`);
-      }
-    }
-  ],
-  function (field) {
-    if (field.execDecision(D.and("is18", "isTom"))) {
-      console.log("Tom is 18 years old");
-    }
-  }
-])
-
-const addressRelaition = defineRelation([
-  [
-    "account.username",
-    (field, name) => {
-      console.log(`address: ${field.value}; name: ${name}`);
-    }
-  ],
-])
-
-const ageRelaition = defineRelation([
-  [
-    "account.username",
-    (field, name) => {
-      console.log(`age: ${field.value}; name: ${name}`);
-    }
-  ],
-])
-
-const infoRelaition = defineRelation([
-  [
-    ["account.username", "account.age"],
-    (field, [username, age]) => {
-      if (username && age) {
-        field.value = [`${username} is ${age} years old`]
-      } else {
-        field.value = []
-      }
-    }
-  ],
-  [
-    ["account.username", "account.address", "account.age"],
-    (field, [username, address, age]) => {
-      if (username && address && age) {
-        field.value = [
-          field.value[0],
-          `${username} is ${age} years old, and he lives in ${address}`
-        ]
-      } else if (!address) {
-        field.value = [field.value[0]]
-      }
-    }
-  ],
-])
 
 const username = defineField<string, Props>()
   .component({
@@ -110,16 +44,9 @@ const username = defineField<string, Props>()
     prefix: "👤",
     required: true
   })
-  .relation(nameRelaition)
   .events({
     onChange: function (value) {
-      this.setValue(value)
-      match(this.execDecision(D.and("is18", "isTom")))
-      .when(true, () => {
-        console.log("Tom is 18");
-      }).when(false, () => {
-        console.log("Tom is not 18");
-      }).exhaustive()
+     this.value = value
     },
   })
   .validator(z.string({ message: "用户名为必填项" }).min(2, "用户名长度必须在2-10").max(10, "用户名长度必须在2-10").regex(/^[a-zA-Z]+$/, { message: "用户名必须是英文" }))
@@ -151,7 +78,6 @@ const age = defineField<number, Props>()
     prefix: "🎂",
     required: true
   })
-  .relation(ageRelaition)
   .actions({
     onSubmitValue(model) {
       const username = this.getAbstractModel().getFieldsValue("account.username")
@@ -177,7 +103,6 @@ const address = defineField<string, Props>()
     prefix: "🏠",
     required: true
   })
-  .relation(addressRelaition)
   .validator(z.string({ message: "地址为必填项" }).min(2, "地址长度必须在2-10").max(10, "地址长度必须在2-10"))
 
 
@@ -193,7 +118,9 @@ const info = defineField<any, any>()
     setDefaultValue() {
       return []
     },
-  }).relation(infoRelaition)
+  })
+
+
 
 const useraccount = defineField<Model['account'], any>()
   .component({
@@ -213,8 +140,6 @@ const useraccount = defineField<Model['account'], any>()
     }
   })
 
-
-
 const { app, form } = createForm({
   id: "boolless",
   defaultValidatorEngine: "zod",
@@ -228,6 +153,26 @@ const { app, form } = createForm({
     }
   }
 })
+
+// 设置关系
+setupRelation({
+  field: age,
+  dependencies: 'account.username',
+  update: (field, aValue) => {
+    console.log('age', aValue);
+    field.value = aValue === "tom" ? 18 : 0;
+  }
+});
+
+setupRelation({
+  field: info,
+  dependencies: ['account.username', 'account.age'],
+  update: (field, [aValue, bValue]) => {
+    console.log('info', aValue, bValue);
+    
+    field.setValue([`C from A: ${aValue}, B: ${bValue}`]);
+  }
+});
 export default function () {
   return <App app={app} form={form} />
 }

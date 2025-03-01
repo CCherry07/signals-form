@@ -1,2 +1,2 @@
 export * from "./defineField"
-export * from "./defineRelation"
+export * from "../relation/defineRelation"

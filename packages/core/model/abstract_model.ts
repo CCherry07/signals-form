@@ -9,7 +9,7 @@ import { FieldBuilder } from "../builder/field";
 import { FieldErrors } from "../types/field";
 import { validate } from "../validator";
 import { Context, ValidateItem } from "../types/validator";
-
+import { Graph } from "../relation/graph"
 export class AbstractModel<M extends Model> {
   id: string;
   models: Map<string, Model>;
@@ -121,6 +121,19 @@ export class AbstractModel<M extends Model> {
     }
 
     return cycles;
+  }
+
+  buildDependencyGraph() {
+    const graph = new Graph();
+    Object.values(this.fields).forEach((field) => {
+      graph.addVertex(field.path, field)
+    })
+    Object.values(this.fields).forEach((field) => {
+      field.effectFields.forEach((effectField) => {
+        graph.addEdge(field.path, effectField.path)
+      })
+    })
+    return graph
   }
 
 

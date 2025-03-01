@@ -8,7 +8,7 @@ import { batch, computed, deepSignal, effect, isFunction, isObject, signal, Sign
 import { effectScope } from "alien-signals"
 import { isArray, isEmpty, isPromise, set } from "@signals-form/shared"
 
-import { defineRelation } from "../hooks/defineRelation"
+import { defineRelation } from "../relation/defineRelation"
 import { formatValidateItem } from "../validator"
 import { Action, createUpdate, createUpdateQueue, enqueueUpdate, processUpdateQueue, Update, UpdateQueue } from "../updater/updateQueue"
 import { DefaultLane, Lane, requestUpdateLane } from "../updater/lanes"
@@ -101,9 +101,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   protected set value(v: T) {
-    this.#batchDispatchEffectStart()
     this.#abstractModel.setFieldValue(this.path, v)
-    this.#batchDispatchEffectEnd()
   }
 
   setValue(action: Action<T>) {
@@ -240,6 +238,10 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     this.#cleanups.push(stop)
   }
 
+  getId() {
+    return this.id
+  }
+
   appendEffectField(field: FieldBuilder) {
     this.effectFields.add(field)
   }
@@ -259,17 +261,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     this.validatePassive({ value: this.value })
   }
 
-  setValueWillPending(isPending: boolean) {
-    this[ValueStatus.Pending].value = isPending
-  }
-
-  setValueWillCommiting(isCommiting: boolean) {
-    this[ValueStatus.Commiting].value = isCommiting
-  }
-
-  setValueWillCommitted(isCommitted: boolean) {
-    this[ValueStatus.Committed].value = isCommitted
-  }
 
   get isRoot() {
     return this.parent === null
@@ -296,32 +287,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     }
   }
 
-  getValueStatusMethods() {
-    return {
-      setValueWillPending: this.setValueWillPending.bind(this),
-      setValueWillCommiting: this.setValueWillCommiting.bind(this),
-      setValueWillCommitted: this.setValueWillCommitted.bind(this),
-    }
-  }
-
-  #batchDispatchEffectStart() {
-    this.effectFields.forEach(field => {
-      const { setValueWillCommiting, setValueWillPending, setValueWillCommitted } = field.getValueStatusMethods()
-      setValueWillCommiting(true)
-      setValueWillPending(true)
-      setValueWillCommitted(false)
-      field.#batchDispatchEffectStart()
-    })
-  }
-
-  #batchDispatchEffectEnd() {
-    this.effectFields.forEach(field => {
-      const { setValueWillCommiting, setValueWillPending, setValueWillCommitted } = field.getValueStatusMethods()
-      setValueWillCommiting(false)
-      setValueWillPending(false)
-      setValueWillCommitted(true)
-    })
-  }
 
   resetStatus() {
     this.isInitialized.value = true
@@ -607,7 +572,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   }
 
   events(events: Record<string, (this: Field<FieldBuilder<T, P>>, ...args: any[]) => void>) {
-
     const onChange = async (value: T) => {
       if (events.onChange) {
         // @ts-ignore
@@ -645,7 +609,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
       // @ts-ignore
       this.#events[key] = createEventListenerWrapperWithPriority(key, async (...args: any[]) => {
         // @ts-ignore
-        await event.call(this, args)
+        await event.apply(this, args)
         this.validate({
           value: this.value,
           updateOn: key,

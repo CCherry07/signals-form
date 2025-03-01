@@ -36,12 +36,6 @@ export function createRelation<T extends FieldBuilder>(relation: Relation<T>) {
       cb?.(field, newValue)
       oldValue = newValue
     }
-    effect(() => {
-      if (!field.getValueStatus().pending) {
-        e.notify()
-        field.getValueStatusMethods().setValueWillPending(false)
-      }
-    })
     e.run()
     return e
   }
