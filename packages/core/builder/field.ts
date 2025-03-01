@@ -11,17 +11,10 @@ import { isArray, isEmpty, isPromise, set } from "@signals-form/shared"
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
 import { Action, createUpdate, createUpdateQueue, enqueueUpdate, processUpdateQueue, Update, UpdateQueue } from "../updater/updateQueue"
-import { DefaultLane, Lane, lanesToSchedulerPriority, NoLane, requestUpdateLane } from "../updater/lanes"
+import { DefaultLane, Lane, requestUpdateLane } from "../updater/lanes"
 import { updater } from "../updater"
-import { getEventPriority } from "../updater/eventsPriority"
 import { createEventListenerWrapperWithPriority } from "../updater/events"
 import { unstable_getCurrentPriorityLevel } from "scheduler"
-
-const caclHighPriorityRelation = () => {
-  // 1. **用户交互**：与用户交互相关的联动关系通常是高优先级的。
-
-}
-
 let index = 0
 function getParentField(field: FieldBuilder): FieldBuilder | null {
   if (field.parent?.isVoidField) {
@@ -650,7 +643,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
       onFocus
     }).forEach(([key, event]) => {
       // @ts-ignore
-      this.#events[key] = createEventListenerWrapperWithPriority(key, async(...args: any[]) => {
+      this.#events[key] = createEventListenerWrapperWithPriority(key, async (...args: any[]) => {
         // @ts-ignore
         await event.call(this, args)
         this.validate({
