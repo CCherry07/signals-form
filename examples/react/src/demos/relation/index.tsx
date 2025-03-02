@@ -1,7 +1,7 @@
 import React from "react";
 import { ReactNode } from "react";
 import { createForm } from "@signals-form/react"
-import { defineField, setupRelation } from "@signals-form/core";
+import { debugDependencyGraph, defineField, setupRelation } from "@signals-form/core";
 import { zodResolver } from "@signals-form/resolvers";
 import Form from "../../components/Form";
 import Input from "../../components/Input";
@@ -106,13 +106,11 @@ const { app, form } = createForm({
   }
 })
 
-// 设置关系
 setupRelation({
   field: c,
   dependencies: 'account.a',
   update(field, aValue) {
     console.log('c', aValue);
-
     return new Promise((resolve) => {
       setTimeout(() => {
         field.value = Math.floor(Math.random() * 100)
@@ -121,6 +119,16 @@ setupRelation({
     })
   }
 });
+
+setupRelation({
+  field: e,
+  dependencies: ['account.a', 'account.c'],
+  update: (field, [aValue, bValue]) => {
+    console.log('e', aValue, bValue);
+    field.value = [`C from A: ${aValue}, B: ${bValue}`]
+  }
+});
+
 
 setupRelation({
   field: c,
@@ -137,25 +145,18 @@ setupRelation({
 });
 
 
-setupRelation({
-  field: a,
-  dependencies: 'account.c',
-  update: (field, cValue) => {
-    console.log("a,props", cValue);
-    field.setProp('label', `a: ${cValue}`)
-    // field.value = [`C from A: ${aValue}, B: ${bValue}`]
-  }
-});
+// setupRelation({
+//   field: a,
+//   dependencies: 'account.c',
+//   update: (field, cValue) => {
+//     console.log("a,props", cValue);
+//     field.setProp('label', `a: ${cValue}`)
+//     // field.value = [`C from A: ${aValue}, B: ${bValue}`]
+//   }
+// });
 
-setupRelation({
-  field: e,
-  dependencies: ['account.a', 'account.c'],
-  update: (field, [aValue, bValue]) => {
-    console.log('e', aValue, bValue);
-    // field.value = [`C from A: ${aValue}, B: ${bValue}`]
-  }
-});
 
+debugDependencyGraph()
 
 export default function () {
   return <App app={app} form={form} />
