@@ -36,14 +36,12 @@ const username = defineField<string, Props>()
           })
         })
 
+        
+
         setTimeout(() => {
-          const num = Math.floor(Math.random() * 100)
-          const state = value + String(num)
-          // this.value = state
-          this.setValue(() => {
-            return state
-          })
+          
         });
+        
   
         Promise.resolve(value).then(res => {
           const num = Math.floor(Math.random() * 100)

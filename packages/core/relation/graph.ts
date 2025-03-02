@@ -31,6 +31,9 @@ export class Edge {
 export class Graph {
   nodes: Map<string, Vertex>;
   count: number;
+  // 获取拓扑排序
+  order: string[] = [];
+  sccOrders: string[][] = [];
 
   constructor() {
     this.nodes = new Map();
@@ -82,6 +85,9 @@ export class Graph {
   }
 
   tarjanSCC(): string[][] {
+    if (this.sccOrders.length > 0) {
+      return this.sccOrders
+    }
     const stack: Vertex[] = [];
     const result: string[][] = [];
     let index = 0;
@@ -121,10 +127,15 @@ export class Graph {
       }
     });
 
+    this.sccOrders = result;
+
     return result;
   }
 
   topologicalSort(): string[] {
+    if (this.order.length > 0) {
+      return this.order
+    }
     const inDegreeMap = new Map<Vertex, number>();
     const queue: Vertex[] = [];
     const sorted: string[] = [];
@@ -154,6 +165,8 @@ export class Graph {
     if (sorted.length !== this.count) {
       throw new Error("Graph has at least one cycle");
     }
+
+    this.order = sorted;
 
     return sorted;
   }

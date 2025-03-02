@@ -1,5 +1,5 @@
 
-import { ValueStatus, type ActionOptions, type ComponentOptions, type Field, type FieldBuilderType, type FieldErrors, type Lifecycle, type ValidateMode, type ValidateType, type ValidatorOptions } from "../types/field"
+import { type ActionOptions, type ComponentOptions, type Field, type FieldBuilderType, type FieldErrors, type Lifecycle, type ValidateMode, type ValidateType, type ValidatorOptions } from "../types/field"
 import type { Decision } from "../boolless"
 import type { AbstractModelMethods } from "../types/form"
 import type { Context, ValidateItem } from "../types/validator"
@@ -8,7 +8,7 @@ import { batch, computed, deepSignal, effect, isFunction, isObject, signal, Sign
 import { effectScope } from "alien-signals"
 import { isArray, isEmpty, isPromise, set } from "@signals-form/shared"
 
-import { defineRelation } from "../relation/defineRelation"
+import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
 import { Action, createUpdate, createUpdateQueue, enqueueUpdate, processUpdateQueue, Update, UpdateQueue } from "../updater/updateQueue"
 import { DefaultLane, Lane, requestUpdateLane } from "../updater/lanes"
@@ -41,12 +41,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   hidden?: Decision;
   disabled?: Decision;
   #properties?: FieldBuilder[]
-
-  // value status
-  private [ValueStatus.Commiting] = signal(false)
-  private [ValueStatus.Committed] = signal(false)
-  private [ValueStatus.Pending] = signal(false)
-  private [ValueStatus.Failed] = signal(false)
 
   updateQueueMap = new Map<string, UpdateState<any>>()
 
@@ -100,7 +94,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this.#abstractModel?.peekFieldValue?.(parentpath, this.id)
   }
 
-  protected set value(v: T) {
+  set value(v: T) {
     this.#abstractModel.setFieldValue(this.path, v)
   }
 
@@ -235,6 +229,7 @@ export class FieldBuilder<T = any, P extends Object = Object> {
         }
       })
     })
+    this.events({})
     this.#cleanups.push(stop)
   }
 
@@ -278,19 +273,9 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this.#type === "Field"
   }
 
-  getValueStatus() {
-    return {
-      committed: this[ValueStatus.Committed].value,
-      commiting: this[ValueStatus.Commiting].value,
-      pending: this[ValueStatus.Pending].value,
-      failed: this[ValueStatus.Failed].value,
-    }
-  }
-
 
   resetStatus() {
     this.isInitialized.value = true
-    this[ValueStatus.Commiting].value = true
     this.isBlurred.value = false
     this.isFocused.value = false
     this.isDestroyed.value = false

@@ -30,7 +30,7 @@ export function createRelation<T extends FieldBuilder>(relation: Relation<T>) {
     const e = new Effect(getter)
     let oldValue = getter()
     e.scheduler = function () {
-      if (!e.active || !e.dirty || field.getValueStatus().pending) return
+      if (!e.active || !e.dirty ) return
       const newValue = e.run()
       if (!hasChanged(newValue, oldValue)) return
       cb?.(field, newValue)

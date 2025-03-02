@@ -279,10 +279,6 @@ export class AbstractModel<M extends Model> {
     }
   }
 
-  getFieldValueStatus(field: string) {
-    return this.fields[field].getValueStatus()
-  }
-
   reset() {
     this.submitted.value = false;
     this.graph.forEach((field) => {

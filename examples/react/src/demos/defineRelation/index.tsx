@@ -1,12 +1,13 @@
 import React from "react";
 import { ReactNode } from "react";
 import { createForm } from "@signals-form/react"
-import { defineField, setupRelation } from "@signals-form/core";
+import { defineField } from "@signals-form/core";
 import { zodResolver } from "@signals-form/resolvers";
 import Form from "../../components/Form";
 import Input from "../../components/Input";
 import { App } from "./app"
 import { Info } from "./info"
+import { defineRelation } from "@signals-form/core/hooks/defineRelation";
 interface Props {
   label: string
   type?: "Group" | "Search" | "TextArea" | "Password" | "OTP";
@@ -50,6 +51,20 @@ const c = defineField<number, Props>()
     prefix: "🎂",
     required: true
   })
+  .relation(defineRelation([
+    [
+      'account.a',
+      (field, aValue) => {
+        console.log('c', aValue);
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            field.value = Math.floor(Math.random() * 100)
+            resolve(field.value)
+          }, 1000)
+        })
+      }
+    ]
+  ]))
 const d = defineField<string, Props>()
   .component({
     id: "d",
@@ -74,6 +89,15 @@ const e = defineField<any, any>()
       return []
     },
   })
+  .relation(defineRelation([
+    [
+      ['account.a', 'account.c'],
+      (field, [aValue, bValue]) => {
+        console.log('e', aValue, bValue);
+        field.value = [`C from A: ${aValue}, B: ${bValue}`]
+      }
+    ]
+  ]))
 
 const useraccount = defineField<Model['account'], any>()
   .component({
@@ -105,57 +129,6 @@ const { app, form } = createForm({
     }
   }
 })
-
-// 设置关系
-setupRelation({
-  field: c,
-  dependencies: 'account.a',
-  update(field, aValue) {
-    console.log('c', aValue);
-
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        field.value = Math.floor(Math.random() * 100)
-        resolve()
-      }, 1000)
-    })
-  }
-});
-
-setupRelation({
-  field: c,
-  dependencies: 'account.d',
-  update(field, aValue) {
-    console.log('c', aValue);
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        field.value = 40
-        resolve()
-      }, 1000)
-    })
-  }
-});
-
-
-setupRelation({
-  field: a,
-  dependencies: 'account.c',
-  update: (field, cValue) => {
-    console.log("a,props", cValue);
-    field.setProp('label', `a: ${cValue}`)
-    // field.value = [`C from A: ${aValue}, B: ${bValue}`]
-  }
-});
-
-setupRelation({
-  field: e,
-  dependencies: ['account.a', 'account.c'],
-  update: (field, [aValue, bValue]) => {
-    console.log('e', aValue, bValue);
-    // field.value = [`C from A: ${aValue}, B: ${bValue}`]
-  }
-});
-
 
 export default function () {
   return <App app={app} form={form} />

@@ -24,7 +24,6 @@ export class FormGroup {
       getField: form.getField.bind(form),
       addField: form.addField.bind(form),
       getFieldsValue: form.getFieldsValue.bind(form),
-      getFieldValueStatus: form.getFieldValueStatus.bind(form),
       validate: form.validate.bind(form),
       execDecision: form.execDecision.bind(form),
     }
