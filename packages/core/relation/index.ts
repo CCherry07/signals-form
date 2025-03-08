@@ -1,6 +1,7 @@
-import type { FieldBuilder } from "../builder/field";
+import { FieldBuilder } from "../builder/field";
 import { Effect, isArray } from "alien-deepsignals";
 import { Graph } from "./graph";
+import { hasChanged } from "../hooks/defineRelation";
 
 const dependencyGraph = new Graph();
 
@@ -9,8 +10,6 @@ let uniqueIdCounter = 0;
 
 const pendingUpdates = new Map<string, Set<string[]>>();
 let isProcessingUpdates = false;
-
-const fieldEffects = new Map<string, Effect<any>[]>();
 
 const fieldCallbacks = new Map<string, WeakMap<string[], (field: FieldBuilder, depValues: any) => void | Promise<void>>>();
 
@@ -34,14 +33,7 @@ async function processUpdates(): Promise<void> {
   isProcessingUpdates = true;
 
   try {
-    let updateOrder: string[];
-
-    try {
-      updateOrder = dependencyGraph.topologicalSort();
-    } catch (error) {
-      console.warn('检测到循环依赖，使用替代解决方案');
-      updateOrder = handleCyclicDependencies();
-    }
+    const updateOrder: string[] = dependencyGraph.getOrder();
     for (const fieldId of updateOrder) {
       if (pendingUpdates.has(fieldId)) {
         const depSet = pendingUpdates.get(fieldId)!;
@@ -77,50 +69,6 @@ async function processUpdates(): Promise<void> {
   }
 }
 
-function handleCyclicDependencies(): string[] {
-  const sccs = dependencyGraph.tarjanSCC();
-  const condensedGraph = new Graph();
-  const fieldToScc = new Map<string, number>();
-  sccs.forEach((scc, index) => {
-    condensedGraph.addVertex(`scc_${index}`);
-    scc.forEach(fieldId => {
-      fieldToScc.set(fieldId, index);
-    });
-  });
-
-  dependencyGraph.nodes.forEach((vertex, fieldId) => {
-    const fromScc = fieldToScc.get(fieldId);
-    if (fromScc === undefined) return;
-
-    vertex.outDegree.forEach(edge => {
-      const toScc = fieldToScc.get(edge.next.name);
-      if (toScc === undefined || fromScc === toScc) return;
-
-      condensedGraph.addEdge(`scc_${fromScc}`, `scc_${toScc}`);
-    });
-  });
-  const sccOrder = condensedGraph.topologicalSort();
-
-  const result: string[] = [];
-  const processedFields = new Set<string>();
-
-  sccOrder.forEach(sccId => {
-    const sccIndex = parseInt(sccId.substring(4), 10);
-    const fieldsInScc = sccs[sccIndex] || [];
-
-    [...fieldsInScc].sort().forEach(fieldId => {
-      result.push(fieldId);
-      processedFields.add(fieldId);
-    });
-  });
-
-  dependencyGraph.nodes.forEach((_, fieldId) => {
-    if (!processedFields.has(fieldId)) {
-      result.push(fieldId);
-    }
-  });
-  return result;
-}
 
 function notifyDependencyUpdate(fieldId: string, deps: string[]): void {
   if (!pendingUpdates.has(fieldId)) {
@@ -133,27 +81,34 @@ function notifyDependencyUpdate(fieldId: string, deps: string[]): void {
   }
 }
 
-export function cleanupRelation(field: FieldBuilder<any>): void {
+export function cleanupRelation(field: FieldBuilder<any>, effect: Effect, deps: string[]): void {
   const fieldId = fieldIdMap.get(field);
   if (!fieldId) return;
-
-  const effects = fieldEffects.get(fieldId);
-  if (effects) {
-    effects.forEach(effect => effect.stop());
-    fieldEffects.delete(fieldId);
-  }
-
-  fieldCallbacks.delete(fieldId);
-  pendingUpdates.delete(fieldId);
-  dependencyGraph.removeVertex(fieldId);
-  fieldIdMap.delete(field);
+  effect.stop();
+  fieldCallbacks.get(fieldId)?.delete(deps);
 }
 
 function defineRelation<T extends FieldBuilder>(
   field: T,
   dependencies: string | string[],
-  updateCallback: (field: T, depValues: any) => void | Promise<void>
+  updateCallback: (field: T, depValues: any) => void | Promise<void>,
+  options: {
+    priority?: number,
+    once?: boolean,
+    immediate?: boolean,
+    possibleInterruption?: () => boolean,
+  } = { priority: 0 }
 ): () => void {
+  let effect!: Effect<any>;
+  const getter = () => field.getAbstractModel().getFieldsValue(deps);
+  let oldValue: any;
+  if (options.once) {
+    const _cb = updateCallback
+    updateCallback = function (...args) {
+      _cb(...args);
+      cleanupRelation(field, effect, deps)
+    }
+  }
   const fieldId = getFieldId(field);
   const deps = isArray(dependencies) ? dependencies : [dependencies];
   // @ts-ignore
@@ -167,41 +122,71 @@ function defineRelation<T extends FieldBuilder>(
     const depFieldId = getFieldId(depField);
     dependencyGraph.addEdge(depFieldId, fieldId);
   });
-  const effect = new Effect(() => {
-    return field.getAbstractModel().getFieldsValue(deps);
-  });
 
-  effect.scheduler = () => {
-    if (effect.active && effect.dirty) {
-      effect.run();
-      notifyDependencyUpdate(fieldId, deps);
+  const job = (immediateFirstRun?: boolean) => {
+    if (!effect.active || (!immediateFirstRun && !effect.dirty)) {
+      return
     }
-  };
+    const newValue = effect.run()
+    if (!hasChanged(newValue, oldValue)) {
+      return
+    }
+    notifyDependencyUpdate(fieldId, deps);
+    oldValue = newValue
+  }
 
-  effect.run();
+  effect = new Effect(getter)
+  effect.scheduler = job
 
-  fieldEffects.set(fieldId, [effect]);
+  if (options.immediate) {
+    job(true)
+  } else {
+    oldValue = effect.run()
+  }
 
-  return () => cleanupRelation(field);
+  return () => cleanupRelation(field, effect, deps);
 }
 
-export function setupRelation<T extends FieldBuilder<any, any>>(options: {
+export function setupRelation<T extends FieldBuilder>(options: {
   field: T,
-  dependencies: string | string[],
-  update: (field: T, depValues: any) => void | Promise<void>
+  dependencies: string | string[] | FieldBuilder | FieldBuilder[],
+  update: (field: T, depValues: any) => void | Promise<void>,
+  options?: {
+    priority?: number,
+    once?: boolean,
+    immediate?: boolean,
+    possibleInterruption?: () => boolean,
+  }
 }): () => void {
-  return defineRelation(options.field, options.dependencies, options.update);
+  const dependencies = isArray(options.dependencies) ? options.dependencies : [options.dependencies];
+  const depIds = dependencies.map(dep => {
+    if (dep instanceof FieldBuilder) {
+      return getFieldId(dep);
+    }
+    return dep;
+  });
+  return defineRelation(options.field, depIds, options.update, options.options);
 }
 
 export function setupRelations(relations: Array<{
   field: FieldBuilder<any>,
   dependencies: string | string[],
   update: (field: FieldBuilder<any>, depValues: any) => void | Promise<void>
+  options?: {
+    priority?: number,
+    once?: boolean,
+    immediate?: boolean,
+    possibleInterruption?: () => boolean,
+  }
 }>): () => void {
   const cleanupFns = relations.map(relation =>
-    defineRelation(relation.field, relation.dependencies, relation.update)
+    setupRelation({
+      field: relation.field,
+      dependencies: relation.dependencies,
+      update: relation.update,
+      options: relation.options,
+    })
   );
-
   return () => cleanupFns.forEach(fn => fn());
 }
 
@@ -217,6 +202,5 @@ export function getRelationDebugInfo() {
     dependencyGraph,
     pendingUpdates: Array.from(pendingUpdates),
     fieldCount: fieldIdMap.size,
-    effectCount: fieldEffects.size,
   };
 }

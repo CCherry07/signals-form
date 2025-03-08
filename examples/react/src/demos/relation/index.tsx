@@ -1,7 +1,7 @@
 import React from "react";
 import { ReactNode } from "react";
 import { createForm } from "@signals-form/react"
-import { debugDependencyGraph, defineField, setupRelation } from "@signals-form/core";
+import { defineField, setupRelation } from "@signals-form/core";
 import { zodResolver } from "@signals-form/resolvers";
 import Form from "../../components/Form";
 import Input from "../../components/Input";
@@ -108,7 +108,7 @@ const { app, form } = createForm({
 
 setupRelation({
   field: c,
-  dependencies: 'account.a',
+  dependencies: a,
   update(field, aValue) {
     console.log('c', aValue);
     return new Promise((resolve) => {
@@ -117,46 +117,34 @@ setupRelation({
         resolve()
       }, 1000)
     })
+  },
+  options: {
+    once: true
   }
 });
 
 setupRelation({
   field: e,
-  dependencies: ['account.a', 'account.c'],
-  update: (field, [aValue, bValue]) => {
-    console.log('e', aValue, bValue);
-    field.value = [`C from A: ${aValue}, B: ${bValue}`]
+  dependencies: [c],
+  update: (field, cValue) => {
+    const aValue = field.getAbstractModel().getField('account.a').value
+    const str = aValue + cValue
+    console.log('e', str);
+    field.value = [
+      `a: ${aValue}, c: ${cValue}`
+    ]
   }
 });
-
 
 setupRelation({
-  field: c,
-  dependencies: 'account.d',
-  update(field, aValue) {
-    console.log('c', aValue);
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        field.value = 40
-        resolve()
-      }, 1000)
-    })
+  field: a,
+  dependencies: [e],
+  update: (field, eValue) => {
+    console.log('a', eValue);
+    field.setProp('label', eValue[0])
   }
 });
 
-
-// setupRelation({
-//   field: a,
-//   dependencies: 'account.c',
-//   update: (field, cValue) => {
-//     console.log("a,props", cValue);
-//     field.setProp('label', `a: ${cValue}`)
-//     // field.value = [`C from A: ${aValue}, B: ${bValue}`]
-//   }
-// });
-
-
-debugDependencyGraph()
 
 export default function () {
   return <App app={app} form={form} />

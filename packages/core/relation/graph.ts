@@ -5,7 +5,7 @@ export class Vertex {
   index: number | null;
   lowLink: number | null;
   onStack: boolean;
-  data: any; // 可以存储任意附加数据
+  data: any;
 
   constructor(name: string, data: any = null) {
     this.name = name;
@@ -31,9 +31,10 @@ export class Edge {
 export class Graph {
   nodes: Map<string, Vertex>;
   count: number;
-  // 获取拓扑排序
   order: string[] = [];
   sccOrders: string[][] = [];
+  hasCycle: boolean = false;
+  cycles: string[][] = [];
 
   constructor() {
     this.nodes = new Map();
@@ -62,13 +63,11 @@ export class Graph {
     const vertex = this.nodes.get(name);
     if (!vertex) return false;
 
-    // Remove all edges pointing to this vertex
     this.nodes.forEach(v => {
       v.outDegree = v.outDegree.filter(e => e.next !== vertex);
       v.inDegree = v.inDegree.filter(v => v !== vertex);
     });
 
-    // Remove the vertex
     this.nodes.delete(name);
     this.count--;
     return true;
@@ -82,6 +81,21 @@ export class Graph {
     fromVertex.outDegree = fromVertex.outDegree.filter(e => e.next !== toVertex);
     toVertex.inDegree = toVertex.inDegree.filter(v => v !== fromVertex);
     return true;
+  }
+
+  getOrder(): string[] {
+    if (this.order.length > 0) {
+      return this.order
+    }
+    let { sorted, cycles } = this.topologicalSort();
+    if (cycles.length > 0) {
+      this.hasCycle = true;
+      this.cycles = cycles;
+      console.warn('relation has cycle dependencies:', this.cycles.map((cycle) => cycle.join(' -> ') + ' -> ' + cycle[0]));
+      sorted = this.getOrderWithCycles()
+    }
+    this.order = sorted;
+    return sorted;
   }
 
   tarjanSCC(): string[][] {
@@ -132,15 +146,60 @@ export class Graph {
     return result;
   }
 
-  topologicalSort(): string[] {
-    if (this.order.length > 0) {
-      return this.order
-    }
+  getOrderWithCycles(): string[] {
+    const sccs = this.tarjanSCC();
+
+    const condensedGraph = new Graph();
+    const nodeToScc = new Map<string, number>();
+
+    sccs.forEach((scc, index) => {
+      condensedGraph.addVertex(`scc_${index}`);
+      scc.forEach(nodeId => {
+        nodeToScc.set(nodeId, index);
+      });
+    });
+
+    this.nodes.forEach((vertex, nodeId) => {
+      const fromScc = nodeToScc.get(nodeId);
+      if (fromScc === undefined) return;
+
+      vertex.outDegree.forEach(edge => {
+        const toScc = nodeToScc.get(edge.next.name);
+        if (toScc === undefined || fromScc === toScc) return;
+
+        condensedGraph.addEdge(`scc_${fromScc}`, `scc_${toScc}`);
+      });
+    });
+
+    const { sorted: sccOrder } = condensedGraph.topologicalSort();
+
+    const result: string[] = [];
+    const processedNodes = new Set<string>();
+
+    sccOrder.forEach(sccId => {
+      const sccIndex = parseInt(sccId.substring(4), 10);
+      const nodesInScc = sccs[sccIndex] || [];
+
+      [...nodesInScc].sort().forEach(nodeId => {
+        result.push(nodeId);
+        processedNodes.add(nodeId);
+      });
+    });
+
+    this.nodes.forEach((_, nodeId) => {
+      if (!processedNodes.has(nodeId)) {
+        result.push(nodeId);
+      }
+    });
+
+    return result;
+  }
+
+  topologicalSort(): { sorted: string[]; cycles: string[][] } {
     const inDegreeMap = new Map<Vertex, number>();
     const queue: Vertex[] = [];
     const sorted: string[] = [];
 
-    // Initialize in-degrees
     this.nodes.forEach(node => {
       inDegreeMap.set(node, node.inDegree.length);
       if (node.inDegree.length === 0) {
@@ -148,7 +207,6 @@ export class Graph {
       }
     });
 
-    // Kahn's algorithm
     while (queue.length > 0) {
       const node = queue.shift()!;
       sorted.push(node.name);
@@ -162,16 +220,87 @@ export class Graph {
       }
     }
 
-    if (sorted.length !== this.count) {
-      throw new Error("Graph has at least one cycle");
-    }
-
     this.order = sorted;
 
-    return sorted;
+    if (sorted.length !== this.count) {
+      const cycles = this.findAllCycles();
+      return { sorted, cycles };
+    }
+
+    return { sorted, cycles: [] };
   }
 
-  // 新增方法：深度优先搜索
+  private findAllCycles(): string[][] {
+    const cycles: string[][] = [];
+    const visited = new Set<string>();
+    const recursionStack = new Set<string>();
+    const pathStack: string[] = [];
+
+    const findCyclesDFS = (nodeName: string): void => {
+      const node = this.nodes.get(nodeName)!;
+
+      if (recursionStack.has(nodeName)) {
+        const cycleStart = pathStack.indexOf(nodeName);
+        if (cycleStart !== -1) {
+          const cycle = pathStack.slice(cycleStart);
+          cycle.push(nodeName);
+          cycles.push(cycle);
+        }
+        return;
+      }
+
+      if (visited.has(nodeName)) {
+        return;
+      }
+
+      visited.add(nodeName);
+      recursionStack.add(nodeName);
+      pathStack.push(nodeName);
+
+      for (const edge of node.outDegree) {
+        findCyclesDFS(edge.next.name);
+      }
+
+      pathStack.pop();
+      recursionStack.delete(nodeName);
+    };
+
+    this.nodes.forEach((_, name) => {
+      if (!visited.has(name)) {
+        findCyclesDFS(name);
+      }
+    });
+
+    return this.normalizeCycles(cycles);
+  }
+
+  private normalizeCycles(cycles: string[][]): string[][] {
+    const normalizedCycles: string[][] = [];
+    const cycleSignatures = new Set<string>();
+
+    for (const cycle of cycles) {
+      const actualCycle = cycle.slice(0, -1);
+
+      const minElement = actualCycle.reduce((min, current) =>
+        current < min ? current : min, actualCycle[0]);
+      const minIndex = actualCycle.indexOf(minElement);
+
+      const normalizedCycle = [
+        ...actualCycle.slice(minIndex),
+        ...actualCycle.slice(0, minIndex)
+      ];
+
+      const signature = normalizedCycle.join(',');
+
+      if (!cycleSignatures.has(signature)) {
+        cycleSignatures.add(signature);
+        normalizedCycles.push(normalizedCycle);
+      }
+    }
+
+    return normalizedCycles;
+  }
+
   dfs(startName: string, callback: (vertex: Vertex) => void): void {
     const visited = new Set<string>();
     const dfsRecursive = (vertexName: string) => {
@@ -188,7 +317,6 @@ export class Graph {
     dfsRecursive(startName);
   }
 
-  // 新增方法：广度优先搜索
   bfs(startName: string, callback: (vertex: Vertex) => void): void {
     const visited = new Set<string>();
     const queue: string[] = [startName];
@@ -208,7 +336,6 @@ export class Graph {
     }
   }
 
-  // 新增方法：检查是否存在路径
   hasPath(from: string, to: string): boolean {
     const visited = new Set<string>();
     const dfsCheck = (current: string): boolean => {
@@ -226,7 +353,6 @@ export class Graph {
     return dfsCheck(from);
   }
 
-  // 新增方法：获取所有路径
   getAllPaths(from: string, to: string): string[][] {
     const paths: string[][] = [];
     const dfsPath = (current: string, path: string[]) => {
@@ -246,7 +372,6 @@ export class Graph {
     return paths;
   }
 
-  // 新增方法：图的转置（反转所有边的方向）
   transpose(): Graph {
     const transposed = new Graph();
     this.nodes.forEach((vertex, name) => {
@@ -260,49 +385,9 @@ export class Graph {
     return transposed;
   }
 
-  // 新增方法：打印图结构
   print(): void {
     this.nodes.forEach((vertex, name) => {
       console.log(`${name} -> ${vertex.outDegree.map(e => e.next.name).join(', ')}`);
     });
   }
 }
-
-// // 使用示例
-// const graph = new Graph();
-
-// graph.addEdge("A", "B");
-// graph.addEdge("B", "C");
-// graph.addEdge("C", "A");
-// graph.addEdge("B", "D");
-// graph.addEdge("D", "E");
-// graph.addEdge("E", "F");
-// graph.addEdge("F", "D");
-
-// console.log("Graph structure:");
-// graph.print();
-
-// console.log("\nStrongly Connected Components:");
-// console.log(graph.tarjanSCC());
-
-// try {
-//   console.log("\nTopological Sort:");
-//   console.log(graph.topologicalSort());
-// } catch (error) {
-//   console.error("Topological sort failed:", error.message);
-// }
-
-// console.log("\nDFS from 'A':");
-// graph.dfs("A", (vertex) => console.log(vertex.name));
-
-// console.log("\nBFS from 'A':");
-// graph.bfs("A", (vertex) => console.log(vertex.name));
-
-// console.log("\nPath exists from 'A' to 'F':", graph.hasPath("A", "F"));
-
-// console.log("\nAll paths from 'A' to 'F':");
-// console.log(graph.getAllPaths("A", "F"));
-
-// console.log("\nTransposed graph:");
-// const transposedGraph = graph.transpose();
-// transposedGraph.print();
