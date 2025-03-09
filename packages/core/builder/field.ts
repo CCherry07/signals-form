@@ -11,7 +11,7 @@ import { isArray, isEmpty, isPromise, set } from "@signals-form/shared"
 import { defineRelation } from "../hooks/defineRelation"
 import { formatValidateItem } from "../validator"
 import { Action, createUpdate, createUpdateQueue, enqueueUpdate, processUpdateQueue, Update, UpdateQueue } from "../updater/updateQueue"
-import { DefaultLane, Lane, requestUpdateLane } from "../updater/lanes"
+import { DefaultLane, Lane } from "../updater/lanes"
 import { updater } from "../updater"
 import { createEventListenerWrapperWithPriority } from "../updater/events"
 import { unstable_getCurrentPriorityLevel } from "scheduler"
@@ -96,18 +96,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
 
   set value(v: T) {
     this.#abstractModel.setFieldValue(this.path, v)
-  }
-
-  setValue(action: Action<T>) {
-    // const lane = requestUpdateLane()
-    const lane = unstable_getCurrentPriorityLevel()
-
-    const update = createUpdate(action, lane)
-    const valueUpdateQueue = this.updateQueueMap.get('value')!
-    enqueueUpdate(valueUpdateQueue, update)
-    updater.enqueueUpdate(() => {
-      this.updateState(lane, 'value')
-    }, lane)
   }
 
   updateState<K extends keyof P>(lane: Lane = DefaultLane, key: 'value' | K = 'value') {
@@ -196,12 +184,6 @@ export class FieldBuilder<T = any, P extends Object = Object> {
   onUnmounted?(): void
 
   constructor() {
-    this.updateQueueMap.set('value', {
-      ...createUpdateQueue<T>(),
-      dispatch: this.setValue.bind(this),
-      lastRenderedState: undefined as T,
-      baseQueue: null
-    })
     const stop = effectScope(() => {
       // disabled
       effect(() => {
@@ -537,14 +519,15 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     return this
   }
 
-  setProp<K extends keyof P, V extends P[K]>(key: K, action: Action<V>) {
-    const line = requestUpdateLane()
-    const update = createUpdate(action, line)
+  // @ts-ignore
+  setState<K extends keyof P | 'value', V extends P[K]>(key: K, action: K extends 'value' ? Action<T> : Action<V>) {
+    const priority = unstable_getCurrentPriorityLevel()
+    const update = createUpdate(action, priority)
     if (!this.updateQueueMap.has(key as string)) {
       this.updateQueueMap.set(key as string, {
         ...createUpdateQueue(),
         // @ts-ignore
-        dispatch: this.setProp.bind(this, key),
+        dispatch: this.setState.bind(this),
         lastRenderedState: undefined,
         baseQueue: null
       })
@@ -552,8 +535,8 @@ export class FieldBuilder<T = any, P extends Object = Object> {
     const propUpdateQueue = this.updateQueueMap.get(key as string)!
     enqueueUpdate(propUpdateQueue, update)
     updater.enqueueUpdate(() => {
-      this.updateState(line, key)
-    }, line)
+      this.updateState(priority, key)
+    }, priority)
   }
 
   events(events: Record<string, (this: Field<FieldBuilder<T, P>>, ...args: any[]) => void>) {

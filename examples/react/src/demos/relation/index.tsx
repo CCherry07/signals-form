@@ -136,7 +136,7 @@ setupRelation({
   dependencies: [e],
   update: (field, eValue) => {
     console.log('a', eValue);
-    field.setProp('label', eValue[0])
+    field.setState('label', eValue[0])
   }
 });
 

@@ -58,7 +58,7 @@ function getUpdateProcessor(fieldId: string, deps: string[]): Subject<{
               }),
               tap(resolvedValue => {
                 if (resolvedValue !== undefined) {
-                  field.setValue(resolvedValue);
+                  field.setState('value',resolvedValue);
                 }
               }),
               catchError(err => {
@@ -69,7 +69,7 @@ function getUpdateProcessor(fieldId: string, deps: string[]): Subject<{
           }
           else {
             if (result !== undefined) {
-              field.setValue(result);
+              field.setState('value',result);
             }
             return of(null);
           }

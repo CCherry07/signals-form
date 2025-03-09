@@ -31,7 +31,7 @@ const username = defineField<string, Props>()
           const num = Math.floor(Math.random() * 100)
           const state = res + String(num)
           // this.value = state
-          this.setValue(() => {
+          this.setState(() => {
             return state
           })
         })
@@ -47,7 +47,7 @@ const username = defineField<string, Props>()
           const num = Math.floor(Math.random() * 100)
           const state = res + String(num)
           // this.value = state
-          this.setValue(() => {
+          this.setState(() => {
             return state
           })
         })
