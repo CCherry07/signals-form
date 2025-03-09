@@ -2,22 +2,93 @@ import { FieldBuilder } from "../builder/field";
 import { Effect, isArray } from "alien-deepsignals";
 import { Graph } from "./graph";
 import { hasChanged } from "../hooks/defineRelation";
+import { from, of, Subject } from "rxjs";
+import {
+  switchMap,
+  catchError,
+  tap,
+} from "rxjs/operators";
 
 const dependencyGraph = new Graph();
-
 const fieldIdMap = new Map<FieldBuilder<any>, string>();
 let uniqueIdCounter = 0;
-
 const pendingUpdates = new Map<string, Set<string[]>>();
 let isProcessingUpdates = false;
-
 const fieldCallbacks = new Map<string, WeakMap<string[], (field: FieldBuilder, depValues: any) => void | Promise<void>>>();
+
+const updateProcessors = new Map<string, Map<string, Subject<{
+  field: FieldBuilder;
+  callback: (field: FieldBuilder, depValues: any) => void | Promise<void>;
+  depValues: any[];
+}>>>();
+
+function createDepsKey(deps: string[]): string {
+  return [...deps].sort().join(',');
+}
+
+function getUpdateProcessor(fieldId: string, deps: string[]): Subject<{
+  field: FieldBuilder;
+  callback: (field: FieldBuilder, depValues: any) => void | Promise<void>;
+  depValues: any[];
+}> {
+  const depsKey = createDepsKey(deps);
+
+  if (!updateProcessors.has(fieldId)) {
+    updateProcessors.set(fieldId, new Map());
+  }
+
+  const fieldProcessors = updateProcessors.get(fieldId)!;
+
+  if (!fieldProcessors.has(depsKey)) {
+    const processor = new Subject<{
+      field: FieldBuilder;
+      callback: (field: FieldBuilder, depValues: any) => void | Promise<void>;
+      depValues: any[];
+    }>();
+
+    processor.pipe(
+      switchMap(({ field, callback, depValues }) => {
+        try {
+          const result = callback(field, depValues.length === 1 ? depValues[0] : depValues);
+
+          if (result instanceof Promise) {
+            return from(result).pipe(
+              tap(resolvedValue => {
+                console.log(`Updating field ${fieldId} with value:`, resolvedValue);
+              }),
+              tap(resolvedValue => {
+                if (resolvedValue !== undefined) {
+                  field.setValue(resolvedValue);
+                }
+              }),
+              catchError(err => {
+                console.error(`Error updating field ${fieldId}:`, err);
+                return of(null);
+              })
+            );
+          }
+          else {
+            if (result !== undefined) {
+              field.setValue(result);
+            }
+            return of(null);
+          }
+        } catch (error) {
+          console.error(`Error executing callback for field ${fieldId}:`, error);
+          return of(null);
+        }
+      })
+    ).subscribe();
+
+    fieldProcessors.set(depsKey, processor);
+  }
+  return fieldProcessors.get(depsKey)!;
+}
 
 function getFieldId(field: FieldBuilder<any>): string {
   if (!fieldIdMap.has(field)) {
     const id = field.path || `field_${uniqueIdCounter++}`;
     fieldIdMap.set(field, id);
-
     dependencyGraph.addVertex(id, field);
   }
   return fieldIdMap.get(field)!;
@@ -38,22 +109,22 @@ async function processUpdates(): Promise<void> {
       if (pendingUpdates.has(fieldId)) {
         const depSet = pendingUpdates.get(fieldId)!;
         const field = dependencyGraph.nodes.get(fieldId)?.data;
-        const callbackMap = fieldCallbacks.get(fieldId)
+        const callbackMap = fieldCallbacks.get(fieldId);
 
         if (field && callbackMap) {
           for (const deps of depSet) {
-            const callback = fieldCallbacks.get(fieldId)?.get(deps);
+            const callback = callbackMap.get(deps);
             if (callback) {
               const depValues = deps.map(depId => {
-                const depField = dependencyGraph.nodes.get(depId)?.data;
+                const depField = field.getAbstractModel().getField(depId);
                 return depField ? depField.value : undefined;
               });
-
-              const result = callback(field, depValues.length === 1 ? depValues[0] : depValues);
-
-              if (result instanceof Promise) {
-                await result;
-              }
+              const processor = getUpdateProcessor(fieldId, deps);
+              processor.next({
+                field,
+                callback,
+                depValues
+              });
             }
           }
         }
@@ -69,7 +140,6 @@ async function processUpdates(): Promise<void> {
   }
 }
 
-
 function notifyDependencyUpdate(fieldId: string, deps: string[]): void {
   if (!pendingUpdates.has(fieldId)) {
     pendingUpdates.set(fieldId, new Set());
@@ -84,8 +154,24 @@ function notifyDependencyUpdate(fieldId: string, deps: string[]): void {
 export function cleanupRelation(field: FieldBuilder<any>, effect: Effect, deps: string[]): void {
   const fieldId = fieldIdMap.get(field);
   if (!fieldId) return;
+
   effect.stop();
+
   fieldCallbacks.get(fieldId)?.delete(deps);
+
+  const depsKey = createDepsKey(deps);
+  const fieldProcessors = updateProcessors.get(fieldId);
+  if (fieldProcessors) {
+    const processor = fieldProcessors.get(depsKey);
+    if (processor) {
+      processor.complete();
+      fieldProcessors.delete(depsKey);
+    }
+
+    if (fieldProcessors.size === 0) {
+      updateProcessors.delete(fieldId);
+    }
+  }
 }
 
 function defineRelation<T extends FieldBuilder>(
@@ -93,15 +179,15 @@ function defineRelation<T extends FieldBuilder>(
   dependencies: string | string[],
   updateCallback: (field: T, depValues: any) => void | Promise<void>,
   options: {
-    priority?: number,
     once?: boolean,
     immediate?: boolean,
-    possibleInterruption?: () => boolean,
-  } = { priority: 0 }
+  } = {}
 ): () => void {
   let effect!: Effect<any>;
+  const deps = isArray(dependencies) ? dependencies : [dependencies];
   const getter = () => field.getAbstractModel().getFieldsValue(deps);
   let oldValue: any;
+
   if (options.once) {
     const _cb = updateCallback
     updateCallback = function (...args) {
@@ -109,10 +195,11 @@ function defineRelation<T extends FieldBuilder>(
       cleanupRelation(field, effect, deps)
     }
   }
+
   const fieldId = getFieldId(field);
-  const deps = isArray(dependencies) ? dependencies : [dependencies];
   // @ts-ignore
   fieldCallbacks.has(fieldId) ? fieldCallbacks.get(fieldId)?.set(deps, updateCallback) : fieldCallbacks.set(fieldId, new WeakMap([[deps, updateCallback]]));
+
   deps.forEach(depId => {
     const depField = field.getAbstractModel().getField(depId);
     if (!depField) {
@@ -131,6 +218,7 @@ function defineRelation<T extends FieldBuilder>(
     if (!hasChanged(newValue, oldValue)) {
       return
     }
+
     notifyDependencyUpdate(fieldId, deps);
     oldValue = newValue
   }
@@ -150,12 +238,10 @@ function defineRelation<T extends FieldBuilder>(
 export function setupRelation<T extends FieldBuilder>(options: {
   field: T,
   dependencies: string | string[] | FieldBuilder | FieldBuilder[],
-  update: (field: T, depValues: any) => void | Promise<void>,
+  update: (field: T, depValues: any) => void | T['value'] | Promise<T['value']>,
   options?: {
-    priority?: number,
     once?: boolean,
     immediate?: boolean,
-    possibleInterruption?: () => boolean,
   }
 }): () => void {
   const dependencies = isArray(options.dependencies) ? options.dependencies : [options.dependencies];
@@ -173,10 +259,8 @@ export function setupRelations(relations: Array<{
   dependencies: string | string[],
   update: (field: FieldBuilder<any>, depValues: any) => void | Promise<void>
   options?: {
-    priority?: number,
     once?: boolean,
     immediate?: boolean,
-    possibleInterruption?: () => boolean,
   }
 }>): () => void {
   const cleanupFns = relations.map(relation =>
@@ -191,16 +275,21 @@ export function setupRelations(relations: Array<{
 }
 
 export function debugDependencyGraph(): void {
-  console.log("current dependency graph:");
+  console.log("当前依赖图:");
   dependencyGraph.print();
-  console.log("fields to be updated:", Array.from(pendingUpdates));
-  console.log("field update version:");
+  console.log("待更新字段:", Array.from(pendingUpdates.entries())
+    .map(([id, deps]) => `${id}: ${Array.from(deps).map(d => d.join(','))}`));
+  console.log("处理器数量:", Array.from(updateProcessors.entries())
+    .map(([id, map]) => `${id}: ${map.size}`));
 }
 
 export function getRelationDebugInfo() {
   return {
     dependencyGraph,
-    pendingUpdates: Array.from(pendingUpdates),
+    pendingUpdates: Array.from(pendingUpdates.entries())
+      .map(([id, deps]) => [id, Array.from(deps)]),
+    activeProcessors: Array.from(updateProcessors.entries())
+      .map(([id, map]) => [id, Array.from(map.keys())]),
     fieldCount: fieldIdMap.size,
   };
 }

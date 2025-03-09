@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@signals-form/shared": "workspace:*",
+    "rxjs": "8.0.0-alpha.14",
     "sanctuary-show": "^3.0.0",
     "sanctuary-type-identifiers": "^4.0.0"
   },

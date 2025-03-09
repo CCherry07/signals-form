@@ -11,5 +11,6 @@ export const tsup: Options = {
     '!^(\\./|\\.\\./|[A-Za-z]:\\\\|/|^@/).*',
     "alien-signals",
     "alien-deepsignals",
+    "rxjs"
   ],
 }

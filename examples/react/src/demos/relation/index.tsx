@@ -109,18 +109,9 @@ const { app, form } = createForm({
 setupRelation({
   field: c,
   dependencies: a,
-  update(field, aValue) {
-    console.log('c', aValue);
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        field.value = Math.floor(Math.random() * 100)
-        resolve()
-      }, 1000)
-    })
+  update() {
+    return Math.floor(Math.random() * 100)
   },
-  options: {
-    once: true
-  }
 });
 
 setupRelation({
@@ -130,9 +121,13 @@ setupRelation({
     const aValue = field.getAbstractModel().getField('account.a').value
     const str = aValue + cValue
     console.log('e', str);
-    field.value = [
-      `a: ${aValue}, c: ${cValue}`
-    ]
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          `a: ${aValue}, c: ${cValue}`
+        ])
+      }, 1000)
+    })
   }
 });
 
@@ -144,7 +139,6 @@ setupRelation({
     field.setProp('label', eValue[0])
   }
 });
-
 
 export default function () {
   return <App app={app} form={form} />

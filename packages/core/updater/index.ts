@@ -57,7 +57,3 @@ export class Updater {
 
 
 export const updater = new Updater();
-
-updater.subscribeUpdateComplete(() => {
-  console.log('All updates are complete');
-});
