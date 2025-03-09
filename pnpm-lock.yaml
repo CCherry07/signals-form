@@ -219,6 +219,9 @@ importers:
       '@signals-form/shared':
         specifier: workspace:*
         version: link:../shared
+      rxjs:
+        specifier: 8.0.0-alpha.14
+        version: 8.0.0-alpha.14
       sanctuary-show:
         specifier: ^3.0.0
         version: 3.0.0
